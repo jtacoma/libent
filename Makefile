@@ -4,14 +4,11 @@ CFLAGS=-g -fprofile-arcs -ftest-coverage -O0
 CFLAGS+=-std=c11 -Wall -Wextra -Werror
 
 .PHONY: all
-all: .styled tags debug
+all: .styled tags testent
+	./testent
 	valgrind -v --leak-check=full ./testent
 	gcov *.gcda > /dev/null
 	grep '#####' *.gcov | cut -d: -f1,3,4- | sed -e 's/: */:/' -e 's/\.gcov//' | grep -v 'extraordinary'
-
-.PHONY: debug
-debug: testent
-	./testent || ( gdb ./testent && false )
 
 .codegen: *.[ch]
 	python gen.py *.[ch]

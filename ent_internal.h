@@ -27,4 +27,6 @@ enum ent_elemtype
 	ENT_TYPE_UTF8 = ENT_KIND_BUF + 1,
 };
 
+int ent_column_set(struct ent_column * c, void * start, size_t n);
+
 #endif//LIBENT_ENT_INTERNAL_H

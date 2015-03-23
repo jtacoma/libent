@@ -22,8 +22,8 @@ main ()
 	assert (ent_insert_buffer_commit (new_names) == -1);
 	ent_insert_buffer_free(new_names);
 
-	char const ** start;
-	size_t size;
+	char const ** start = NULL;
+	size_t size = 0;
 	ent_column_start (names, (void**)&start, &size);
 	assert (size == 2);
 	assert (strcmp (start[0], "Lana") == 0);
@@ -38,6 +38,8 @@ main ()
 	assert(ent_update_buffer_commit(changed_names) == -1);
 	ent_update_buffer_free(changed_names);
 
+	start = NULL;
+	size = 0;
 	ent_column_start (names, (void**)&start, &size);
 	assert (size == 2);
 	assert (strcmp (start[0], "Lana") == 0);

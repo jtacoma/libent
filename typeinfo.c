@@ -18,7 +18,7 @@ struct ent_typeinfo builtin_types[] =
 	{
 		.cname = "utf8",
 		.elem = ENT_TYPE_UTF8,
-		.elemsize = sizeof(int8_t),
+		.elemsize = sizeof(char *),
 		.dimensions = 1,
 		.n = 1,
 	},
