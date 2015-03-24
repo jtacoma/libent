@@ -7,47 +7,48 @@
 int
 main ()
 {
-	struct ent_typeinfo const * utf8 = ent_typeinfo_from_name("utf8");
-	assert (utf8 != NULL);
+	struct ent_range * range = ent_range_alloc ();
+	ent_range_append (range, 0, 2);
+	ent_range_append (range, 2, 4);
+	assert (ent_range_len (range) == 4);
 
-	struct ent_column * names = ent_column_alloc ("name", utf8);
+	struct ent_column * names = ent_column_alloc (range, "name", "bytes");
 	assert (names != NULL);
 
-	struct ent_insert_buffer * new_names = ent_insert_buffer_alloc (names);
-	assert (new_names != NULL);
-	char const * input[2] = { "Lana", "Archer" };
-	assert (ent_insert_buffer_append (new_names, input, 2) == 0);
-	assert (ent_insert_buffer_commit (new_names) == 0);
-	assert (ent_insert_buffer_append (new_names, input, 2) == -1);
-	assert (ent_insert_buffer_commit (new_names) == -1);
-	ent_insert_buffer_free(new_names);
+	struct ent_bytes * dst = ent_column_ref (names);
+	assert (dst != NULL);
 
-	char const ** start = NULL;
-	size_t size = 0;
-	ent_column_start (names, (void**)&start, &size);
-	assert (size == 2);
-	assert (strcmp (start[0], "Lana") == 0);
-	assert (strcmp (start[1], "Archer") == 0);
+	char const * src[] = { "Lana", "Archer", "Cyril" };
+	for (size_t i = 0; i < sizeof(src) / sizeof(*src); ++i, ++dst)
+	{
+		ent_bytes_reset (dst, src[i], strlen(src[i]) + 1);
 
-	struct ent_update_buffer * changed_names = ent_update_buffer_alloc(names);
-	assert(changed_names != NULL);
-	char const * changes[1] = { "Randy" };
-	assert(ent_update_buffer_set(changed_names, 1, changes, 1) == 0);
-	assert(ent_update_buffer_commit(changed_names) == 0);
-	assert(ent_update_buffer_set(changed_names, 1, changes, 1) == -1);
-	assert(ent_update_buffer_commit(changed_names) == -1);
-	ent_update_buffer_free(changed_names);
+		size_t len;
+		char const * result = ent_bytes_get (dst, &len);
+		assert (len == strlen (src[i]) + 1);
+		assert (strcmp (result, src[i]) == 0);
+	}
 
-	start = NULL;
-	size = 0;
-	ent_column_start (names, (void**)&start, &size);
-	assert (size == 2);
-	assert (strcmp (start[0], "Lana") == 0);
-	assert (strcmp (start[1], "Randy") == 0);
+	ent_bytes_reset (dst, "Randy", 6);
+	size_t randy_len;
+	assert (strcmp ("Randy", ent_bytes_get (dst, &randy_len)) == 0);
+	assert (randy_len == 6);
 
-	struct ent_delete_buffer * rm_names = ent_delete_buffer_alloc(names);
-	assert(rm_names != NULL);
-	assert(ent_delete_buffer_rm(rm_names, 0, 1) == 0);
+	struct ent_range * delete = ent_range_alloc ();
+	assert (ent_range_append (delete, 1, 2) == 0);
+	assert (ent_range_delete (range, delete) == 0);
+	assert (ent_range_len (range) == 3);
+	char const * expected[] = { "Lana", "Cyril", "Randy" };
+	struct ent_bytes * actual = ent_column_ref (names);
+	for (size_t i = 0; i < 3; ++i)
+	{
+		size_t len;
+		char const * s = ent_bytes_get(&actual[i], &len);
+		assert (len == strlen(s) + 1);
+		assert (strcmp (s, expected[i]) == 0);
+	}
+	ent_range_free (delete);
 
-	ent_column_free(names);
+	ent_column_free (names);
+	ent_range_free (range);
 }

@@ -28,4 +28,4 @@ testent: libent.so test/*.[ch]
 	gcc test/*.c -o $@ -I. -L. -lent $(CFLAGS)
 
 clean:
-	rm -f .styled tags libent.so testent
+	rm -f .codegen .styled tags libent.so testent *.gcno *.gcda *.gcov
