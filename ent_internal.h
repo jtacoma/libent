@@ -29,14 +29,14 @@ enum ent_elemtype
 	ENT_TYPE_UTF8 = ENT_KIND_BUF + 1,
 };
 
-struct ent_range_chunk
+struct ent_rlist_range
 {
 	size_t begin;
 	size_t end;
 };
 
-struct ent_range_chunk const * ent_range_chunks(
-    struct ent_range const * range, size_t *len);
+struct ent_rlist_range const * ent_rlist_ranges(
+    struct ent_rlist const * rlist, size_t *len);
 
 struct ent_typeinfo
 {

@@ -17,7 +17,7 @@ main ()
 	// Roughly in dependency order so that failures in the most
 	// depended-upon modules will be discovered first.
 	typeinfo_test();
-	range_test();
+	rlist_test();
 	bytes_test();
 	column_test();
 }

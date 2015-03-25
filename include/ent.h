@@ -14,13 +14,13 @@ struct ent_bytes
 void const * ent_bytes_get (struct ent_bytes const * b, size_t * len);
 int ent_bytes_reset (struct ent_bytes * b, void const * start, size_t n);
 
-struct ent_range;
+struct ent_rlist;
 
-struct ent_range * ent_range_alloc ();
-void ent_range_free (struct ent_range * range);
-size_t ent_range_len (struct ent_range const * range);
-int ent_range_append (struct ent_range * range, size_t begin, size_t end);
-int ent_range_delete (struct ent_range * range, struct ent_range const * src);
+struct ent_rlist * ent_rlist_alloc ();
+void ent_rlist_free (struct ent_rlist * rlist);
+size_t ent_rlist_len (struct ent_rlist const * rlist);
+int ent_rlist_append (struct ent_rlist * rlist, size_t begin, size_t end);
+int ent_rlist_delete (struct ent_rlist * rlist, struct ent_rlist const * src);
 
 struct ent_column;
 
@@ -31,6 +31,6 @@ struct ent_typeinfo const * ent_column_typeinfo (struct ent_column const * c);
 void * ent_column_ref (struct ent_column * c, size_t *len);
 int ent_column_select (struct ent_column * c,
 		struct ent_column const * src,
-		struct ent_range const * range);
+		struct ent_rlist const * rlist);
 
 #endif//LIBENT_ENT_H

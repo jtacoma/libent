@@ -84,7 +84,7 @@ void * ent_column_ref (struct ent_column * c, size_t *len)
 
 int ent_column_select (struct ent_column * dst,
                        struct ent_column const * src,
-                       struct ent_range const * range)
+                       struct ent_rlist const * rlist)
 {
 	struct ent_typeinfo const * dst_type = ent_column_typeinfo (dst);
 	struct ent_typeinfo const * src_type = ent_column_typeinfo (src);
@@ -101,13 +101,13 @@ int ent_column_select (struct ent_column * dst,
 	size_t src_len = 0;
 	uint8_t const * src_ptr = ent_column_get(src, &src_len);
 
-	size_t chunks_len = 0;
-	struct ent_range_chunk const * chunks =
-	    ent_range_chunks(range, &chunks_len);
+	size_t ranges_len = 0;
+	struct ent_rlist_range const * ranges =
+	    ent_rlist_ranges(rlist, &ranges_len);
 
-	size_t required_dst_len = ent_range_len (range);
-	size_t required_src_len = chunks_len
-	                          ? chunks[chunks_len - 1].end
+	size_t required_dst_len = ent_rlist_len (rlist);
+	size_t required_src_len = ranges_len
+	                          ? ranges[ranges_len - 1].end
 	                          : 0;
 
 	if (required_src_len > src_len)
@@ -122,11 +122,11 @@ int ent_column_select (struct ent_column * dst,
 		return -1;
 	}
 
-	for (size_t i = 0; i < chunks_len; ++i)
+	for (size_t i = 0; i < ranges_len; ++i)
 	{
-		size_t n = (chunks[i].end - chunks[i].begin) * width;
-		uint8_t const * src_chunk = src_ptr + chunks[i].begin * width;
-		memcpy (dst_next, src_chunk, n);
+		size_t n = (ranges[i].end - ranges[i].begin) * width;
+		uint8_t const * src_range = src_ptr + ranges[i].begin * width;
+		memcpy (dst_next, src_range, n);
 		dst_next += n;
 	}
 

@@ -13,5 +13,5 @@ void true_or_exit (bool value, char const * file, int line,
 
 void bytes_test();
 void column_test();
-void range_test();
+void rlist_test();
 void typeinfo_test();

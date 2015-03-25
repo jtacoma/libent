@@ -28,15 +28,15 @@ column_test ()
 
 	struct ent_column * filtered = ent_column_alloc("bytes", 3);
 
-	struct ent_range * want = ent_range_alloc ();
+	struct ent_rlist * want = ent_rlist_alloc ();
 	assert_true (want != NULL);
 	assert_true (ent_column_select (filtered, names, want) == -1);
-	assert_true (ent_range_append (want, 0, 6) == 0);
+	assert_true (ent_rlist_append (want, 0, 6) == 0);
 	assert_true (ent_column_select (filtered, names, want) == -1);
-	ent_range_free(want);
-	want = ent_range_alloc ();
-	assert_true (ent_range_append (want, 0, 1) == 0);
-	assert_true (ent_range_append (want, 2, 4) == 0);
+	ent_rlist_free(want);
+	want = ent_rlist_alloc ();
+	assert_true (ent_rlist_append (want, 0, 1) == 0);
+	assert_true (ent_rlist_append (want, 2, 4) == 0);
 	assert_true (ent_column_select (filtered, names, want) == 0);
 
 	size_t actual_len;
@@ -57,6 +57,6 @@ column_test ()
 	}
 
 	ent_column_free (filtered);
-	ent_range_free (want);
+	ent_rlist_free (want);
 	ent_column_free (names);
 }
