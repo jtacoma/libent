@@ -21,11 +21,12 @@ all: .styled tags testent
 tags: *.c
 	ctags *.c
 
-libent.so: *.[ch]
+lib/libent.so: *.[ch]
+	mkdir -p lib
 	gcc *.c -o $@ -shared -fPIC $(CFLAGS)
 
-testent: libent.so test/*.[ch]
+testent: lib/libent.so test/*.[ch]
 	gcc test/*.c -o $@ -I. -L. -lent $(CFLAGS)
 
 clean:
-	rm -f .codegen .styled tags libent.so testent *.gcno *.gcda *.gcov
+	rm -f .codegen .styled tags lib/libent.so testent *.gcno *.gcda *.gcov
