@@ -4,10 +4,18 @@ libent
 Status: **Alpha**
 
 This is a C implementation of the "entities and components" pattern common in
-modern game programming engines, specially designed for simple implementation,
-easy binding with scripting languages, and straight-forward integration with
-OpenGL-like compute/graphics interfaces.  Ideas have been borrowed from research
-in column-oriented databases, notably MonetDB.
+modern game programming engines.  Why?  I want an implemtnation that is simple
+enough for me to implemnt, easy to bind to most scripting languages, and
+straight-forward to integration with OpenGL-like compute/graphics interfaces.
+Some ideas have been borrowed from research in column-oriented databases that
+support transient tables (like MonetDB).  These other databases were not re-used
+for this project because they do not support (or do not easily support)
+embedding the server-side component.  Instead, MonetDB's frequent copying of
+subsets of contiguous constant-width buffers to form new contiguous
+constant-width buffers is used.  Also inspired by John Carmack's comments on the
+promise of functional programming and immutable data strucutres in computer game
+engines, said contiguous buffers will be read-only in most cases to simplify the
+implementation.
 
 Version 1.0 Roadmap
 -------------------
