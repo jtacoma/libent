@@ -1,6 +1,8 @@
 #ifndef LIBENT_ENT_INTERNAL_H
 #define LIBENT_ENT_INTERNAL_H
 
+#include <stdbool.h>
+
 enum ent_datakind
 {
 	ENT_KIND_BUF = 1 << 4,
@@ -27,6 +29,15 @@ enum ent_elemtype
 	ENT_TYPE_UTF8 = ENT_KIND_BUF + 1,
 };
 
+struct ent_range_chunk
+{
+	size_t begin;
+	size_t end;
+};
+
+struct ent_range_chunk const * ent_range_chunks(
+    struct ent_range const * range, size_t *len);
+
 struct ent_typeinfo
 {
 	char const *cname;
@@ -34,9 +45,14 @@ struct ent_typeinfo
 	size_t elemsize;
 	size_t dimensions;
 	size_t n;
+	void (* clear) (void *);
 };
 
 int ent_typeinfo_parse (struct ent_typeinfo * typeinfo, char const * type);
+bool ent_typeinfo_equal(struct ent_typeinfo const * typeinfo,
+                        struct ent_typeinfo const * other);
 size_t ent_typeinfo_width (struct ent_typeinfo const * typeinfo);
+
+void ent_bytes_clear (void * b);
 
 #endif//LIBENT_ENT_INTERNAL_H

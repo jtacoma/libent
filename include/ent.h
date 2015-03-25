@@ -11,8 +11,6 @@ struct ent_bytes
 	size_t len;
 };
 
-struct ent_bytes * ent_bytes_alloc ();
-void ent_bytes_free (struct ent_bytes * b);
 void const * ent_bytes_get (struct ent_bytes const * b, size_t * len);
 int ent_bytes_reset (struct ent_bytes * b, void const * start, size_t n);
 
@@ -26,10 +24,13 @@ int ent_range_delete (struct ent_range * range, struct ent_range const * src);
 
 struct ent_column;
 
-struct ent_column * ent_column_alloc (struct ent_range * range, char const * name, char const * type);
+struct ent_column * ent_column_alloc (char const * type, size_t len);
 void ent_column_free (struct ent_column * c);
-void * ent_column_ref (struct ent_column * c);
-const char * ent_column_type (struct ent_column * c);
-struct ent_typeinfo const * ent_column_typeinfo (struct ent_column * c);
+void const * ent_column_get (struct ent_column const * c, size_t *len);
+struct ent_typeinfo const * ent_column_typeinfo (struct ent_column const * c);
+void * ent_column_ref (struct ent_column * c, size_t *len);
+int ent_column_select (struct ent_column * c,
+		struct ent_column const * src,
+		struct ent_range const * range);
 
 #endif//LIBENT_ENT_H

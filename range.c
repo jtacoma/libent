@@ -4,17 +4,11 @@
 #include <string.h>
 #include <stdlib.h>
 
-struct chunk
-{
-	size_t begin;
-	size_t end;
-};
-
 struct ent_range
 {
 	size_t vlen;
 	size_t rlen;
-	struct chunk * chunks;
+	struct ent_range_chunk * chunks;
 };
 
 struct ent_range * ent_range_alloc ()
@@ -33,29 +27,42 @@ size_t ent_range_len (struct ent_range const * range)
 	return range->vlen;
 }
 
+struct ent_range_chunk const * ent_range_chunks(
+    struct ent_range const * range, size_t *len)
+{
+	*len = range->rlen;
+	return range->chunks;
+}
+
 int ent_range_append (struct ent_range * range, size_t begin, size_t end)
 {
-	if (end <= begin || (range->chunks != NULL && begin < range->chunks[range->rlen - 1].begin))
+	if (end <= begin ||
+	        (range->chunks != NULL &&
+	         begin < range->chunks[range->rlen - 1].begin))
 	{
-		return -1;
+		return -1; // invalid begin,end values
 	}
 
-	if (range->chunks != NULL && end <= range->chunks[range->rlen - 1].end)
+	if (range->chunks != NULL &&
+	        end <= range->chunks[range->rlen - 1].end)
 	{
-		return 0;
+		return 0; // no-op
 	}
 
-	if (range->chunks != NULL && begin <= range->chunks[range->rlen - 1].end)
+	if (range->chunks != NULL &&
+	        begin <= range->chunks[range->rlen - 1].end)
 	{
 		range->vlen += end - range->chunks[range->rlen - 1].end;
 		range->chunks[range->rlen - 1].end = end;
 	}
 	else
 	{
-		struct chunk * chunks = realloc(range->chunks, sizeof(*chunks) * (range->rlen + 1));
+		struct ent_range_chunk * chunks = realloc(
+		                                      range->chunks,
+		                                      sizeof(*chunks) * (range->rlen + 1));
 		if (chunks == NULL)
 		{
-			return -1;
+			return -1; // out of memory
 		}
 
 		chunks[range->rlen].begin = begin;
@@ -68,6 +75,9 @@ int ent_range_append (struct ent_range * range, size_t begin, size_t end)
 	return 0;
 }
 
+/* This code is not being used right now but I put a lot of thought into it
+ * and I expect it will come in handy as soon as I want to start combining
+ * ranges.
 int ent_range_delete (struct ent_range * range, struct ent_range const * src)
 {
 	struct ent_range * collect = ent_range_alloc();
@@ -77,13 +87,15 @@ int ent_range_delete (struct ent_range * range, struct ent_range const * src)
 	}
 
 	int rc = 0;
-	struct chunk * old = range->chunks;
-	struct chunk * old_end = range->chunks == NULL ? NULL : range->chunks + range->rlen;
-	struct chunk * del = src->chunks;
-	struct chunk * del_end = src->chunks == NULL ? NULL : src->chunks + src->rlen;
+	struct ent_range_chunk * old = range->chunks;
+	struct ent_range_chunk * old_end =
+			    range->chunks == NULL ? NULL : range->chunks + range->rlen;
+	struct ent_range_chunk * del = src->chunks;
+	struct ent_range_chunk * del_end =
+			    src->chunks == NULL ? NULL : src->chunks + src->rlen;
 
 	do
-	{
+{
 		while (old != NULL && del != NULL)
 		{
 			while (del->end < old->begin)
@@ -143,3 +155,4 @@ int ent_range_delete (struct ent_range * range, struct ent_range const * src)
 
 	return rc;
 }
+*/

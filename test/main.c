@@ -1,54 +1,23 @@
-#include "ent.h"
+#include "test/ent_test.h"
 
-#include <assert.h>
-#include <stdio.h>
-#include <string.h>
+void true_or_exit (bool value, char const * file, int line,
+                   char const * literal)
+{
+	if (!value)
+	{
+		fprintf(stderr, "%s:%d: %s\n",
+		        file, line, literal);
+		exit(1);
+	}
+}
 
 int
 main ()
 {
-	struct ent_range * range = ent_range_alloc ();
-	ent_range_append (range, 0, 2);
-	ent_range_append (range, 2, 4);
-	assert (ent_range_len (range) == 4);
-
-	struct ent_column * names = ent_column_alloc (range, "name", "bytes");
-	assert (names != NULL);
-
-	struct ent_bytes * dst = ent_column_ref (names);
-	assert (dst != NULL);
-
-	char const * src[] = { "Lana", "Archer", "Cyril" };
-	for (size_t i = 0; i < sizeof(src) / sizeof(*src); ++i, ++dst)
-	{
-		ent_bytes_reset (dst, src[i], strlen(src[i]) + 1);
-
-		size_t len;
-		char const * result = ent_bytes_get (dst, &len);
-		assert (len == strlen (src[i]) + 1);
-		assert (strcmp (result, src[i]) == 0);
-	}
-
-	ent_bytes_reset (dst, "Randy", 6);
-	size_t randy_len;
-	assert (strcmp ("Randy", ent_bytes_get (dst, &randy_len)) == 0);
-	assert (randy_len == 6);
-
-	struct ent_range * delete = ent_range_alloc ();
-	assert (ent_range_append (delete, 1, 2) == 0);
-	assert (ent_range_delete (range, delete) == 0);
-	assert (ent_range_len (range) == 3);
-	char const * expected[] = { "Lana", "Cyril", "Randy" };
-	struct ent_bytes * actual = ent_column_ref (names);
-	for (size_t i = 0; i < 3; ++i)
-	{
-		size_t len;
-		char const * s = ent_bytes_get(&actual[i], &len);
-		assert (len == strlen(s) + 1);
-		assert (strcmp (s, expected[i]) == 0);
-	}
-	ent_range_free (delete);
-
-	ent_column_free (names);
-	ent_range_free (range);
+	// Roughly in dependency order so that failures in the most
+	// depended-upon modules will be discovered first.
+	typeinfo_test();
+	range_test();
+	bytes_test();
+	column_test();
 }

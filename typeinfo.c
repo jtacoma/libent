@@ -12,10 +12,12 @@ struct ent_typeinfo builtin_types[] =
 		.elemsize = sizeof(struct ent_bytes),
 		.dimensions = 1,
 		.n = 1,
+		.clear = ent_bytes_clear,
 	},
 };
 
-#define builtin_types_len ((int)(sizeof(builtin_types)/sizeof(*builtin_types)))
+#define builtin_types_len \
+	((int)(sizeof(builtin_types)/sizeof(*builtin_types)))
 
 int ent_typeinfo_parse(struct ent_typeinfo * typeinfo, char const * name)
 {
@@ -27,10 +29,18 @@ int ent_typeinfo_parse(struct ent_typeinfo * typeinfo, char const * name)
 			return 0;
 		}
 	}
-	return -1;
+	return -1; // no such type
+}
+
+bool ent_typeinfo_equal(struct ent_typeinfo const * typeinfo,
+                        struct ent_typeinfo const * other)
+{
+	return typeinfo == other ||
+	       strcmp(typeinfo->cname, other->cname) == 0;
 }
 
 size_t ent_typeinfo_width(struct ent_typeinfo const * t)
 {
 	return t->elemsize * t->dimensions * t->n;
 }
+
