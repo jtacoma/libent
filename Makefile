@@ -10,11 +10,7 @@ all: .styled tags testent
 	gcov *.gcda > /dev/null
 	grep '#####' *.gcov | cut -d: -f1,3,4- | sed -e 's/: */:/' -e 's/\.gcov//' | grep -v 'out of memory'
 
-.codegen: *.[ch]
-	python gen.py *.[ch]
-	touch $@
-
-.styled: .codegen *.[ch] test/*.[ch]
+.styled: *.[ch] test/*.[ch]
 	astyle $?
 	touch $@
 
@@ -29,4 +25,4 @@ testent: lib/libent.so test/*.[ch]
 	gcc test/*.c -o $@ -I. -L. -lent $(CFLAGS)
 
 clean:
-	rm -f .codegen .styled tags lib/libent.so testent *.gcno *.gcda *.gcov
+	rm -f .styled tags lib/libent.so testent *.gcno *.gcda *.gcov

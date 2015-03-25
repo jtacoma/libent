@@ -1,0 +1,61 @@
+libent
+======
+
+Status: **Alpha**
+
+This is a C implementation of the "entities and components" pattern common in
+modern game programming engines, specially designed for simple implementation,
+easy binding with scripting languages, and straight-forward integration with
+OpenGL-like compute/graphics interfaces.  Ideas have been borrowed from research
+in column-oriented databases, notably MonetDB.
+
+Version 1.0 Roadmap
+-------------------
+
+ * Fine-grained (column-scoped) locks will let the same tables be operated on
+   by many processors simultaneously sharing both read & write access.
+ * Integration with OpenGL 2.0 (and/or later) shaders will work nicely.
+ * Binding to at least one scripting language (Lua, Python, and SQL are
+   candidates).
+
+Version 0.1 POC Roadmap
+-----------------------
+
+ * Support strings and floating point numbers.  It's ok to support only one
+   precision for floating-point numbers.  It's also ok to assume all strings are
+   UTF-8.
+ * Support simple insert, select, update, and delete semantics for single-column
+   data.  It's ok to leave multi-column support out for now, to get a minimal
+   proof of concept worked out.
+
+Known Issues
+------------
+
+ * When components are copied from one "bytes" column to another, and then both
+   columns are freed, the "bytes" arrays are double-freed.
+
+Coding Style
+------------
+
+Artistic Style (astyle) is used with the following options:
+
+    --style=allman
+    --add-one-line-brackets
+    --indent=tab
+    --pad-oper
+    --pad-header
+
+Memory ownership is never passed through function parameters; only through
+pointers returned from allocation functions, identified by the "alloc" suffix.
+For each allocation function there is a correponding "free" function.
+
+Functions that require non-NULL arguments do not check whether their arguments
+are NULL.  This is the user's responsibility.
+
+Never (ever) cast away const.
+
+License
+-------
+
+To be decided.  Initially this library will only be used, embedded, inside my
+own hobby projects.
