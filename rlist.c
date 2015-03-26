@@ -11,15 +11,15 @@ struct ent_rlist
 	struct ent_rlist_range * ranges;
 };
 
-struct ent_rlist * ent_rlist_alloc ()
+struct ent_rlist * ent_rlist_alloc()
 {
-	return calloc(1, sizeof(struct ent_rlist));
+	return calloc (1, sizeof (struct ent_rlist));
 }
 
 void ent_rlist_free (struct ent_rlist * rlist)
 {
-	free(rlist->ranges);
-	free(rlist);
+	free (rlist->ranges);
+	free (rlist);
 }
 
 size_t ent_rlist_len (struct ent_rlist const * rlist)
@@ -27,7 +27,7 @@ size_t ent_rlist_len (struct ent_rlist const * rlist)
 	return rlist->vlen;
 }
 
-struct ent_rlist_range const * ent_rlist_ranges(
+struct ent_rlist_range const * ent_rlist_ranges (
     struct ent_rlist const * rlist, size_t *len)
 {
 	*len = rlist->rlen;
@@ -57,9 +57,9 @@ int ent_rlist_append (struct ent_rlist * rlist, size_t begin, size_t end)
 	}
 	else
 	{
-		struct ent_rlist_range * ranges = realloc(
+		struct ent_rlist_range * ranges = realloc (
 		                                      rlist->ranges,
-		                                      sizeof(*ranges) * (rlist->rlen + 1));
+		                                      sizeof (*ranges) * (rlist->rlen + 1));
 		if (ranges == NULL)
 		{
 			return -1; // out of memory

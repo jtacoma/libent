@@ -1,7 +1,7 @@
 #include "test/ent_test.h"
 
 void
-column_test ()
+column_test()
 {
 	struct ent_column * names = ent_column_alloc ("bytes", 4);
 	assert_true (names != NULL);
@@ -11,22 +11,22 @@ column_test ()
 	assert_true (dst != NULL);
 
 	char const * src[] = { "Lana", "Archer", "Cyril" };
-	for (size_t i = 0; i < sizeof(src) / sizeof(*src); ++i, ++dst)
+	for (size_t i = 0; i < sizeof (src) / sizeof (*src); ++i, ++dst)
 	{
 		*dst = src[i];
 	}
 
 	*dst = "Randy";
 
-	struct ent_column * filtered = ent_column_alloc("bytes", 3);
+	struct ent_column * filtered = ent_column_alloc ("bytes", 3);
 
-	struct ent_rlist * want = ent_rlist_alloc ();
+	struct ent_rlist * want = ent_rlist_alloc();
 	assert_true (want != NULL);
 	assert_true (ent_column_select (filtered, names, want) == -1);
 	assert_true (ent_rlist_append (want, 0, 6) == 0);
 	assert_true (ent_column_select (filtered, names, want) == -1);
-	ent_rlist_free(want);
-	want = ent_rlist_alloc ();
+	ent_rlist_free (want);
+	want = ent_rlist_alloc();
 	assert_true (ent_rlist_append (want, 0, 1) == 0);
 	assert_true (ent_rlist_append (want, 2, 4) == 0);
 	assert_true (ent_column_select (filtered, names, want) == 0);
@@ -40,9 +40,9 @@ column_test ()
 	for (size_t i = 0; i < actual_len; ++i)
 	{
 		char const * s = actual[i];
-		printf("i=%lu\n", i);
+		printf ("i=%lu\n", i);
 		assert_true (s != NULL);
-		printf("s[i]=%s\n", s);
+		printf ("s[i]=%s\n", s);
 		assert_true (strcmp (s, expected[i]) == 0);
 	}
 

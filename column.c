@@ -14,13 +14,13 @@ struct ent_column
 struct ent_column *
 ent_column_alloc (char const * type, size_t len)
 {
-	struct ent_column * column = calloc(1, sizeof(*column));
+	struct ent_column * column = calloc (1, sizeof (*column));
 	if (column == NULL)
 	{
 		return NULL; // out of memory
 	}
 
-	if (ent_typeinfo_parse( &column->type, type) == -1)
+	if (ent_typeinfo_parse (&column->type, type) == -1)
 	{
 		free (column); // out of memory
 		return NULL; // out of memory
@@ -28,11 +28,11 @@ ent_column_alloc (char const * type, size_t len)
 
 	if (len > 0)
 	{
-		column->start = calloc(len,
-		                       ent_typeinfo_width(&column->type));
+		column->start = calloc (len,
+		                        ent_typeinfo_width (&column->type));
 		if (column->start == NULL)
 		{
-			ent_column_free(column); // out of memory
+			ent_column_free (column); // out of memory
 			return NULL; // out of memory
 		}
 
@@ -42,15 +42,15 @@ ent_column_alloc (char const * type, size_t len)
 	return column;
 }
 
-void ent_column_free(struct ent_column * c)
+void ent_column_free (struct ent_column * c)
 {
 	if (c != NULL)
 	{
 		if (c->start != NULL)
 		{
-			free(c->start);
+			free (c->start);
 		}
-		free(c);
+		free (c);
 	}
 }
 
@@ -77,22 +77,22 @@ int ent_column_select (struct ent_column * dst,
 {
 	struct ent_typeinfo const * dst_type = ent_column_typeinfo (dst);
 	struct ent_typeinfo const * src_type = ent_column_typeinfo (src);
-	if (!ent_typeinfo_equal(dst_type, src_type))
+	if (!ent_typeinfo_equal (dst_type, src_type))
 	{
 		return -1; // mismatched types
 	}
-	size_t width = ent_typeinfo_width(dst_type);
+	size_t width = ent_typeinfo_width (dst_type);
 
 	size_t dst_cap = 0;
-	uint8_t * dst_ptr = ent_column_ref(dst, &dst_cap);
+	uint8_t * dst_ptr = ent_column_ref (dst, &dst_cap);
 	uint8_t * dst_next = dst_ptr;
 
 	size_t src_len = 0;
-	uint8_t const * src_ptr = ent_column_get(src, &src_len);
+	uint8_t const * src_ptr = ent_column_get (src, &src_len);
 
 	size_t ranges_len = 0;
 	struct ent_rlist_range const * ranges =
-	    ent_rlist_ranges(rlist, &ranges_len);
+	    ent_rlist_ranges (rlist, &ranges_len);
 
 	size_t required_dst_len = ent_rlist_len (rlist);
 	size_t required_src_len = ranges_len

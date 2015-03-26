@@ -35,7 +35,7 @@ struct ent_rlist_range
 	size_t end;
 };
 
-struct ent_rlist_range const * ent_rlist_ranges(
+struct ent_rlist_range const * ent_rlist_ranges (
     struct ent_rlist const * rlist, size_t *len);
 
 struct ent_typeinfo
@@ -48,8 +48,8 @@ struct ent_typeinfo
 };
 
 int ent_typeinfo_parse (struct ent_typeinfo * typeinfo, char const * type);
-bool ent_typeinfo_equal(struct ent_typeinfo const * typeinfo,
-                        struct ent_typeinfo const * other);
+bool ent_typeinfo_equal (struct ent_typeinfo const * typeinfo,
+                         struct ent_typeinfo const * other);
 size_t ent_typeinfo_width (struct ent_typeinfo const * typeinfo);
 
 void ent_bytes_clear (void * b);

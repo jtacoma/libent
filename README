@@ -46,6 +46,8 @@ Artistic Style (astyle) is used with the following options:
     --indent=tab
     --pad-oper
     --pad-header
+    --unpad-paren
+    --pad-first-paren-out
 
 Memory ownership is never passed through function parameters; only through
 pointers returned from allocation functions, identified by the "alloc" suffix.
