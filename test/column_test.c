@@ -7,24 +7,16 @@ column_test ()
 	assert_true (names != NULL);
 
 	size_t names_len = 0;
-	struct ent_bytes * dst = ent_column_ref (names, &names_len);
+	void const ** dst = ent_column_ref (names, &names_len);
 	assert_true (dst != NULL);
 
 	char const * src[] = { "Lana", "Archer", "Cyril" };
 	for (size_t i = 0; i < sizeof(src) / sizeof(*src); ++i, ++dst)
 	{
-		ent_bytes_reset (dst, src[i], strlen(src[i]) + 1);
-
-		size_t len;
-		char const * result = ent_bytes_get (dst, &len);
-		assert_true (len == strlen (src[i]) + 1);
-		assert_true (strcmp (result, src[i]) == 0);
+		*dst = src[i];
 	}
 
-	ent_bytes_reset (dst, "Randy", 6);
-	size_t randy_len;
-	assert_true (strcmp ("Randy", ent_bytes_get (dst, &randy_len)) == 0);
-	assert_true (randy_len == 6);
+	*dst = "Randy";
 
 	struct ent_column * filtered = ent_column_alloc("bytes", 3);
 
@@ -40,19 +32,17 @@ column_test ()
 	assert_true (ent_column_select (filtered, names, want) == 0);
 
 	size_t actual_len;
-	struct ent_bytes * actual = ent_column_ref (filtered, &actual_len);
+	void ** actual = ent_column_ref (filtered, &actual_len);
 	assert_true (actual_len == 3);
 	assert_true (actual != NULL);
 
 	char const * expected[] = { "Lana", "Cyril", "Randy" };
 	for (size_t i = 0; i < actual_len; ++i)
 	{
-		size_t len;
-		char const * s = ent_bytes_get(&actual[i], &len);
+		char const * s = actual[i];
 		printf("i=%lu\n", i);
 		assert_true (s != NULL);
 		printf("s[i]=%s\n", s);
-		assert_true (len == strlen(s) + 1);
 		assert_true (strcmp (s, expected[i]) == 0);
 	}
 

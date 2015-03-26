@@ -48,17 +48,6 @@ void ent_column_free(struct ent_column * c)
 	{
 		if (c->start != NULL)
 		{
-			if ( c->type.clear != NULL)
-			{
-				size_t width = ent_typeinfo_width(&c->type);
-				uint8_t * ptr = c->start;
-				uint8_t * end = ptr + c->len * width;
-				while (ptr < end)
-				{
-					c->type.clear(ptr);
-					ptr += width;
-				}
-			}
 			free(c->start);
 		}
 		free(c);

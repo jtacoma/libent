@@ -36,12 +36,6 @@ Version 0.1 POC Roadmap
    data.  It's ok to leave multi-column support out for now, to get a minimal
    proof of concept worked out.
 
-Known Issues
-------------
-
- * When components are copied from one "bytes" column to another, and then both
-   columns are freed, the "bytes" arrays are double-freed.
-
 Coding Style
 ------------
 

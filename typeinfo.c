@@ -8,11 +8,10 @@ struct ent_typeinfo builtin_types[] =
 {
 	{
 		.cname = "bytes",
-		.elem = ENT_TYPE_UTF8,
-		.elemsize = sizeof(struct ent_bytes),
+		.elem = ENT_TYPE_BYTES,
+		.elemsize = sizeof(void*),
 		.dimensions = 1,
 		.n = 1,
-		.clear = ent_bytes_clear,
 	},
 };
 

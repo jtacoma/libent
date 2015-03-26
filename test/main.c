@@ -18,6 +18,5 @@ main ()
 	// depended-upon modules will be discovered first.
 	typeinfo_test();
 	rlist_test();
-	bytes_test();
 	column_test();
 }

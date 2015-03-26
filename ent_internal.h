@@ -45,7 +45,6 @@ struct ent_typeinfo
 	size_t elemsize;
 	size_t dimensions;
 	size_t n;
-	void (* clear) (void *);
 };
 
 int ent_typeinfo_parse (struct ent_typeinfo * typeinfo, char const * type);

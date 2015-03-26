@@ -5,15 +5,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-struct ent_bytes
-{
-	void * p;
-	size_t len;
-};
-
-void const * ent_bytes_get (struct ent_bytes const * b, size_t * len);
-int ent_bytes_reset (struct ent_bytes * b, void const * start, size_t n);
-
 struct ent_rlist;
 
 struct ent_rlist * ent_rlist_alloc ();
