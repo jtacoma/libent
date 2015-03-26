@@ -19,4 +19,5 @@ main()
 	typeinfo_test();
 	rlist_test();
 	column_test();
+	table_test();
 }

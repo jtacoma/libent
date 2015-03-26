@@ -35,6 +35,7 @@ Version 0.1 POC Roadmap
  * Support simple insert, select, update, and delete semantics for single-column
    data.  It's ok to leave multi-column support out for now, to get a minimal
    proof of concept worked out.
+ * Proof-of-concept integration with OpenGL 2.0 (and/or later) vertex shaders.
 
 Coding Style
 ------------

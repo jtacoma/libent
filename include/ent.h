@@ -24,4 +24,12 @@ int ent_column_select (struct ent_column * c,
 		struct ent_column const * src,
 		struct ent_rlist const * rlist);
 
+struct ent_table;
+
+struct ent_table * ent_table_alloc (size_t len);
+void ent_table_free(struct ent_table * table);
+size_t ent_table_len(struct ent_table const * table);
+struct ent_column * ent_table_add_column(struct ent_table * table,
+	       	char const * name, char const * type);
+
 #endif//LIBENT_ENT_H
