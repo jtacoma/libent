@@ -1,4 +1,5 @@
 #include "test/ent_test.h"
+#include "ent_internal.h"
 
 void
 column_test()

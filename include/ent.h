@@ -15,8 +15,6 @@ int ent_rlist_delete (struct ent_rlist * rlist, struct ent_rlist const * src);
 
 struct ent_column;
 
-struct ent_column * ent_column_alloc (char const * type, size_t len);
-void ent_column_free (struct ent_column * c);
 void const * ent_column_get (struct ent_column const * c, size_t *len);
 struct ent_typeinfo const * ent_column_typeinfo (struct ent_column const * c);
 void * ent_column_ref (struct ent_column * c, size_t *len);

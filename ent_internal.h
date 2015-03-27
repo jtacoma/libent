@@ -3,6 +3,8 @@
 
 #include <stdbool.h>
 
+// typeinfo
+
 enum ent_datakind
 {
 	ENT_KIND_BUF = 1 << 4,
@@ -29,15 +31,6 @@ enum ent_elemtype
 	ENT_TYPE_UTF8 = ENT_KIND_BUF + 1,
 };
 
-struct ent_rlist_range
-{
-	size_t begin;
-	size_t end;
-};
-
-struct ent_rlist_range const * ent_rlist_ranges (
-    struct ent_rlist const * rlist, size_t *len);
-
 struct ent_typeinfo
 {
 	char const *cname;
@@ -52,7 +45,21 @@ bool ent_typeinfo_equal (struct ent_typeinfo const * typeinfo,
                          struct ent_typeinfo const * other);
 size_t ent_typeinfo_width (struct ent_typeinfo const * typeinfo);
 
-void ent_bytes_clear (void * b);
+// rlist
+
+struct ent_rlist_range
+{
+	size_t begin;
+	size_t end;
+};
+
+struct ent_rlist_range const * ent_rlist_ranges (
+    struct ent_rlist const * rlist, size_t *len);
+
+// column
+
+struct ent_column * ent_column_alloc (char const * type, size_t len);
+void ent_column_free (struct ent_column * c);
 
 /* Logically equivalent to realloc from stdlib.h plus initialization.
  *
