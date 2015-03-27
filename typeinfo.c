@@ -98,7 +98,8 @@ int ent_typeinfo_parse (struct ent_typeinfo * typeinfo, char const * name)
 			return 0;
 		}
 	}
-	return -1; // no such type
+
+	return -1;
 }
 
 bool ent_typeinfo_equal (struct ent_typeinfo const * typeinfo,
@@ -106,6 +107,11 @@ bool ent_typeinfo_equal (struct ent_typeinfo const * typeinfo,
 {
 	return typeinfo == other ||
 	       strcmp (typeinfo->cname, other->cname) == 0;
+}
+
+char const * ent_typeinfo_name (struct ent_typeinfo const * t)
+{
+	return t->cname;
 }
 
 size_t ent_typeinfo_width (struct ent_typeinfo const * t)

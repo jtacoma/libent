@@ -65,6 +65,11 @@ struct ent_typeinfo const * ent_column_typeinfo (struct ent_column const * c)
 	return &c->type;
 }
 
+char const * ent_column_typename (struct ent_column const * c)
+{
+	return ent_typeinfo_name (&c->type);
+}
+
 void * ent_column_ref (struct ent_column * c, size_t *len)
 {
 	*len = c->len;

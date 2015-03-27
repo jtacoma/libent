@@ -10,7 +10,7 @@ all: .styled tags testent
 	gcov *.gcda > /dev/null
 	grep '#####' *.gcov | cut -d: -f1,3,4- | sed -e 's/: */:/' -e 's/\.gcov//' | grep -v 'out of memory'
 
-.styled: *.[ch] test/*.[ch]
+.styled: *.[ch] include/*.h test/*.[ch]
 	astyle $?
 	touch $@
 

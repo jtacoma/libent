@@ -43,6 +43,7 @@ struct ent_typeinfo
 int ent_typeinfo_parse (struct ent_typeinfo * typeinfo, char const * type);
 bool ent_typeinfo_equal (struct ent_typeinfo const * typeinfo,
                          struct ent_typeinfo const * other);
+char const * ent_typeinfo_name (struct ent_typeinfo const * typeinfo);
 size_t ent_typeinfo_width (struct ent_typeinfo const * typeinfo);
 
 // rlist

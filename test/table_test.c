@@ -37,5 +37,25 @@ table_test()
 		scores_dst[i] = 10 + i;
 	}
 
+	// Delete some entities
+	struct ent_rlist * delete = ent_rlist_alloc();
+	assert_true (delete != NULL);
+	assert_true (ent_rlist_append (delete, 0, 1) == 0);
+	assert_true (ent_rlist_append (delete, 3, 4) == 0);
+	assert_true (ent_table_delete (table, delete) == 0);
+	ent_rlist_free (delete);
+
+	// Verify that the entities have been deleted
+	printf ("len=%lu\n", ent_table_len (table));
+	assert_true (ent_table_len (table) == 2);
+	names = ent_table_column (table, "name", "bytes");
+	names_dst = ent_column_ref (names, &len);
+	assert_true (names_dst != NULL);
+	assert_true (len == 2);
+	score = ent_table_column (table, "hits", "uint8");
+	scores_dst = ent_column_ref (score, &len);
+	assert_true (scores_dst != NULL);
+	assert_true (len == 2);
+
 	ent_table_free (table);
 }
