@@ -1,7 +1,7 @@
 #CFLAGS=-O3
 #CFLAGS=-g -O2
 CFLAGS=-g -fprofile-arcs -ftest-coverage -O0
-CFLAGS+=-std=c11 -Wall -Wextra -Werror
+CFLAGS+=-std=c11 -Wall -Wextra -Werror -Iinclude
 
 .PHONY: all
 all: .styled tags testent
