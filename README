@@ -54,6 +54,11 @@ Memory ownership is never passed through function parameters; only through
 pointers returned from allocation functions, identified by the "alloc" suffix.
 For each allocation function there is a correponding "free" function.
 
+Out-of-memory conditions are handled in such a way that data structures are left
+in a coherent state and an error code is returned.  Internally, all allocation
+is performed through ent_realloc, which handles resizing allocated memory and
+intializing new memory to zero.
+
 Functions that require non-NULL arguments do not check whether their arguments
 are NULL.  This is the user's responsibility.
 

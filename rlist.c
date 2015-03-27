@@ -13,13 +13,17 @@ struct ent_rlist
 
 struct ent_rlist * ent_rlist_alloc()
 {
-	return calloc (1, sizeof (struct ent_rlist));
+	return ent_realloc_carray (NULL, 1, sizeof (struct ent_rlist), true);
 }
 
 void ent_rlist_free (struct ent_rlist * rlist)
 {
-	free (rlist->ranges);
-	free (rlist);
+	if (rlist->ranges != NULL)
+	{
+		ent_realloc_free (rlist->ranges);
+	}
+
+	ent_realloc_free (rlist);
 }
 
 size_t ent_rlist_len (struct ent_rlist const * rlist)
@@ -57,9 +61,8 @@ int ent_rlist_append (struct ent_rlist * rlist, size_t begin, size_t end)
 	}
 	else
 	{
-		struct ent_rlist_range * ranges = realloc (
-		                                      rlist->ranges,
-		                                      sizeof (*ranges) * (rlist->rlen + 1));
+		struct ent_rlist_range * ranges = ent_realloc_array (rlist->ranges, rlist->rlen + 1, false);
+
 		if (ranges == NULL)
 		{
 			return -1; // out of memory

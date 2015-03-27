@@ -54,4 +54,20 @@ size_t ent_typeinfo_width (struct ent_typeinfo const * typeinfo);
 
 void ent_bytes_clear (void * b);
 
+/* Logically equivalent to realloc from stdlib.h plus initialization.
+ *
+ * If zero is true and the new size is older than the old size, the additional
+ * memory is set to zero.
+ */
+void * ent_realloc (void * ptr, size_t size, bool zero);
+
+#define ent_realloc_array(ptr, nmemb, zero) \
+	ent_realloc ((ptr), (nmemb) * sizeof(*(ptr)), (zero))
+
+#define ent_realloc_carray(ptr, nmemb, size, zero) \
+	ent_realloc ((ptr), (nmemb) * (size), (zero))
+
+#define ent_realloc_free(ptr) \
+	ent_realloc ((ptr), 0, false)
+
 #endif//LIBENT_ENT_INTERNAL_H
