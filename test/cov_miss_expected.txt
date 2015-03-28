@@ -1,0 +1,27 @@
+column.c:22:		return NULL; // out of memory
+column.c:27:		free (column); // out of memory
+column.c:28:		return NULL; // out of memory
+column.c:38:			ent_column_free (column); // out of memory
+column.c:39:			return NULL; // out of memory
+column.c:87:		return -1; // mismatched types
+main.c:8:		fprintf (stderr, "%s:%d: %s\n",
+main.c:10:		exit (1);
+rlist.c:68:			return -1; // out of memory
+table.c:80:		return NULL; // out of memory
+table.c:92:		return NULL; // out of memory
+table.c:104:		return NULL; // out of memory
+table.c:115:		newnames[table->columns_len] =
+table.c:116:		    ent_realloc_free (newnames[table->columns_len]);
+table.c:117:		return NULL; // out of memory
+table.c:133:				return NULL;
+table.c:139:	return NULL;
+table.c:172:			ent_rlist_free (keep);
+table.c:173:			for (size_t k = 0; k < i; ++k)
+table.c:175:				ent_column_free (newcolumns[i]);
+table.c:177:			ent_realloc_free (newcolumns);
+table.c:178:			return -1;
+table.c:186:			ent_rlist_free (keep);
+table.c:187:			for (size_t k = 0; k < columns_len; ++k)
+table.c:189:				ent_column_free (newcolumns[i]);
+table.c:191:			ent_realloc_free (newcolumns);
+table.c:192:			return -1;

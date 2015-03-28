@@ -1,3 +1,4 @@
 .styled
 libent.so
 testent
+test/cov_miss_actual.txt

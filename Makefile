@@ -8,7 +8,8 @@ all: .styled tags testent
 	./testent
 	valgrind -v --leak-check=full ./testent
 	gcov *.gcda > /dev/null
-	grep '#####' *.gcov | cut -d: -f1,3,4- | sed -e 's/: */:/' -e 's/\.gcov//' | grep -v 'out of memory'
+	grep '#####' *.gcov | cut -d: -f1,3,4- | sed -e 's/: */:/' -e 's/\.gcov//' | grep -v 'EOF' > test/cov_miss_actual.txt
+	diff test/cov_miss_expected.txt test/cov_miss_actual.txt
 
 .styled: *.[ch] include/*.h test/*.[ch]
 	astyle $?
