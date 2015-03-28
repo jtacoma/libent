@@ -12,5 +12,7 @@ struct ent_column * ent_table_column (struct ent_table * table,
                                       char const * name, char const * type);
 int ent_table_delete (struct ent_table * table,
                       struct ent_rlist const * rlist);
+int ent_table_grow (struct ent_table * table,
+                    size_t add);
 
 #endif//LIBENT_TABLE_H

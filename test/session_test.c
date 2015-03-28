@@ -20,7 +20,6 @@ void session_test()
 
 	assert_true (ent_session_lock (s) == 0);
 	assert_true (ent_session_table_len (s, items) == 0);
-	goto end;
 	assert_true (ent_session_table_grow (s, items, 2) == 0);
 
 	//int32_t const * a = ent_column_get (column_w);
@@ -49,7 +48,6 @@ void session_test()
 	assert_true (b[0] == 42);
 	assert_true (b[1] == 43);
 
-end:
 	ent_session_free (s);
 	ent_model_free (model);
 }

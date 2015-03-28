@@ -75,6 +75,19 @@ char const * ent_column_typename (struct ent_column const * c)
 	return ent_typeinfo_name (&c->type);
 }
 
+int ent_column_grow (struct ent_column * c, size_t add)
+{
+	size_t width = ent_typeinfo_width (&c->type);
+	void * mem = realloc (c->start, width * (c->len + add));
+	if (!mem)
+	{
+		return -1; // out of memory
+	}
+	c->start = mem;
+	c->len += add;
+	return 0;
+}
+
 void * ent_column_ref (struct ent_column * c)
 {
 	return c->start;

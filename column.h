@@ -4,5 +4,6 @@
 struct ent_column * ent_column_alloc (char const * type, size_t len);
 void ent_column_free (struct ent_column * c);
 size_t ent_column_len (struct ent_column const * c);
+int ent_column_grow (struct ent_column * c, size_t add);
 
 #endif//ENTLIB_COLUMN_H

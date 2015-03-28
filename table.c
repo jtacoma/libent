@@ -258,3 +258,29 @@ ent_table_delete (
 	ent_rlist_free (keep);
 	return 0;
 }
+
+int ent_table_grow (struct ent_table * table,
+                    size_t add)
+{
+	if (! (table && add > 0))
+	{
+		return -1;
+	}
+
+	table->len += add;
+	for (size_t i = 0; i < table->columns_len; ++i)
+	{
+		size_t column_len = ent_column_len (table->columns[i]);
+		if (column_len > table->len)
+		{
+			continue;
+		}
+		size_t column_add = table->len - column_len;
+		if (ent_column_grow (table->columns[i], column_add) == -1)
+		{
+			return -1;
+		}
+	}
+
+	return 0;
+}

@@ -121,16 +121,13 @@ size_t ent_session_table_len (struct ent_session * s,
 
 int ent_session_table_grow (struct ent_session * s,
                             struct ent_table * table,
-                            size_t add_size)
+                            size_t add)
 {
 	if (!s->locked)
 	{
 		return -1;
 	}
 
-	(void)s;
-	(void)table;
-	(void)add_size;//TODO
-	return -1;
+	return ent_table_grow (table, add);
 }
 
