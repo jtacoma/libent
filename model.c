@@ -2,6 +2,7 @@
 #include "ent_internal.h"
 
 #include <string.h>
+#include <stdlib.h>
 
 struct ent_model
 {
@@ -15,13 +16,21 @@ struct ent_model
 
 struct ent_model * ent_model_alloc()
 {
-	struct ent_model * m = ent_realloc (NULL, sizeof (*m), true);
+	struct ent_model * m = malloc (sizeof (*m));
+	*m = (struct ent_model) {0};
 	return m;
 }
 
 void ent_model_free (struct ent_model * m)
 {
-	ent_realloc_free (m);
+	if (m)
+	{
+		if (m->tables)
+		{
+			free (m->tables);
+		}
+		free (m);
+	}
 }
 
 bool ent_model_has (struct ent_model * m, char const * table_name)
@@ -47,24 +56,25 @@ struct ent_table * ent_model_get (struct ent_model * m, char const * table_name)
 	}
 
 	size_t name_size = strlen (table_name) + 1;
-	char * newname = ent_realloc (NULL, name_size, false);
-	if (newname == NULL)
+	char * newname = malloc (name_size);
+	if (!newname)
 	{
 		return NULL;
 	}
 	memcpy (newname, table_name, name_size);
 
 	struct ent_table * t = ent_table_alloc (0);
-	if (t == NULL)
+	if (!t)
 	{
-		ent_realloc_free (newname);
+		free (newname);
 		return NULL;
 	}
 
-	void * newtables = ent_realloc_array (m->tables, m->tables_len + 1, false);
-	if (newtables == NULL)
+	void * newtables = realloc (m->tables,
+	                            sizeof (*m->tables) * m->tables_len + 1);
+	if (!newtables)
 	{
-		ent_realloc_free (newname);
+		free (newname);
 		ent_table_free (t);
 		return NULL;
 	}

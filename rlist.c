@@ -13,38 +13,65 @@ struct ent_rlist
 
 struct ent_rlist * ent_rlist_alloc()
 {
-	return ent_realloc_carray (NULL, 1, sizeof (struct ent_rlist), true);
-}
+	struct ent_rlist * rlist = malloc (sizeof (*rlist));
 
-void ent_rlist_free (struct ent_rlist * rlist)
-{
-	if (rlist->ranges != NULL)
+	if (rlist)
 	{
-		ent_realloc_free (rlist->ranges);
+		*rlist = (struct ent_rlist) {0};
 	}
 
-	ent_realloc_free (rlist);
+	return rlist;
 }
 
-size_t ent_rlist_len (struct ent_rlist const * rlist)
+void
+ent_rlist_free (struct ent_rlist * rlist)
 {
+	if (rlist)
+	{
+		if (rlist->ranges)
+		{
+			free (rlist->ranges);
+			rlist->ranges = NULL;
+		}
+
+		free (rlist);
+	}
+}
+
+size_t
+ent_rlist_len (struct ent_rlist const * rlist)
+{
+	if (!rlist)
+	{
+		return 0;
+	}
+
 	return rlist->vlen;
 }
 
-struct ent_rlist_range const * ent_rlist_ranges (
-    struct ent_rlist const * rlist, size_t *len)
+struct ent_rlist_range const *
+ent_rlist_ranges (struct ent_rlist const * rlist,
+                  size_t *len)
 {
+	if (!rlist)
+	{
+		return NULL;
+	}
+
 	*len = rlist->rlen;
 	return rlist->ranges;
 }
 
-int ent_rlist_append (struct ent_rlist * rlist, size_t begin, size_t end)
+int
+ent_rlist_append (struct ent_rlist * rlist,
+                  size_t begin,
+                  size_t end)
 {
-	if (end <= begin ||
+	if (!rlist || end <= begin ||
 	        (rlist->ranges != NULL &&
 	         begin < rlist->ranges[rlist->rlen - 1].begin))
 	{
-		return -1; // invalid begin,end values
+		return -1; // null rlist or invalid begin,end values
 	}
 
 	if (rlist->ranges != NULL &&
@@ -61,7 +88,7 @@ int ent_rlist_append (struct ent_rlist * rlist, size_t begin, size_t end)
 	}
 	else
 	{
-		struct ent_rlist_range * ranges = ent_realloc_array (rlist->ranges, rlist->rlen + 1, false);
+		struct ent_rlist_range * ranges = realloc (rlist->ranges, sizeof (*ranges) * rlist->rlen + 1);
 
 		if (ranges == NULL)
 		{

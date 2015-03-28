@@ -1,6 +1,8 @@
 #include "ent.h"
 #include "ent_internal.h"
 
+#include <stdlib.h>
+
 struct ent_session
 {
 	struct ent_model * model;
@@ -9,7 +11,7 @@ struct ent_session
 
 struct ent_session * ent_session_alloc (struct ent_model * m)
 {
-	struct ent_session * s = ent_realloc (NULL, sizeof (*s), false);
+	struct ent_session * s = malloc (sizeof (*s));
 
 	if (s != NULL)
 	{
@@ -21,7 +23,7 @@ struct ent_session * ent_session_alloc (struct ent_model * m)
 
 void ent_session_free (struct ent_session * s)
 {
-	ent_realloc_free (s);
+	free (s);
 }
 
 struct ent_table * ent_session_table (struct ent_session * s,

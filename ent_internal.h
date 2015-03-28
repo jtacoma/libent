@@ -3,22 +3,6 @@
 
 #include <stdbool.h>
 
-/* Logically equivalent to realloc from stdlib.h plus initialization.
- *
- * If zero is true and the new size is older than the old size, the additional
- * memory is set to zero.
- */
-void * ent_realloc (void * ptr, size_t size, bool zero);
-
-#define ent_realloc_array(ptr, nmemb, zero) \
-	ent_realloc ((ptr), (nmemb) * sizeof(*(ptr)), (zero))
-
-#define ent_realloc_carray(ptr, nmemb, size, zero) \
-	ent_realloc ((ptr), (nmemb) * (size), (zero))
-
-#define ent_realloc_free(ptr) \
-	ent_realloc ((ptr), 0, false)
-
 // typeinfo
 
 enum ent_datakind

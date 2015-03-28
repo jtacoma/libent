@@ -14,13 +14,11 @@ struct ent_table
 
 struct ent_table * ent_table_alloc (size_t len)
 {
-	struct ent_table * table = ent_realloc_carray (NULL, 1,
-	                           sizeof (*table),
-	                           true);
+	struct ent_table * table = malloc (sizeof (*table));
 
-	if (table != NULL)
+	if (table)
 	{
-		table->len = len;
+		*table = (struct ent_table) { .len = len};
 	}
 
 	return table;
@@ -28,30 +26,43 @@ struct ent_table * ent_table_alloc (size_t len)
 
 void ent_table_free (struct ent_table * table)
 {
-	size_t columns_len = table->columns_len;
-
-	if (columns_len)
+	if (table)
 	{
-		for (size_t i = 0; i < columns_len; ++i)
+		size_t columns_len = table->columns_len;
+
+		if (columns_len)
 		{
-			ent_realloc_free (table->column_names[i]);
-			ent_column_free (table->columns[i]);
+			for (size_t i = 0; i < columns_len; ++i)
+			{
+				free (table->column_names[i]);
+				ent_column_free (table->columns[i]);
+			}
+
+			free (table->column_names);
+			free (table->columns);
 		}
 
-		ent_realloc_free (table->column_names);
-		ent_realloc_free (table->columns);
+		free (table);
 	}
-
-	ent_realloc_free (table);
 }
 
 size_t ent_table_len (struct ent_table const * table)
 {
+	if (!table)
+	{
+		return 0;
+	}
+
 	return table->len;
 }
 
 bool ent_table_has_column_name (struct ent_table * table, char const * name)
 {
+	if (!table)
+	{
+		return false;
+	}
+
 	for (size_t i = 0; i < table->columns_len; ++i)
 	{
 		if (strcmp (table->column_names[i], name) == 0)
@@ -66,25 +77,25 @@ bool ent_table_has_column_name (struct ent_table * table, char const * name)
 struct ent_column * ent_table_add_column (struct ent_table * table,
         char const * name, char const * type)
 {
-	if (ent_table_has_column_name (table, name))
+	if (!table || ent_table_has_column_name (table, name))
 	{
 		return NULL;
 	}
 
-	struct ent_column ** newcolumns = ent_realloc_array (table->columns,
-	                                  table->columns_len + 1,
-	                                  true);
+	struct ent_column ** newcolumns =
+	    realloc (table->columns,
+	             sizeof (*table->columns) * (table->columns_len + 1));
 
 	if (newcolumns == NULL)
 	{
 		return NULL; // out of memory
 	}
+	newcolumns[table->columns_len] = NULL;
 
 	table->columns = newcolumns;
 
-	char ** newnames = ent_realloc_array (table->column_names,
-	                                      table->columns_len + 1,
-	                                      true);
+	char ** newnames = realloc (table->column_names,
+	                            table->columns_len + 1);
 
 	if (newnames == NULL)
 	{
@@ -92,10 +103,12 @@ struct ent_column * ent_table_add_column (struct ent_table * table,
 		return NULL; // out of memory
 	}
 
+	newnames[table->columns_len] = NULL;
+
 	table->column_names = newnames;
 
-	size_t name_len = strlen (name) + 1;
-	newnames[table->columns_len] = ent_realloc_carray (NULL, name_len, sizeof (char), false);
+	size_t name_size = strlen (name) + 1;
+	newnames[table->columns_len] = malloc (name_size);
 
 	if (newnames[table->columns_len] == NULL)
 	{
@@ -104,7 +117,7 @@ struct ent_column * ent_table_add_column (struct ent_table * table,
 		return NULL; // out of memory
 	}
 
-	strncpy (newnames[table->columns_len], name, name_len);
+	strncpy (newnames[table->columns_len], name, name_size);
 
 	newcolumns[table->columns_len] = ent_column_alloc (type, table->len);
 
@@ -112,8 +125,8 @@ struct ent_column * ent_table_add_column (struct ent_table * table,
 	{
 		// table->columns: is bigger and zero-padded, no problem
 		// table->column_names: is bigger and zero-padded, no problem
-		newnames[table->columns_len] =
-		    ent_realloc_free (newnames[table->columns_len]);
+		free (newnames[table->columns_len]);
+		newnames[table->columns_len] = NULL;
 		return NULL; // out of memory
 	}
 
@@ -143,10 +156,8 @@ int ent_table_delete (struct ent_table * table,
                       struct ent_rlist const * rlist)
 {
 	size_t columns_len = table->columns_len;
-	struct ent_column ** newcolumns = ent_realloc_carray (NULL,
-	                                  columns_len,
-	                                  sizeof (*newcolumns),
-	                                  true);
+	struct ent_column ** newcolumns = calloc (columns_len,
+	                                  sizeof (*newcolumns));
 
 	struct ent_rlist * keep = ent_rlist_alloc();
 	size_t del_ranges_len = 0;
@@ -167,14 +178,17 @@ int ent_table_delete (struct ent_table * table,
 	{
 		char const * typename = ent_column_typename (table->columns[i]);
 		newcolumns[i] = ent_column_alloc (typename, table->len - ent_rlist_len (rlist));
-		if (newcolumns[i] == NULL)
+
+		if (!newcolumns[i])
 		{
 			ent_rlist_free (keep);
+
 			for (size_t k = 0; k < i; ++k)
 			{
 				ent_column_free (newcolumns[i]);
 			}
-			ent_realloc_free (newcolumns);
+
+			free (newcolumns);
 			return -1;
 		}
 	}
@@ -184,11 +198,13 @@ int ent_table_delete (struct ent_table * table,
 		if (ent_column_select (newcolumns[i], table->columns[i], keep) == -1)
 		{
 			ent_rlist_free (keep);
+
 			for (size_t k = 0; k < columns_len; ++k)
 			{
 				ent_column_free (newcolumns[i]);
 			}
-			ent_realloc_free (newcolumns);
+
+			free (newcolumns);
 			return -1;
 		}
 	}
@@ -198,7 +214,7 @@ int ent_table_delete (struct ent_table * table,
 		ent_column_free (table->columns[i]);
 	}
 
-	ent_realloc_free (table->columns);
+	free (table->columns);
 	table->columns = newcolumns;
 	table->len = ent_rlist_len (rlist);
 

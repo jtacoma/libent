@@ -14,13 +14,14 @@ struct ent_column
 struct ent_column *
 ent_column_alloc (char const * type, size_t len)
 {
-	struct ent_column * column =
-	    ent_realloc_carray (NULL, 1, sizeof (*column), true);
+	struct ent_column * column = malloc (sizeof (*column));
 
 	if (column == NULL)
 	{
 		return NULL; // out of memory
 	}
+
+	*column = (struct ent_column) {0};
 
 	if (ent_typeinfo_parse (&column->type, type) == -1)
 	{
@@ -31,7 +32,7 @@ ent_column_alloc (char const * type, size_t len)
 	if (len > 0)
 	{
 		size_t width = ent_typeinfo_width (&column->type);
-		column->start = ent_realloc_carray (NULL, len, width, true);
+		column->start = calloc (len, width);
 
 		if (column->start == NULL)
 		{
@@ -49,9 +50,9 @@ void ent_column_free (struct ent_column * c)
 {
 	if (c->start != NULL)
 	{
-		ent_realloc_free (c->start);
+		free (c->start);
 	}
-	ent_realloc_free (c);
+	free (c);
 }
 
 void const * ent_column_get (struct ent_column const * c)
