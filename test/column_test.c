@@ -51,4 +51,5 @@ column_test()
 	ent_column_free (filtered);
 	ent_rlist_free (want);
 	ent_column_free (names);
+	ent_column_free (NULL);
 }

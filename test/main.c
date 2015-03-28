@@ -20,5 +20,6 @@ main()
 	rlist_test();
 	column_test();
 	table_test();
+	model_test();
 	session_test();
 }

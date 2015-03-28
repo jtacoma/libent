@@ -13,6 +13,11 @@ struct ent_session
 
 struct ent_session * ent_session_alloc (struct ent_model * m)
 {
+	if (!m)
+	{
+		return NULL;
+	}
+
 	struct ent_session * s = calloc (1, sizeof (*s));
 
 	if (s)
@@ -31,7 +36,7 @@ void ent_session_free (struct ent_session * s)
 struct ent_table * ent_session_table (struct ent_session * s,
                                       char const * table_name)
 {
-	if (s->locked)
+	if (!s || s->locked)
 	{
 		return NULL;
 	}
@@ -45,7 +50,7 @@ ent_session_column_r (struct ent_session * s,
                       char const * column_name,
                       char const * type_name)
 {
-	if (s->locked)
+	if (!s || s->locked)
 	{
 		return NULL;
 	}
@@ -59,7 +64,7 @@ ent_session_column_w (struct ent_session * s,
                       char const * column_name,
                       char const * type_name)
 {
-	if (s->locked)
+	if (!s || s->locked)
 	{
 		return NULL;
 	}
@@ -84,7 +89,7 @@ ent_session_column_a (struct ent_session * s,
                       char const * column_name,
                       char const * type_name)
 {
-	if (s->locked)
+	if (!s || s->locked)
 	{
 		return NULL;
 	}
@@ -104,6 +109,11 @@ ent_session_column_a (struct ent_session * s,
 
 int ent_session_lock (struct ent_session * s)
 {
+	if (!s)
+	{
+		return -1;
+	}
+
 	s->locked = true;
 	return 0;
 }
@@ -111,7 +121,7 @@ int ent_session_lock (struct ent_session * s)
 size_t ent_session_table_len (struct ent_session * s,
                               struct ent_table * table)
 {
-	if (!s->locked)
+	if (!s || !s->locked)
 	{
 		return 0;
 	}
@@ -123,7 +133,7 @@ int ent_session_table_grow (struct ent_session * s,
                             struct ent_table * table,
                             size_t add)
 {
-	if (!s->locked)
+	if (!s || !s->locked)
 	{
 		return -1;
 	}

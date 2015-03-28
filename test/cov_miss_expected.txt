@@ -1,27 +1,53 @@
-column.c:22:		return NULL; // out of memory
-column.c:27:		free (column); // out of memory
+column.c:21:		return NULL;
 column.c:28:		return NULL; // out of memory
-column.c:38:			ent_column_free (column); // out of memory
-column.c:39:			return NULL; // out of memory
-column.c:87:		return -1; // mismatched types
+column.c:33:		free (column); // out of memory
+column.c:34:		return NULL; // out of memory
+column.c:44:			ent_column_free (column); // out of memory
+column.c:45:			return NULL; // out of memory
+column.c:71:		return NULL;
+column.c:81:		return 0;
+column.c:91:		return NULL;
+column.c:101:		return NULL;
+column.c:111:		return -1;
+column.c:119:		return -1; // out of memory
+column.c:131:		return NULL;
+column.c:143:		return -1;
+column.c:150:		return -1; // mismatched types
 main.c:8:		fprintf (stderr, "%s:%d: %s\n",
 main.c:10:		exit (1);
-rlist.c:68:			return -1; // out of memory
-table.c:80:		return NULL; // out of memory
-table.c:92:		return NULL; // out of memory
-table.c:104:		return NULL; // out of memory
-table.c:115:		newnames[table->columns_len] =
-table.c:116:		    ent_realloc_free (newnames[table->columns_len]);
-table.c:117:		return NULL; // out of memory
-table.c:133:				return NULL;
-table.c:139:	return NULL;
-table.c:172:			ent_rlist_free (keep);
-table.c:173:			for (size_t k = 0; k < i; ++k)
-table.c:175:				ent_column_free (newcolumns[i]);
-table.c:177:			ent_realloc_free (newcolumns);
-table.c:178:			return -1;
-table.c:186:			ent_rlist_free (keep);
-table.c:187:			for (size_t k = 0; k < columns_len; ++k)
-table.c:189:				ent_column_free (newcolumns[i]);
-table.c:191:			ent_realloc_free (newcolumns);
-table.c:192:			return -1;
+model.c:77:		return NULL;
+model.c:84:		free (newname);
+model.c:85:		return NULL;
+model.c:92:		free (newname);
+model.c:93:		ent_table_free (t);
+model.c:94:		return NULL;
+rlist.c:51:		return NULL;
+rlist.c:88:			return -1; // out of memory
+session.c:69:		return NULL;
+session.c:87:ent_session_column_a (struct ent_session * s,
+session.c:92:	if (!s || s->locked)
+session.c:94:		return NULL;
+session.c:97:	struct ent_column * c = ent_table_column (table, column_name, type_name);
+session.c:98:	if (!c)
+session.c:100:		c = ent_table_add_column (table, column_name, type_name);
+session.c:107:	return c;
+table.c:74:		return false;
+table.c:110:		return NULL; // out of memory
+table.c:123:		return NULL; // out of memory
+table.c:136:		return NULL; // out of memory
+table.c:146:		free (newnames[table->columns_len]);
+table.c:147:		newnames[table->columns_len] = NULL;
+table.c:148:		return NULL; // out of memory
+table.c:171:				return NULL;
+table.c:221:			ent_rlist_free (keep);
+table.c:223:			for (size_t k = 0; k < i; ++k)
+table.c:225:				ent_column_free (newcolumns[i]);
+table.c:228:			free (newcolumns);
+table.c:229:			return -1;
+table.c:237:			ent_rlist_free (keep);
+table.c:239:			for (size_t k = 0; k < columns_len; ++k)
+table.c:241:				ent_column_free (newcolumns[i]);
+table.c:244:			free (newcolumns);
+table.c:245:			return -1;
+table.c:276:			continue;
+table.c:281:			return -1;

@@ -39,6 +39,11 @@ void ent_model_free (struct ent_model * m)
 
 bool ent_model_has (struct ent_model * m, char const * table_name)
 {
+	if (! (m && table_name))
+	{
+		return false;
+	}
+
 	for (size_t i = 0; i < m->tables_len; ++i)
 	{
 		if (strcmp (m->tables[i].name, table_name) == 0)
@@ -46,11 +51,17 @@ bool ent_model_has (struct ent_model * m, char const * table_name)
 			return true;
 		}
 	}
+
 	return false;
 }
 
 struct ent_table * ent_model_get (struct ent_model * m, char const * table_name)
 {
+	if (! (m && table_name))
+	{
+		return NULL;
+	}
+
 	for (size_t i = 0; i < m->tables_len; ++i)
 	{
 		if (strcmp (m->tables[i].name, table_name) == 0)

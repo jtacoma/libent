@@ -9,6 +9,7 @@ table_test()
 	struct ent_table * table = ent_table_alloc (4);
 	assert_true (table != NULL);
 	assert_true (ent_table_len (table) == 4);
+	assert_true (ent_table_len (NULL) == 0);
 
 	// Add two columns
 	struct ent_column * names = ent_table_add_column (table, "name", "bytes");
@@ -18,9 +19,13 @@ table_test()
 	assert_true (table != NULL);
 	assert_true (ent_column_len (score) == 4);
 
+	assert_true (ent_table_add_column (table, "name", NULL) == NULL);
+	assert_true (ent_table_add_column (table, NULL, "unknown type") == NULL);
+	assert_true (ent_table_add_column (NULL, "name", "unknown type") == NULL);
+	// Add column of unknown type
+	assert_true (ent_table_add_column (table, "name", "unknown type") == NULL);
 	// Add a duplicate column
-	struct ent_column * bad = ent_table_add_column (table, "name", "bytes");
-	assert_true (bad == NULL);
+	assert_true (ent_table_add_column (table, "name", "bytes") == NULL);
 
 	// Get pointers to the initially zero-filled column data
 	void const ** names_dst = ent_column_ref (names);
@@ -44,6 +49,8 @@ table_test()
 	assert_true (ent_rlist_append (delete, 0, 1) == 0);
 	assert_true (ent_rlist_append (delete, 3, 4) == 0);
 	assert_true (ent_table_delete (table, delete) == 0);
+	assert_true (ent_table_delete (table, NULL) == -1);
+	assert_true (ent_table_delete (NULL, delete) == -1);
 	ent_rlist_free (delete);
 
 	// Verify that the entities have been deleted
@@ -64,4 +71,5 @@ table_test()
 	assert_true (scores_dst != NULL);
 
 	ent_table_free (table);
+	ent_table_free (NULL);
 }

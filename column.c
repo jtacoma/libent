@@ -16,6 +16,11 @@ struct ent_column
 struct ent_column *
 ent_column_alloc (char const * type, size_t len)
 {
+	if (!type)
+	{
+		return NULL;
+	}
+
 	struct ent_column * column = calloc (1, sizeof (*column));
 
 	if (!column)
@@ -48,41 +53,72 @@ ent_column_alloc (char const * type, size_t len)
 
 void ent_column_free (struct ent_column * c)
 {
-	if (!c->start)
+	if (c)
 	{
-		free (c->start);
+		if (c->start)
+		{
+			free (c->start);
+		}
+
+		free (c);
 	}
-	free (c);
 }
 
 void const * ent_column_get (struct ent_column const * c)
 {
+	if (!c)
+	{
+		return NULL;
+	}
+
 	return c->start;
 }
 
 size_t ent_column_len (struct ent_column const * c)
 {
+	if (!c)
+	{
+		return 0;
+	}
+
 	return c->len;
 }
 
 struct ent_typeinfo const * ent_column_typeinfo (struct ent_column const * c)
 {
+	if (!c)
+	{
+		return NULL;
+	}
+
 	return &c->type;
 }
 
 char const * ent_column_typename (struct ent_column const * c)
 {
+	if (!c)
+	{
+		return NULL;
+	}
+
 	return ent_typeinfo_name (&c->type);
 }
 
 int ent_column_grow (struct ent_column * c, size_t add)
 {
+	if (!c || add == 0)
+	{
+		return -1;
+	}
+
 	size_t width = ent_typeinfo_width (&c->type);
 	void * mem = realloc (c->start, width * (c->len + add));
+
 	if (!mem)
 	{
 		return -1; // out of memory
 	}
+
 	c->start = mem;
 	c->len += add;
 	return 0;
@@ -90,6 +126,11 @@ int ent_column_grow (struct ent_column * c, size_t add)
 
 void * ent_column_ref (struct ent_column * c)
 {
+	if (!c)
+	{
+		return NULL;
+	}
+
 	return c->start;
 }
 
@@ -97,6 +138,11 @@ int ent_column_select (struct ent_column * dst,
                        struct ent_column const * src,
                        struct ent_rlist const * rlist)
 {
+	if (! (dst && src && rlist))
+	{
+		return -1;
+	}
+
 	struct ent_typeinfo const * dst_type = ent_column_typeinfo (dst);
 	struct ent_typeinfo const * src_type = ent_column_typeinfo (src);
 	if (!ent_typeinfo_equal (dst_type, src_type))

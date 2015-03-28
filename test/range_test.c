@@ -7,6 +7,7 @@ rlist_test()
 	struct ent_rlist * rlist = ent_rlist_alloc();
 	assert_true (rlist != NULL);
 	assert_true (ent_rlist_len (rlist) == 0);
+	assert_true (ent_rlist_len (NULL) == 0);
 
 	// Initial rlist is empty
 	size_t ranges_len = 1;
@@ -53,4 +54,5 @@ rlist_test()
 	assert_true (ranges[1].end == 10);
 
 	ent_rlist_free (rlist);
+	ent_rlist_free (NULL);
 }
