@@ -1,4 +1,4 @@
-.styled
-libent.so
-testent
-test/cov_miss_actual.txt
+/.styled
+/lib
+/bin
+/test/cov_miss_actual.txt
