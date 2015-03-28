@@ -42,9 +42,7 @@ column_test()
 	for (size_t i = 0; i < actual_len; ++i)
 	{
 		char const * s = actual[i];
-		printf ("i=%lu\n", i);
 		assert_true (s != NULL);
-		printf ("s[i]=%s\n", s);
 		assert_true (strcmp (s, expected[i]) == 0);
 	}
 
