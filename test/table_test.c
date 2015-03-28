@@ -1,4 +1,6 @@
 #include "test/ent_test.h"
+#include "table.h"
+#include "column.h"
 
 void
 table_test()

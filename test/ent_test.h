@@ -1,5 +1,4 @@
 #include "ent.h"
-#include "ent_internal.h"
 
 #include <stdbool.h>
 #include <stdio.h>

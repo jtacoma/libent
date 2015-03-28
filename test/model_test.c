@@ -1,4 +1,6 @@
 #include "test/ent_test.h"
+#include "model.h"
+#include "table.h"
 
 void model_test()
 {

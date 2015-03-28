@@ -1,4 +1,5 @@
 #include "test/ent_test.h"
+#include "table.h"
 
 void session_test()
 {

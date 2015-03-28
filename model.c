@@ -1,5 +1,5 @@
 #include "ent.h"
-#include "ent_internal.h"
+#include "table.h"
 
 #include <string.h>
 #include <stdlib.h>

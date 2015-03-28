@@ -1,5 +1,7 @@
 #include "ent.h"
-#include "ent_internal.h"
+#include "table.h"
+#include "rlist.h"
+#include "column.h"
 
 #include <stdlib.h>
 #include <string.h>
