@@ -3,26 +3,31 @@ libent
 
 Status: **Alpha**
 
-This is a C implementation of the "entities and components" pattern common in
-modern game programming engines.  Why?  I want an implemtnation that is simple
-enough for me to implemnt, easy to bind to most scripting languages, and
-straight-forward to integration with OpenGL-like compute/graphics interfaces.
-Some ideas have been borrowed from research in column-oriented databases that
-support transient tables (like MonetDB).  These other databases were not re-used
-for this project because they do not support (or do not easily support)
-embedding the server-side component.  Instead, MonetDB's frequent copying of
-subsets of contiguous constant-width buffers to form new contiguous
-constant-width buffers is used.  Also inspired by John Carmack's comments on the
-promise of functional programming and immutable data strucutres in computer game
-engines, said contiguous buffers will be read-only in most cases to simplify the
-implementation.
+This is (or will be) a C implementation of, and therefore buzzword compatible
+with, the following:
+
+* the "entities and components" pattern common in modern game programming
+  engines.  Entity identifiers are indices into contiguous buffers of component
+  data.
+* an embedded in-memory columnar data store providing atomicity, consistency,
+  and isolation.  Column data is accessed directly in memory.  Transactions will
+  be implemented with per-column mutexes.
+* data oriented programming.  Well, actually just data locality for now, but
+  given the scope for optimization once the basic functionality is working...
+  very likely in other ways too.
+* Vulkan-compatible.  Or, well, it probably will be...
+
+Etymologically, "libent" is third-person plural present active subjunctive of
+libo, to "taste", "make a libation", "spill", or "graze".  Also in Tagalog,
+"thousand".  Some day these meanings will all come together in a wonderful
+metaphor about this library.
 
 Version 1.0 Roadmap
 -------------------
 
  * Fine-grained (column-scoped) locks will let the same tables be operated on
    by many processors simultaneously sharing both read & write access.
- * Integration with OpenGL 2.0 (and/or later) shaders will work nicely.
+ * Integration with OpenGL 2.0 (and/or later) shaders.
  * Binding to at least one scripting language (Lua, Python, and SQL are
    candidates).
 
@@ -32,9 +37,7 @@ Version 0.1 POC Roadmap
  * Support strings and floating point numbers.  It's ok to support only one
    precision for floating-point numbers.  It's also ok to assume all strings are
    UTF-8.
- * Support simple insert, select, update, and delete semantics for single-column
-   data.  It's ok to leave multi-column support out for now, to get a minimal
-   proof of concept worked out.
+ * Support simple insert, select, update, and delete operations.
  * Proof-of-concept integration with OpenGL 2.0 (and/or later) vertex shaders.
 
 Coding Style

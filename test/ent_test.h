@@ -12,7 +12,7 @@ void true_or_exit (bool value, char const * file, int line,
 	true_or_exit((expr), __FILE__, __LINE__, "false: " #expr)
 
 void column_test();
-void realloc_test();
 void rlist_test();
+void session_test();
 void table_test();
 void typeinfo_test();

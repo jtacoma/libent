@@ -1,5 +1,5 @@
 #include "test/ent_test.h"
-#include "ent_internal.h"
+#include "rlist.h"
 
 void
 rlist_test()

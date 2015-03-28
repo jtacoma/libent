@@ -1,5 +1,5 @@
 #include "ent.h"
-#include "ent_internal.h"
+#include "rlist.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -13,47 +13,67 @@ struct ent_rlist
 
 struct ent_rlist * ent_rlist_alloc()
 {
-	return ent_realloc_carray (NULL, 1, sizeof (struct ent_rlist), true);
+	return calloc (1, sizeof (struct ent_rlist));
 }
 
-void ent_rlist_free (struct ent_rlist * rlist)
+void
+ent_rlist_free (struct ent_rlist * rlist)
 {
-	if (rlist->ranges != NULL)
+	if (rlist)
 	{
-		ent_realloc_free (rlist->ranges);
+		if (rlist->ranges)
+		{
+			free (rlist->ranges);
+			rlist->ranges = NULL;
+		}
+
+		free (rlist);
+	}
+}
+
+size_t
+ent_rlist_len (struct ent_rlist const * rlist)
+{
+	if (!rlist)
+	{
+		return 0;
 	}
 
-	ent_realloc_free (rlist);
-}
-
-size_t ent_rlist_len (struct ent_rlist const * rlist)
-{
 	return rlist->vlen;
 }
 
-struct ent_rlist_range const * ent_rlist_ranges (
-    struct ent_rlist const * rlist, size_t *len)
+struct ent_rlist_range const *
+ent_rlist_ranges (struct ent_rlist const * rlist,
+                  size_t *len)
 {
+	if (!rlist)
+	{
+		return NULL;
+	}
+
 	*len = rlist->rlen;
 	return rlist->ranges;
 }
 
-int ent_rlist_append (struct ent_rlist * rlist, size_t begin, size_t end)
+int
+ent_rlist_append (struct ent_rlist * rlist,
+                  size_t begin,
+                  size_t end)
 {
-	if (end <= begin ||
+	if (!rlist || end <= begin ||
 	        (rlist->ranges != NULL &&
 	         begin < rlist->ranges[rlist->rlen - 1].begin))
 	{
-		return -1; // invalid begin,end values
+		return -1; // null rlist or invalid begin,end values
 	}
 
-	if (rlist->ranges != NULL &&
+	if (rlist->ranges &&
 	        end <= rlist->ranges[rlist->rlen - 1].end)
 	{
 		return 0; // no-op
 	}
 
-	if (rlist->ranges != NULL &&
+	if (rlist->ranges &&
 	        begin <= rlist->ranges[rlist->rlen - 1].end)
 	{
 		rlist->vlen += end - rlist->ranges[rlist->rlen - 1].end;
@@ -61,9 +81,9 @@ int ent_rlist_append (struct ent_rlist * rlist, size_t begin, size_t end)
 	}
 	else
 	{
-		struct ent_rlist_range * ranges = ent_realloc_array (rlist->ranges, rlist->rlen + 1, false);
+		struct ent_rlist_range * ranges = realloc (rlist->ranges, sizeof (*ranges) * (rlist->rlen + 1));
 
-		if (ranges == NULL)
+		if (!ranges)
 		{
 			return -1; // out of memory
 		}

@@ -1,6 +1,6 @@
 #include "test/ent_test.h"
 
-#include "ent_internal.h"
+#include "typeinfo.h"
 
 void
 typeinfo_test()

@@ -1,14 +1,14 @@
 #include "test/ent_test.h"
-#include "ent_internal.h"
+#include "column.h"
 
 void
 column_test()
 {
 	struct ent_column * names = ent_column_alloc ("bytes", 4);
 	assert_true (names != NULL);
+	assert_true (ent_column_len (names) == 4);
 
-	size_t names_len = 0;
-	void const ** dst = ent_column_ref (names, &names_len);
+	void const ** dst = ent_column_ref (names);
 	assert_true (dst != NULL);
 
 	char const * src[] = { "Lana", "Archer", "Cyril" };
@@ -32,9 +32,10 @@ column_test()
 	assert_true (ent_rlist_append (want, 2, 4) == 0);
 	assert_true (ent_column_select (filtered, names, want) == 0);
 
-	size_t actual_len;
-	void ** actual = ent_column_ref (filtered, &actual_len);
+	size_t actual_len = ent_column_len (filtered);
 	assert_true (actual_len == 3);
+
+	void ** actual = ent_column_ref (filtered);
 	assert_true (actual != NULL);
 
 	char const * expected[] = { "Lana", "Cyril", "Randy" };

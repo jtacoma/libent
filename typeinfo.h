@@ -1,9 +1,7 @@
-#ifndef LIBENT_ENT_INTERNAL_H
-#define LIBENT_ENT_INTERNAL_H
+#ifndef ENTLIB_TYPEINFO_H
+#define ENTLIB_TYPEINFO_H
 
-#include <stdbool.h>
-
-// typeinfo
+#include "ent.h"
 
 enum ent_datakind
 {
@@ -46,36 +44,4 @@ bool ent_typeinfo_equal (struct ent_typeinfo const * typeinfo,
 char const * ent_typeinfo_name (struct ent_typeinfo const * typeinfo);
 size_t ent_typeinfo_width (struct ent_typeinfo const * typeinfo);
 
-// rlist
-
-struct ent_rlist_range
-{
-	size_t begin;
-	size_t end;
-};
-
-struct ent_rlist_range const * ent_rlist_ranges (
-    struct ent_rlist const * rlist, size_t *len);
-
-// column
-
-struct ent_column * ent_column_alloc (char const * type, size_t len);
-void ent_column_free (struct ent_column * c);
-
-/* Logically equivalent to realloc from stdlib.h plus initialization.
- *
- * If zero is true and the new size is older than the old size, the additional
- * memory is set to zero.
- */
-void * ent_realloc (void * ptr, size_t size, bool zero);
-
-#define ent_realloc_array(ptr, nmemb, zero) \
-	ent_realloc ((ptr), (nmemb) * sizeof(*(ptr)), (zero))
-
-#define ent_realloc_carray(ptr, nmemb, size, zero) \
-	ent_realloc ((ptr), (nmemb) * (size), (zero))
-
-#define ent_realloc_free(ptr) \
-	ent_realloc ((ptr), 0, false)
-
-#endif//LIBENT_ENT_INTERNAL_H
+#endif
