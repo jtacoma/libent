@@ -21,4 +21,5 @@ main()
 	rlist_test();
 	column_test();
 	table_test();
+	session_test();
 }

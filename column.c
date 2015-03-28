@@ -54,10 +54,14 @@ void ent_column_free (struct ent_column * c)
 	ent_realloc_free (c);
 }
 
-void const * ent_column_get (struct ent_column const * c, size_t * len)
+void const * ent_column_get (struct ent_column const * c)
 {
-	*len = c->len;
 	return c->start;
+}
+
+size_t ent_column_len (struct ent_column const * c)
+{
+	return c->len;
 }
 
 struct ent_typeinfo const * ent_column_typeinfo (struct ent_column const * c)
@@ -70,9 +74,8 @@ char const * ent_column_typename (struct ent_column const * c)
 	return ent_typeinfo_name (&c->type);
 }
 
-void * ent_column_ref (struct ent_column * c, size_t *len)
+void * ent_column_ref (struct ent_column * c)
 {
-	*len = c->len;
 	return c->start;
 }
 
@@ -88,12 +91,12 @@ int ent_column_select (struct ent_column * dst,
 	}
 	size_t width = ent_typeinfo_width (dst_type);
 
-	size_t dst_cap = 0;
-	uint8_t * dst_ptr = ent_column_ref (dst, &dst_cap);
+	size_t dst_cap = ent_column_len (dst);
+	uint8_t * dst_ptr = ent_column_ref (dst);
 	uint8_t * dst_next = dst_ptr;
 
-	size_t src_len = 0;
-	uint8_t const * src_ptr = ent_column_get (src, &src_len);
+	size_t src_len = ent_column_len (src);
+	uint8_t const * src_ptr = ent_column_get (src);
 
 	size_t ranges_len = 0;
 	struct ent_rlist_range const * ranges =

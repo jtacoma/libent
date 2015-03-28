@@ -3,6 +3,22 @@
 
 #include <stdbool.h>
 
+/* Logically equivalent to realloc from stdlib.h plus initialization.
+ *
+ * If zero is true and the new size is older than the old size, the additional
+ * memory is set to zero.
+ */
+void * ent_realloc (void * ptr, size_t size, bool zero);
+
+#define ent_realloc_array(ptr, nmemb, zero) \
+	ent_realloc ((ptr), (nmemb) * sizeof(*(ptr)), (zero))
+
+#define ent_realloc_carray(ptr, nmemb, size, zero) \
+	ent_realloc ((ptr), (nmemb) * (size), (zero))
+
+#define ent_realloc_free(ptr) \
+	ent_realloc ((ptr), 0, false)
+
 // typeinfo
 
 enum ent_datakind
@@ -61,21 +77,25 @@ struct ent_rlist_range const * ent_rlist_ranges (
 
 struct ent_column * ent_column_alloc (char const * type, size_t len);
 void ent_column_free (struct ent_column * c);
+size_t ent_column_len (struct ent_column const * c);
 
-/* Logically equivalent to realloc from stdlib.h plus initialization.
- *
- * If zero is true and the new size is older than the old size, the additional
- * memory is set to zero.
- */
-void * ent_realloc (void * ptr, size_t size, bool zero);
+// table
 
-#define ent_realloc_array(ptr, nmemb, zero) \
-	ent_realloc ((ptr), (nmemb) * sizeof(*(ptr)), (zero))
+struct ent_table;
 
-#define ent_realloc_carray(ptr, nmemb, size, zero) \
-	ent_realloc ((ptr), (nmemb) * (size), (zero))
+struct ent_table * ent_table_alloc (size_t len);
+void ent_table_free (struct ent_table * table);
+size_t ent_table_len (struct ent_table const * table);
+struct ent_column * ent_table_add_column (struct ent_table * table,
+        char const * name, char const * type);
+struct ent_column * ent_table_column (struct ent_table * table,
+                                      char const * name, char const * type);
+int ent_table_delete (struct ent_table * table,
+                      struct ent_rlist const * rlist);
 
-#define ent_realloc_free(ptr) \
-	ent_realloc ((ptr), 0, false)
+// model
+
+bool ent_model_has (struct ent_model * m, char const * table_name);
+struct ent_table * ent_model_get (struct ent_model * m, char const * table_name);
 
 #endif//LIBENT_ENT_INTERNAL_H
