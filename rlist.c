@@ -13,14 +13,7 @@ struct ent_rlist
 
 struct ent_rlist * ent_rlist_alloc()
 {
-	struct ent_rlist * rlist = malloc (sizeof (*rlist));
-
-	if (rlist)
-	{
-		*rlist = (struct ent_rlist) {0};
-	}
-
-	return rlist;
+	return calloc (1, sizeof (struct ent_rlist));
 }
 
 void
@@ -74,13 +67,13 @@ ent_rlist_append (struct ent_rlist * rlist,
 		return -1; // null rlist or invalid begin,end values
 	}
 
-	if (rlist->ranges != NULL &&
+	if (rlist->ranges &&
 	        end <= rlist->ranges[rlist->rlen - 1].end)
 	{
 		return 0; // no-op
 	}
 
-	if (rlist->ranges != NULL &&
+	if (rlist->ranges &&
 	        begin <= rlist->ranges[rlist->rlen - 1].end)
 	{
 		rlist->vlen += end - rlist->ranges[rlist->rlen - 1].end;
@@ -88,9 +81,9 @@ ent_rlist_append (struct ent_rlist * rlist,
 	}
 	else
 	{
-		struct ent_rlist_range * ranges = realloc (rlist->ranges, sizeof (*ranges) * rlist->rlen + 1);
+		struct ent_rlist_range * ranges = realloc (rlist->ranges, sizeof (*ranges) * (rlist->rlen + 1));
 
-		if (ranges == NULL)
+		if (!ranges)
 		{
 			return -1; // out of memory
 		}

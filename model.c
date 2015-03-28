@@ -16,9 +16,7 @@ struct ent_model
 
 struct ent_model * ent_model_alloc()
 {
-	struct ent_model * m = malloc (sizeof (*m));
-	*m = (struct ent_model) {0};
-	return m;
+	return calloc (1, sizeof (struct ent_model));
 }
 
 void ent_model_free (struct ent_model * m)
@@ -27,6 +25,12 @@ void ent_model_free (struct ent_model * m)
 	{
 		if (m->tables)
 		{
+			for (size_t i = 0; i < m->tables_len; ++i)
+			{
+				ent_table_free (m->tables[i].table);
+				free (m->tables[i].name);
+			}
+
 			free (m->tables);
 		}
 		free (m);
@@ -71,7 +75,7 @@ struct ent_table * ent_model_get (struct ent_model * m, char const * table_name)
 	}
 
 	void * newtables = realloc (m->tables,
-	                            sizeof (*m->tables) * m->tables_len + 1);
+	                            sizeof (*m->tables) * (m->tables_len + 1));
 	if (!newtables)
 	{
 		free (newname);

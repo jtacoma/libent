@@ -49,8 +49,12 @@ table_test()
 	// Verify that the entities have been deleted
 	printf ("len=%lu\n", ent_table_len (table));
 	assert_true (ent_table_len (table) == 2);
-	assert_true (ent_column_len (ent_table_column (table, "name", "bytes")) == 2);
-	assert_true (ent_column_len (ent_table_column (table, "hits", "uint8")) == 2);
+	names = ent_table_column (table, "name", "bytes");
+	assert_true (names != NULL);
+	assert_true (ent_column_len (names) == 2);
+	score = ent_table_column (table, "hits", "uint8");
+	assert_true (table != NULL);
+	assert_true (ent_column_len (score) == 2);
 
 	names = ent_table_column (table, "name", "bytes");
 	names_dst = ent_column_ref (names);

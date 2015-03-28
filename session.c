@@ -13,11 +13,11 @@ struct ent_session
 
 struct ent_session * ent_session_alloc (struct ent_model * m)
 {
-	struct ent_session * s = malloc (sizeof (*s));
+	struct ent_session * s = calloc (1, sizeof (*s));
 
-	if (s != NULL)
+	if (s)
 	{
-		*s = (struct ent_session) { .model = m, .locked = false };
+		s->model = m;
 	}
 
 	return s;
@@ -49,6 +49,7 @@ ent_session_column_r (struct ent_session * s,
 	{
 		return NULL;
 	}
+
 	return ent_table_column (table, column_name, type_name);
 }
 
@@ -64,7 +65,8 @@ ent_session_column_w (struct ent_session * s,
 	}
 
 	struct ent_column * c = ent_table_column (table, column_name, type_name);
-	if (c == NULL)
+
+	if (!c)
 	{
 		c = ent_table_add_column (table, column_name, type_name);
 	}
@@ -88,7 +90,7 @@ ent_session_column_a (struct ent_session * s,
 	}
 
 	struct ent_column * c = ent_table_column (table, column_name, type_name);
-	if (c == NULL)
+	if (!c)
 	{
 		c = ent_table_add_column (table, column_name, type_name);
 	}
