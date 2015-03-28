@@ -16,13 +16,19 @@ void session_test()
 	assert_true (ent_session_table (s, NULL) == NULL);
 	assert_true (ent_session_table (NULL, "items") == NULL);
 
+	assert_true (ent_session_column_r (s, items, "nope", "nope") == NULL);
 	assert_true (ent_session_column_r (s, items, "a", "int32") == NULL);
 	assert_true (ent_session_column_r (s, items, "a", NULL) == NULL);
 	assert_true (ent_session_column_r (s, items, NULL, "int32") == NULL);
 	assert_true (ent_session_column_r (s, NULL, "a", "int32") == NULL);
 	assert_true (ent_session_column_r (NULL, items, "a", "int32") == NULL);
 
-	struct ent_column * column_b = ent_session_column_w (s, items, "b", "float64");
+	assert_true (ent_session_column_a (s, items, "nope", "nope") == NULL);
+	assert_true (ent_session_column_a (s, items, "b", NULL) == NULL);
+	assert_true (ent_session_column_a (s, items, NULL, "float64") == NULL);
+	assert_true (ent_session_column_a (s, NULL, "b", "float64") == NULL);
+	assert_true (ent_session_column_a (NULL, items, "b", "float64") == NULL);
+	struct ent_column * column_b = ent_session_column_a (s, items, "b", "float64");
 	assert_true (column_b != NULL);
 
 	assert_true (ent_session_lock (s) == 0);
@@ -45,6 +51,11 @@ void session_test()
 	assert_true (s != NULL);
 	items = ent_session_table (s, "items");
 	assert_true (items != NULL);
+	assert_true (ent_session_column_w (s, items, "nope", "nope") == NULL);
+	assert_true (ent_session_column_w (s, items, "b", NULL) == NULL);
+	assert_true (ent_session_column_w (s, items, NULL, "float64") == NULL);
+	assert_true (ent_session_column_w (s, NULL, "b", "float64") == NULL);
+	assert_true (ent_session_column_w (NULL, items, "b", "float64") == NULL);
 	column_b = ent_session_column_w (s, items, "b", "float64");
 	assert_true (column_b != NULL);
 

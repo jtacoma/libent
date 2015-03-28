@@ -1,7 +1,5 @@
 column.c:21:		return NULL;
 column.c:28:		return NULL; // out of memory
-column.c:33:		free (column); // out of memory
-column.c:34:		return NULL; // out of memory
 column.c:44:			ent_column_free (column); // out of memory
 column.c:45:			return NULL; // out of memory
 column.c:71:		return NULL;
@@ -23,21 +21,10 @@ model.c:93:		ent_table_free (t);
 model.c:94:		return NULL;
 rlist.c:51:		return NULL;
 rlist.c:88:			return -1; // out of memory
-session.c:69:		return NULL;
-session.c:87:ent_session_column_a (struct ent_session * s,
-session.c:92:	if (!s || s->locked)
-session.c:94:		return NULL;
-session.c:97:	struct ent_column * c = ent_table_column (table, column_name, type_name);
-session.c:98:	if (!c)
-session.c:100:		c = ent_table_add_column (table, column_name, type_name);
-session.c:107:	return c;
 table.c:74:		return false;
 table.c:110:		return NULL; // out of memory
 table.c:123:		return NULL; // out of memory
 table.c:136:		return NULL; // out of memory
-table.c:146:		free (newnames[table->columns_len]);
-table.c:147:		newnames[table->columns_len] = NULL;
-table.c:148:		return NULL; // out of memory
 table.c:171:				return NULL;
 table.c:221:			ent_rlist_free (keep);
 table.c:223:			for (size_t k = 0; k < i; ++k)

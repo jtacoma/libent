@@ -29,6 +29,11 @@ void ent_session_free (struct ent_session * s);
 int ent_session_lock (struct ent_session * s);
 struct ent_table * ent_session_table (struct ent_session * s,
                                       char const * table_name);
+struct ent_column *
+ent_session_column_a (struct ent_session * s,
+                      struct ent_table * table,
+                      char const * column_name,
+                      char const * type);
 struct ent_column const *
 ent_session_column_r (struct ent_session * s,
                       struct ent_table * table,
