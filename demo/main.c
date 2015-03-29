@@ -3,20 +3,20 @@
 #include <assert.h>
 #include <stdio.h>
 
-void build_model(struct ent_model * model)
+void build_model (struct ent_model * model)
 {
 	// Create a session through which to build the model.
 	struct ent_session * s = ent_session_alloc (model);
-       	assert (s);
+	assert (s);
 
 	// Create a table (or get one if it already exists).
 	struct ent_table * entities = ent_session_table (s, "entities");
-	assert(entities);
+	assert (entities);
 
 	// Declare that we want to set the "mass" on items appended to the
 	// "entities" table.
 	struct ent_column * column_mass =
-	       	ent_session_column_a (s, entities, "mass", "float64");
+	    ent_session_column_a (s, entities, "mass", "float64");
 	assert (column_mass);
 
 	// Acquire the necessary mutexes etc. and transition to the locked
@@ -35,7 +35,7 @@ void build_model(struct ent_model * model)
 	// This array of float64 values can be used as normal.
 	for (size_t i = 0; i < appending; ++i)
 	{
-		masses[i] = (double)(i*i)/3;
+		masses[i] = (double) (i * i) / 3;
 	}
 
 	// Free the session.  This also invalidates all pointers received from
@@ -43,7 +43,7 @@ void build_model(struct ent_model * model)
 	ent_session_free (s);
 }
 
-void print_model(struct ent_model * model)
+void print_model (struct ent_model * model)
 {
 	// Allocate a new session in which we will verify that the model has
 	// been changed as described above.  The steps are very similar.
@@ -66,7 +66,7 @@ void print_model(struct ent_model * model)
 
 	for (size_t i = 0; i < len; ++i)
 	{
-		printf("masses[%lu] == %0.1f\n", i, masses[i]);
+		printf ("masses[%lu] == %0.1f\n", i, masses[i]);
 	}
 
 	// Always remember to free the session.  Of course.
@@ -77,11 +77,11 @@ int main()
 {
 	// Create a model that will hold all tables.
 	struct ent_model * model = ent_model_alloc();
-       	assert (model);
+	assert (model);
 
-	build_model(model);
+	build_model (model);
 
-	print_model(model);
+	print_model (model);
 
 	ent_model_free (model);
 }

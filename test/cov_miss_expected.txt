@@ -11,8 +11,6 @@ column.c:119:		return -1; // out of memory
 column.c:131:		return NULL;
 column.c:143:		return -1;
 column.c:150:		return -1; // mismatched types
-main.c:8:		fprintf (stderr, "%s:%d: %s\n",
-main.c:10:		exit (1);
 model.c:77:		return NULL;
 model.c:84:		free (newname);
 model.c:85:		return NULL;
