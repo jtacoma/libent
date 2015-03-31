@@ -16,8 +16,6 @@ main()
 {
 	// Roughly in dependency order so that failures in the most
 	// depended-upon modules will be discovered first.
-	typeinfo_test();
-	printf ("typeinfo: passed\n");
 	rlist_test();
 	printf ("rlist: passed\n");
 	column_test();

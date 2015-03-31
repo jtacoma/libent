@@ -4,8 +4,10 @@
 void
 column_test()
 {
-	struct ent_column * names = ent_column_alloc ("bytes", 4);
+	struct ent_column * names = ent_column_alloc (sizeof (char*));
 	assert_true (names != NULL);
+
+	assert_true (ent_column_grow (names, 4) == 0);
 	assert_true (ent_column_len (names) == 4);
 
 	void const ** dst = ent_column_ref (names);
@@ -19,7 +21,8 @@ column_test()
 
 	*dst = "Randy";
 
-	struct ent_column * filtered = ent_column_alloc ("bytes", 3);
+	struct ent_column * filtered = ent_column_alloc (sizeof (char*));
+	assert_true (ent_column_grow (filtered, 3) == 0);
 
 	struct ent_rlist * want = ent_rlist_alloc();
 	assert_true (want != NULL);

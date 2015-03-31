@@ -1,8 +1,7 @@
 #CFLAGS=-O3
 #CFLAGS=-g -O2
-#CFLAGS=-g -fprofile-arcs -ftest-coverage -O0
-#CFLAGS+=-std=c11 -Wall -Wextra -Werror -Iinclude
-CFLAGS:=-std=c11 -Wall -Wextra -Werror -Iinclude -O0
+CFLAGS=-g -fprofile-arcs -ftest-coverage -O0
+CFLAGS+=-std=c11 -Wall -Wextra -Werror -Iinclude
 
 .PHONY: all
 all: .styled tags test bench bin/ent-demo
@@ -19,8 +18,8 @@ bench: bin/ent-bench
 	astyle $?
 	touch $@
 
-tags: *.c
-	ctags *.c
+tags: *.c test/*.c bench/*.c demo/*.c
+	ctags $^
 
 lib/libent.so: *.[ch]
 	mkdir -p lib

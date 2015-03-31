@@ -16,7 +16,7 @@ void build_model (struct ent_model * model)
 	// Declare that we want to set the "mass" on items appended to the
 	// "entities" table.
 	struct ent_column * column_mass =
-	    ent_session_column_a (s, entities, "mass", "float64");
+	    ent_session_column_a (s, entities, "mass", 8);
 	assert (column_mass);
 
 	// Acquire the necessary mutexes etc. and transition to the locked
@@ -55,7 +55,7 @@ void print_model (struct ent_model * model)
 
 	// This time we use the "_r" variant because we're only interested in
 	// reading existing data.
-	struct ent_column const * column_mass = ent_session_column_r (s, entities, "mass", "float64");
+	struct ent_column const * column_mass = ent_session_column_r (s, entities, "mass", 8);
 	assert (column_mass != NULL);
 
 	assert (ent_session_lock (s) == 0);

@@ -16,4 +16,3 @@ void model_test();
 void rlist_test();
 void session_test();
 void table_test();
-void typeinfo_test();

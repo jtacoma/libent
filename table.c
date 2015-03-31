@@ -89,9 +89,9 @@ struct ent_column *
 ent_table_add_column (
     struct ent_table * table,
     char const * name,
-    char const * type)
+    size_t width)
 {
-	if (! (table  && name  && type))
+	if (! (table && name && width))
 	{
 		return NULL;
 	}
@@ -137,12 +137,18 @@ ent_table_add_column (
 	}
 
 	strncpy (newnames[table->columns_len], name, name_size);
-	newcolumns[table->columns_len] = ent_column_alloc (type, table->len);
+	newcolumns[table->columns_len] = ent_column_alloc (width);
 
 	if (!newcolumns[table->columns_len])
 	{
 		// table->columns: is bigger and zero-padded, no problem
 		// table->column_names: is bigger and zero-padded, no problem
+		newnames[table->columns_len] = NULL;
+		return NULL; // out of memory
+	}
+
+	if (table->len && ent_column_grow (newcolumns[table->columns_len], table->len) == -1)
+	{
 		free (newnames[table->columns_len]);
 		newnames[table->columns_len] = NULL;
 		return NULL; // out of memory
@@ -155,9 +161,9 @@ struct ent_column *
 ent_table_column (
     struct ent_table * table,
     char const * name,
-    char const * type)
+    size_t width)
 {
-	if (! (table && name && type))
+	if (! (table && name && width))
 	{
 		return NULL;
 	}
@@ -166,7 +172,7 @@ ent_table_column (
 	{
 		if (strcmp (table->column_names[i], name) == 0)
 		{
-			if (strcmp (ent_column_typename (table->columns[i]), type) != 0)
+			if (width != ent_column_width (table->columns[i]))
 			{
 				return NULL;
 			}
@@ -211,13 +217,15 @@ ent_table_delete (
 
 	for (size_t i = 0; i < columns_len; ++i)
 	{
-		char const * typename = ent_column_typename (table->columns[i]);
-		newcolumns[i] =
-		    ent_column_alloc (typename,
-		                      table->len - ent_rlist_len (rlist));
+		newcolumns[i] = ent_column_alloc (ent_column_width (table->columns[i]));
 
-		if (!newcolumns[i])
+		if (!newcolumns[i] || ent_column_grow (newcolumns[i], table->len - ent_rlist_len (rlist)))
 		{
+			if (newcolumns[i])
+			{
+				++i;
+			}
+
 			ent_rlist_free (keep);
 
 			for (size_t k = 0; k < i; ++k)

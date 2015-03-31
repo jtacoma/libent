@@ -1,6 +1,5 @@
 #include "ent.h"
 #include "column.h"
-#include "typeinfo.h"
 #include "rlist.h"
 
 #include <stdlib.h>
@@ -9,44 +8,27 @@
 struct ent_column
 {
 	void * start;
-	struct ent_typeinfo type;
+	size_t width;
 	size_t len;
 };
 
 struct ent_column *
-ent_column_alloc (char const * type, size_t len)
+ent_column_alloc (
+    size_t width)
 {
-	if (!type)
+	if (! (width))
 	{
 		return NULL;
 	}
 
-	struct ent_column * column = calloc (1, sizeof (*column));
+	struct ent_column * column = malloc (sizeof (*column));
 
 	if (!column)
 	{
 		return NULL; // out of memory
 	}
 
-	if (ent_typeinfo_parse (&column->type, type) == -1)
-	{
-		free (column); // out of memory
-		return NULL; // out of memory
-	}
-
-	if (len > 0)
-	{
-		size_t width = ent_typeinfo_width (&column->type);
-		column->start = calloc (len, width);
-
-		if (!column->start)
-		{
-			ent_column_free (column); // out of memory
-			return NULL; // out of memory
-		}
-
-		column->len = len;
-	}
+	*column = (struct ent_column) {.width = width };
 
 	return column;
 }
@@ -84,24 +66,14 @@ size_t ent_column_len (struct ent_column const * c)
 	return c->len;
 }
 
-struct ent_typeinfo const * ent_column_typeinfo (struct ent_column const * c)
+size_t ent_column_width (struct ent_column const * c)
 {
 	if (!c)
 	{
-		return NULL;
+		return 0;
 	}
 
-	return &c->type;
-}
-
-char const * ent_column_typename (struct ent_column const * c)
-{
-	if (!c)
-	{
-		return NULL;
-	}
-
-	return ent_typeinfo_name (&c->type);
+	return c->width;
 }
 
 int ent_column_grow (struct ent_column * c, size_t add)
@@ -111,14 +83,14 @@ int ent_column_grow (struct ent_column * c, size_t add)
 		return -1;
 	}
 
-	size_t width = ent_typeinfo_width (&c->type);
-	void * mem = realloc (c->start, width * (c->len + add));
+	void * mem = realloc (c->start, c->width * (c->len + add));
 
 	if (!mem)
 	{
 		return -1; // out of memory
 	}
 
+	memset (((uint8_t*)mem) + (c->width * c->len), 0, c->width * add);
 	c->start = mem;
 	c->len += add;
 	return 0;
@@ -138,18 +110,12 @@ int ent_column_select (struct ent_column * dst,
                        struct ent_column const * src,
                        struct ent_rlist const * rlist)
 {
-	if (! (dst && src && rlist))
+	if (! (dst && src && rlist && src->width == dst->width))
 	{
 		return -1;
 	}
 
-	struct ent_typeinfo const * dst_type = ent_column_typeinfo (dst);
-	struct ent_typeinfo const * src_type = ent_column_typeinfo (src);
-	if (!ent_typeinfo_equal (dst_type, src_type))
-	{
-		return -1; // mismatched types
-	}
-	size_t width = ent_typeinfo_width (dst_type);
+	size_t width = src->width;
 
 	size_t dst_cap = ent_column_len (dst);
 	uint8_t * dst_ptr = ent_column_ref (dst);

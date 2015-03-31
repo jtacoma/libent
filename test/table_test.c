@@ -12,20 +12,20 @@ table_test()
 	assert_true (ent_table_len (NULL) == 0);
 
 	// Add two columns
-	struct ent_column * names = ent_table_add_column (table, "name", "bytes");
+	struct ent_column * names = ent_table_add_column (table, "name",  sizeof (char*));
 	assert_true (names != NULL);
 	assert_true (ent_column_len (names) == 4);
-	struct ent_column * score = ent_table_add_column (table, "hits", "uint8");
+	struct ent_column * score = ent_table_add_column (table, "hits", sizeof (uint8_t));
 	assert_true (table != NULL);
 	assert_true (ent_column_len (score) == 4);
 
-	assert_true (ent_table_add_column (table, "name", NULL) == NULL);
-	assert_true (ent_table_add_column (table, NULL, "unknown type") == NULL);
-	assert_true (ent_table_add_column (NULL, "name", "unknown type") == NULL);
-	// Add column of unknown type
-	assert_true (ent_table_add_column (table, "name", "unknown type") == NULL);
+	// NULL/zero arguments will not work
+	assert_true (ent_table_add_column (table, "name", 0) == NULL);
+	assert_true (ent_table_add_column (table, NULL, sizeof (char*)) == NULL);
+	assert_true (ent_table_add_column (NULL, "name", sizeof (char*)) == NULL);
+
 	// Add a duplicate column
-	assert_true (ent_table_add_column (table, "name", "bytes") == NULL);
+	assert_true (ent_table_add_column (table, "name", sizeof (char*)) == NULL);
 
 	// Get pointers to the initially zero-filled column data
 	void const ** names_dst = ent_column_ref (names);
@@ -55,17 +55,17 @@ table_test()
 
 	// Verify that the entities have been deleted
 	assert_true (ent_table_len (table) == 2);
-	names = ent_table_column (table, "name", "bytes");
+	names = ent_table_column (table, "name", sizeof (char*));
 	assert_true (names != NULL);
 	assert_true (ent_column_len (names) == 2);
-	score = ent_table_column (table, "hits", "uint8");
+	score = ent_table_column (table, "hits", sizeof (uint8_t));
 	assert_true (table != NULL);
 	assert_true (ent_column_len (score) == 2);
 
-	names = ent_table_column (table, "name", "bytes");
+	names = ent_table_column (table, "name", sizeof (char*));
 	names_dst = ent_column_ref (names);
 	assert_true (names_dst != NULL);
-	score = ent_table_column (table, "hits", "uint8");
+	score = ent_table_column (table, "hits", sizeof (uint8_t));
 	scores_dst = ent_column_ref (score);
 	assert_true (scores_dst != NULL);
 

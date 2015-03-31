@@ -45,35 +45,37 @@ struct ent_table * ent_session_table (struct ent_session * s,
 }
 
 struct ent_column const *
-ent_session_column_r (struct ent_session * s,
-                      struct ent_table * table,
-                      char const * column_name,
-                      char const * type_name)
+ent_session_column_r (
+    struct ent_session * s,
+    struct ent_table * table,
+    char const * column_name,
+    size_t width)
 {
 	if (!s || s->locked)
 	{
 		return NULL;
 	}
 
-	return ent_table_column (table, column_name, type_name);
+	return ent_table_column (table, column_name, width);
 }
 
 struct ent_column *
-ent_session_column_w (struct ent_session * s,
-                      struct ent_table * table,
-                      char const * column_name,
-                      char const * type_name)
+ent_session_column_w (
+    struct ent_session * s,
+    struct ent_table * table,
+    char const * column_name,
+    size_t width)
 {
 	if (!s || s->locked)
 	{
 		return NULL;
 	}
 
-	struct ent_column * c = ent_table_column (table, column_name, type_name);
+	struct ent_column * c = ent_table_column (table, column_name, width);
 
 	if (!c)
 	{
-		c = ent_table_add_column (table, column_name, type_name);
+		c = ent_table_add_column (table, column_name, width);
 	}
 	else
 	{
@@ -84,20 +86,24 @@ ent_session_column_w (struct ent_session * s,
 }
 
 struct ent_column *
-ent_session_column_a (struct ent_session * s,
-                      struct ent_table * table,
-                      char const * column_name,
-                      char const * type_name)
+ent_session_column_a (
+    struct ent_session * s,
+    struct ent_table * table,
+    char const * column_name,
+    size_t width)
 {
 	if (!s || s->locked)
 	{
 		return NULL;
 	}
 
-	struct ent_column * c = ent_table_column (table, column_name, type_name);
+	// TODO: remember that this is an "appending" column
+
+	struct ent_column * c = ent_table_column (table, column_name, width);
+
 	if (!c)
 	{
-		c = ent_table_add_column (table, column_name, type_name);
+		c = ent_table_add_column (table, column_name, width);
 	}
 	else
 	{
