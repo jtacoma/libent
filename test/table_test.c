@@ -69,6 +69,6 @@ table_test()
 	scores_dst = ent_column_ref (score);
 	assert_true (scores_dst != NULL);
 
-	ent_table_free (table);
-	ent_table_free (NULL);
+	ent_table_decref (table);
+	ent_table_decref (NULL);
 }

@@ -12,6 +12,7 @@ struct ent_table
 	char ** column_names;
 	struct ent_column ** columns;
 	size_t columns_len;
+	int refcount;
 };
 
 struct ent_table *
@@ -29,26 +30,33 @@ ent_table_alloc (
 }
 
 void
-ent_table_free (
-    struct ent_table * table)
+ent_table_incref (
+    struct ent_table *t)
 {
-	if (table)
+	t->refcount += 1;
+}
+
+void
+ent_table_decref (
+    struct ent_table * t)
+{
+	if (t && --t->refcount < 0)
 	{
-		size_t columns_len = table->columns_len;
+		size_t columns_len = t->columns_len;
 
 		if (columns_len)
 		{
 			for (size_t i = 0; i < columns_len; ++i)
 			{
-				free (table->column_names[i]);
-				ent_column_free (table->columns[i]);
+				free (t->column_names[i]);
+				ent_column_free (t->columns[i]);
 			}
 
-			free (table->column_names);
-			free (table->columns);
+			free (t->column_names);
+			free (t->columns);
 		}
 
-		free (table);
+		free (t);
 	}
 }
 
@@ -147,7 +155,7 @@ ent_table_add_column (
 		return NULL; // out of memory
 	}
 
-	if (table->len && ent_column_grow (newcolumns[table->columns_len], table->len) == -1)
+	if (table->len && ent_column_set_len (newcolumns[table->columns_len], table->len) == -1)
 	{
 		free (newnames[table->columns_len]);
 		newnames[table->columns_len] = NULL;
@@ -219,7 +227,7 @@ ent_table_delete (
 	{
 		newcolumns[i] = ent_column_alloc (ent_column_width (table->columns[i]));
 
-		if (!newcolumns[i] || ent_column_grow (newcolumns[i], table->len - ent_rlist_len (rlist)))
+		if (!newcolumns[i] || ent_column_set_len (newcolumns[i], table->len - ent_rlist_len (rlist)))
 		{
 			if (newcolumns[i])
 			{
@@ -240,7 +248,10 @@ ent_table_delete (
 
 	for (size_t i = 0; i < columns_len; ++i)
 	{
-		if (ent_column_select (newcolumns[i], table->columns[i], keep) == -1)
+		void * dst = ent_column_ref (newcolumns[i]);
+		void const * src = ent_column_get (table->columns[i]);
+		size_t width = ent_column_width (newcolumns[i]);
+		if (ent_rlist_select (keep, dst, src, width) == -1)
 		{
 			ent_rlist_free (keep);
 
@@ -278,13 +289,7 @@ int ent_table_grow (struct ent_table * table,
 	table->len += add;
 	for (size_t i = 0; i < table->columns_len; ++i)
 	{
-		size_t column_len = ent_column_len (table->columns[i]);
-		if (column_len > table->len)
-		{
-			continue;
-		}
-		size_t column_add = table->len - column_len;
-		if (ent_column_grow (table->columns[i], column_add) == -1)
+		if (ent_column_set_len (table->columns[i], table->len) == -1)
 		{
 			return -1;
 		}

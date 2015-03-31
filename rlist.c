@@ -98,84 +98,34 @@ ent_rlist_append (struct ent_rlist * rlist,
 	return 0;
 }
 
-/* This code is not being used right now but I put a lot of thought into it
- * and I expect it will come in handy as soon as I want to start combining
- * rlists.
-int ent_rlist_delete (struct ent_rlist * rlist, struct ent_rlist const * src)
+int
+ent_rlist_select (
+    struct ent_rlist const * rlist,
+    void * dst,
+    void const * src,
+    size_t width)
 {
-	struct ent_rlist * collect = ent_rlist_alloc();
-	if (collect == NULL)
+	if (! (rlist && dst && src && width))
 	{
 		return -1;
 	}
 
-	int rc = 0;
-	struct ent_rlist_range * old = rlist->ranges;
-	struct ent_rlist_range * old_end =
-			    rlist->ranges == NULL ? NULL : rlist->ranges + rlist->rlen;
-	struct ent_rlist_range * del = src->ranges;
-	struct ent_rlist_range * del_end =
-			    src->ranges == NULL ? NULL : src->ranges + src->rlen;
+	uint8_t * dst_ptr = dst;
+	uint8_t * dst_next = dst_ptr;
 
-	do
-{
-		while (old != NULL && del != NULL)
-		{
-			while (del->end < old->begin)
-			{
-				if (++del == del_end)
-				{
-					del = NULL;
-					break;
-				}
-			}
-			while (del == NULL || old->end < del->begin)
-			{
-				rc = ent_rlist_append(collect, old->begin, old->end);
-				if (rc == -1)
-				{
-					break;
-				}
-				if (++old == old_end)
-				{
-					old = NULL;
-					break;
-				}
-			}
-			if (old == NULL || del == NULL || rc == -1)
-			{
-				break;
-			}
-			if (old->begin < del->begin)
-			{
-				rc = ent_rlist_append(collect, old->begin, del->begin);
-				if (rc == -1)
-				{
-					break;
-				}
-			}
-			if (del->end < old->end)
-			{
-				rc = ent_rlist_append(collect, del->end, old->end);
-				if (rc == -1)
-				{
-					break;
-				}
-			}
-			if (++old == old_end)
-			{
-				break;
-			}
-		}
-		if (rc == 0)
-		{
-			free(rlist->ranges);
-			*rlist = *collect;
-			free(collect);//Maybe collect can be on the stack instead?
-		}
+	uint8_t const * src_ptr = src;
+
+	size_t ranges_len = 0;
+	struct ent_rlist_range const * ranges =
+	    ent_rlist_ranges (rlist, &ranges_len);
+
+	for (size_t i = 0; i < ranges_len; ++i)
+	{
+		size_t n = (ranges[i].end - ranges[i].begin) * width;
+		uint8_t const * src_range = src_ptr + ranges[i].begin * width;
+		memcpy (dst_next, src_range, n);
+		dst_next += n;
 	}
-	while (0);
 
-	return rc;
+	return 0;
 }
-*/

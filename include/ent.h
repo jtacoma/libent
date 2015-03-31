@@ -29,10 +29,15 @@ ent_rlist_delete (
     struct ent_rlist * rlist,
     struct ent_rlist const * src);
 
+int
+ent_rlist_select (
+    struct ent_rlist const * rlist,
+    void * dst,
+    void const * src,
+    size_t width);
+
 struct ent_model;
 struct ent_session;
-struct ent_table;
-struct ent_column;
 
 struct ent_model *
 ent_model_alloc();
@@ -44,67 +49,55 @@ ent_model_free (
 struct ent_session *
 ent_session_alloc (
     struct ent_model * m);
+
 void
 ent_session_free (
     struct ent_session * s);
 
 int
-ent_session_lock (
-    struct ent_session * s);
-
-struct ent_table *
 ent_session_table (
     struct ent_session * s,
-    char const * table_name);
+    char const * table_name,
+    char const * mode);
 
-struct ent_column *
-ent_session_column_a (
+int
+ent_session_column (
     struct ent_session * s,
-    struct ent_table * table,
+    int table,
     char const * column_name,
-    size_t width);
+    size_t width,
+    char const * mode);
 
-struct ent_column const *
-ent_session_column_r (
-    struct ent_session * s,
-    struct ent_table * table,
-    char const * column_name,
-    size_t width);
-
-struct ent_column *
-ent_session_column_w (
-    struct ent_session * s,
-    struct ent_table * table,
-    char const * column_name,
-    size_t width);
+int
+ent_session_lock (
+    struct ent_session * s);
 
 size_t
 ent_session_table_len (
     struct ent_session * s,
-    struct ent_table * table);
+    int table);
 
 int
-ent_session_table_grow (
+ent_session_table_insert (
     struct ent_session * s,
-    struct ent_table * table,
+    int table,
     size_t add_size);
 
 void const *
-ent_column_get (
-    struct ent_column const * c);
+ent_session_column_read (
+    struct ent_session * s,
+    int table,
+    int column);
 
 size_t
-ent_column_width (
-    struct ent_column const * c);
+ent_session_column_width (
+    struct ent_session * s,
+    int column);
 
 void *
-ent_column_ref (
-    struct ent_column * c);
-
-int
-ent_column_select (
-    struct ent_column * c,
-    struct ent_column const * src,
-    struct ent_rlist const * rlist);
+ent_session_column_write (
+    struct ent_session * s,
+    int table,
+    int column);
 
 #endif//LIBENT_ENT_H

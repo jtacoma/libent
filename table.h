@@ -8,7 +8,11 @@ ent_table_alloc (
     size_t len);
 
 void
-ent_table_free (
+ent_table_incref (
+    struct ent_table * table);
+
+void
+ent_table_decref (
     struct ent_table * table);
 
 size_t

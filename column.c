@@ -76,23 +76,40 @@ size_t ent_column_width (struct ent_column const * c)
 	return c->width;
 }
 
-int ent_column_grow (struct ent_column * c, size_t add)
+int ent_column_set_len (struct ent_column * c, size_t len)
 {
-	if (!c || add == 0)
+	if (!c)
 	{
 		return -1;
 	}
 
-	void * mem = realloc (c->start, c->width * (c->len + add));
-
-	if (!mem)
+	if (len > 0)
 	{
-		return -1; // out of memory
+		void * mem = realloc (c->start, c->width * len);
+
+		if (!mem)
+		{
+			return -1; // out of memory
+		}
+
+		if (len > c->len)
+		{
+			size_t added = len - c->len;
+			memset (
+			    ((uint8_t*)mem) + (c->width * c->len),
+			    0,
+			    c->width * added);
+		}
+
+		c->start = mem;
+	}
+	else if (c->start)
+	{
+		free (c->start);
+		c->start = NULL;
 	}
 
-	memset (((uint8_t*)mem) + (c->width * c->len), 0, c->width * add);
-	c->start = mem;
-	c->len += add;
+	c->len = len;
 	return 0;
 }
 

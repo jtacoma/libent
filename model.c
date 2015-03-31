@@ -27,7 +27,7 @@ void ent_model_free (struct ent_model * m)
 		{
 			for (size_t i = 0; i < m->tables_len; ++i)
 			{
-				ent_table_free (m->tables[i].table);
+				ent_table_decref (m->tables[i].table);
 				free (m->tables[i].name);
 			}
 
@@ -90,7 +90,7 @@ struct ent_table * ent_model_get (struct ent_model * m, char const * table_name)
 	if (!newtables)
 	{
 		free (newname);
-		ent_table_free (t);
+		ent_table_decref (t);
 		return NULL;
 	}
 

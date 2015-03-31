@@ -7,7 +7,7 @@ column_test()
 	struct ent_column * names = ent_column_alloc (sizeof (char*));
 	assert_true (names != NULL);
 
-	assert_true (ent_column_grow (names, 4) == 0);
+	assert_true (ent_column_set_len (names, 4) == 0);
 	assert_true (ent_column_len (names) == 4);
 
 	void const ** dst = ent_column_ref (names);
@@ -22,18 +22,23 @@ column_test()
 	*dst = "Randy";
 
 	struct ent_column * filtered = ent_column_alloc (sizeof (char*));
-	assert_true (ent_column_grow (filtered, 3) == 0);
+	assert_true (ent_column_set_len (filtered, 3) == 0);
 
-	struct ent_rlist * want = ent_rlist_alloc();
-	assert_true (want != NULL);
-	assert_true (ent_column_select (filtered, names, want) == -1);
-	assert_true (ent_rlist_append (want, 0, 6) == 0);
-	assert_true (ent_column_select (filtered, names, want) == -1);
-	ent_rlist_free (want);
-	want = ent_rlist_alloc();
-	assert_true (ent_rlist_append (want, 0, 1) == 0);
-	assert_true (ent_rlist_append (want, 2, 4) == 0);
-	assert_true (ent_column_select (filtered, names, want) == 0);
+	struct ent_rlist * keep = ent_rlist_alloc();
+	assert_true (keep != NULL);
+	assert_true (ent_rlist_select (keep, ent_column_ref (filtered), ent_column_get (names), sizeof (char*)) == 0);
+	assert_true (ent_rlist_select (keep, ent_column_ref (filtered), ent_column_get (names), 0) == -1);
+	assert_true (ent_rlist_select (keep, ent_column_ref (filtered), NULL, sizeof (char*)) == -1);
+	assert_true (ent_rlist_select (keep, NULL, ent_column_get (names), sizeof (char*)) == -1);
+	assert_true (ent_rlist_select (NULL, ent_column_ref (filtered), ent_column_get (names), sizeof (char*)) == -1);
+	ent_rlist_free (keep);
+
+	keep = ent_rlist_alloc();
+	assert_true (keep != NULL);
+	assert_true (ent_rlist_append (keep, 0, 1) == 0);
+	assert_true (ent_rlist_append (keep, 2, 4) == 0);
+	assert_true (ent_rlist_select (keep, ent_column_ref (filtered), ent_column_get (names), sizeof (char*)) == 0);
+	ent_rlist_free (keep);
 
 	size_t actual_len = ent_column_len (filtered);
 	assert_true (actual_len == 3);
@@ -50,7 +55,6 @@ column_test()
 	}
 
 	ent_column_free (filtered);
-	ent_rlist_free (want);
 	ent_column_free (names);
 	ent_column_free (NULL);
 }
