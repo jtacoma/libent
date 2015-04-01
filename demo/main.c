@@ -10,14 +10,14 @@ void build_model (struct ent_model * model)
 	assert (s);
 
 	// Create a table (or get one if it already exists).
-	struct ent_table * entities = ent_session_table (s, "entities");
-	assert (entities);
+	int entities = ent_session_table (s, "entities", "w");
+	assert (entities >= 0);
 
 	// Declare that we want to set the "mass" on items appended to the
 	// "entities" table.
-	struct ent_array * column_mass =
-	    ent_session_column_a (s, entities, "mass", 8);
-	assert (column_mass);
+	int column_mass =
+	    ent_session_column (s, entities, "mass", 8, "w");
+	assert (column_mass >= 0);
 
 	// Acquire the necessary mutexes etc. and transition to the locked
 	// state.
@@ -26,10 +26,11 @@ void build_model (struct ent_model * model)
 	// Append some items to the "entities" table.  Data in all columns
 	// defaults to zero.
 	const size_t appending = 9;
-	assert (ent_session_table_grow (s, entities, appending) == 0);
+	int new_entities = ent_session_table_insert (s, entities, appending);
+	assert (new_entities >= 0);
 
 	// Get a non-const pointer to the appended "mass" data.
-	double * masses = ent_array_ref (column_mass);
+	double * masses = ent_session_column_write (s, new_entities, column_mass);
 	assert (masses);
 
 	// This array of float64 values can be used as normal.
@@ -50,18 +51,18 @@ void print_model (struct ent_model * model)
 	struct ent_session * s = ent_session_alloc (model);
 	assert (s);
 
-	struct ent_table * entities = ent_session_table (s, "entities");
-	assert (entities);
+	int entities = ent_session_table (s, "entities", "r");
+	assert (entities >= 0);
 
 	// This time we use the "_r" variant because we're only interested in
 	// reading existing data.
-	struct ent_array const * column_mass = ent_session_column_r (s, entities, "mass", 8);
-	assert (column_mass != NULL);
+	int column_mass = ent_session_column (s, entities, "mass", 8, "r");
+	assert (column_mass >= 0);
 
 	assert (ent_session_lock (s) == 0);
 
 	size_t len = ent_session_table_len (s, entities);
-	double const * masses = ent_array_get (column_mass);
+	double const * masses = ent_session_column_read (s, entities, column_mass);
 	assert (masses);
 
 	for (size_t i = 0; i < len; ++i)

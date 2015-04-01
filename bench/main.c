@@ -1,6 +1,6 @@
 #include "ent.h"
 #include "table.h"
-#include "column.h"
+#include "array.h"
 #include "bench/bench.h"
 
 #include <assert.h>
@@ -105,13 +105,13 @@ void update_arrays_bench (bench_count n)
 void update_table_bench (bench_count n)
 {
 	struct ent_table * table = ent_table_alloc ((size_t)n);
-	double * a = ent_array_ref (ent_table_add_column (table, "a", 8));
-	double * b = ent_array_ref (ent_table_add_column (table, "b", 8));
-	double * c = ent_array_ref (ent_table_add_column (table, "c", 8));
+	double * a = ent_array_ref (ent_table_column (table, "a", 8));
+	double * b = ent_array_ref (ent_table_column (table, "b", 8));
+	double * c = ent_array_ref (ent_table_column (table, "c", 8));
 
 	update (a, b, c, n);
 
-	ent_table_free (table);
+	ent_table_decref (table);
 }
 
 struct bench_info
