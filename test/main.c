@@ -18,8 +18,8 @@ main()
 	// depended-upon modules will be discovered first.
 	rlist_test();
 	printf ("rlist: passed\n");
-	column_test();
-	printf ("column: passed\n");
+	array_test();
+	printf ("array: passed\n");
 	table_test();
 	printf ("table: passed\n");
 	model_test();

@@ -19,13 +19,13 @@ size_t
 ent_table_len (
     struct ent_table const * table);
 
-struct ent_column *
+struct ent_array *
 ent_table_add_column (
     struct ent_table * table,
     char const * name,
     size_t width);
 
-struct ent_column *
+struct ent_array *
 ent_table_column (
     struct ent_table * table,
     char const * name,

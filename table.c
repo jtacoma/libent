@@ -1,7 +1,7 @@
 #include "ent.h"
 #include "table.h"
 #include "rlist.h"
-#include "column.h"
+#include "array.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -10,7 +10,7 @@ struct ent_table
 {
 	size_t len;
 	char ** column_names;
-	struct ent_column ** columns;
+	struct ent_array ** columns;
 	size_t columns_len;
 	int refcount;
 };
@@ -49,7 +49,7 @@ ent_table_decref (
 			for (size_t i = 0; i < columns_len; ++i)
 			{
 				free (t->column_names[i]);
-				ent_column_free (t->columns[i]);
+				ent_array_free (t->columns[i]);
 			}
 
 			free (t->column_names);
@@ -93,7 +93,7 @@ ent_table_has_column_name (
 	return false;
 }
 
-struct ent_column *
+struct ent_array *
 ent_table_add_column (
     struct ent_table * table,
     char const * name,
@@ -109,7 +109,7 @@ ent_table_add_column (
 		return NULL;
 	}
 
-	struct ent_column ** newcolumns =
+	struct ent_array ** newcolumns =
 	    realloc (table->columns,
 	             sizeof (*table->columns) * (table->columns_len + 1));
 
@@ -145,7 +145,7 @@ ent_table_add_column (
 	}
 
 	strncpy (newnames[table->columns_len], name, name_size);
-	newcolumns[table->columns_len] = ent_column_alloc (width);
+	newcolumns[table->columns_len] = ent_array_alloc (width);
 
 	if (!newcolumns[table->columns_len])
 	{
@@ -155,7 +155,7 @@ ent_table_add_column (
 		return NULL; // out of memory
 	}
 
-	if (table->len && ent_column_set_len (newcolumns[table->columns_len], table->len) == -1)
+	if (table->len && ent_array_set_len (newcolumns[table->columns_len], table->len) == -1)
 	{
 		free (newnames[table->columns_len]);
 		newnames[table->columns_len] = NULL;
@@ -165,7 +165,7 @@ ent_table_add_column (
 	return table->columns[table->columns_len++];
 }
 
-struct ent_column *
+struct ent_array *
 ent_table_column (
     struct ent_table * table,
     char const * name,
@@ -180,7 +180,7 @@ ent_table_column (
 	{
 		if (strcmp (table->column_names[i], name) == 0)
 		{
-			if (width != ent_column_width (table->columns[i]))
+			if (width != ent_array_width (table->columns[i]))
 			{
 				return NULL;
 			}
@@ -208,7 +208,7 @@ ent_table_delete (
 	    ent_rlist_ranges (rlist, &del_ranges_len);
 
 	size_t columns_len = table->columns_len;
-	struct ent_column ** newcolumns =
+	struct ent_array ** newcolumns =
 	    calloc (columns_len, sizeof (*newcolumns));
 
 	for (size_t i = 0; i < del_ranges_len; ++i)
@@ -225,9 +225,9 @@ ent_table_delete (
 
 	for (size_t i = 0; i < columns_len; ++i)
 	{
-		newcolumns[i] = ent_column_alloc (ent_column_width (table->columns[i]));
+		newcolumns[i] = ent_array_alloc (ent_array_width (table->columns[i]));
 
-		if (!newcolumns[i] || ent_column_set_len (newcolumns[i], table->len - ent_rlist_len (rlist)))
+		if (!newcolumns[i] || ent_array_set_len (newcolumns[i], table->len - ent_rlist_len (rlist)))
 		{
 			if (newcolumns[i])
 			{
@@ -238,7 +238,7 @@ ent_table_delete (
 
 			for (size_t k = 0; k < i; ++k)
 			{
-				ent_column_free (newcolumns[i]);
+				ent_array_free (newcolumns[i]);
 			}
 
 			free (newcolumns);
@@ -248,16 +248,16 @@ ent_table_delete (
 
 	for (size_t i = 0; i < columns_len; ++i)
 	{
-		void * dst = ent_column_ref (newcolumns[i]);
-		void const * src = ent_column_get (table->columns[i]);
-		size_t width = ent_column_width (newcolumns[i]);
+		void * dst = ent_array_ref (newcolumns[i]);
+		void const * src = ent_array_get (table->columns[i]);
+		size_t width = ent_array_width (newcolumns[i]);
 		if (ent_rlist_select (keep, dst, src, width) == -1)
 		{
 			ent_rlist_free (keep);
 
 			for (size_t k = 0; k < columns_len; ++k)
 			{
-				ent_column_free (newcolumns[i]);
+				ent_array_free (newcolumns[i]);
 			}
 
 			free (newcolumns);
@@ -267,7 +267,7 @@ ent_table_delete (
 
 	for (size_t i = 0; i < columns_len; ++i)
 	{
-		ent_column_free (table->columns[i]);
+		ent_array_free (table->columns[i]);
 	}
 
 	free (table->columns);
@@ -289,7 +289,7 @@ int ent_table_grow (struct ent_table * table,
 	table->len += add;
 	for (size_t i = 0; i < table->columns_len; ++i)
 	{
-		if (ent_column_set_len (table->columns[i], table->len) == -1)
+		if (ent_array_set_len (table->columns[i], table->len) == -1)
 		{
 			return -1;
 		}

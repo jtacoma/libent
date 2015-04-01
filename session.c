@@ -1,7 +1,7 @@
 #include "ent.h"
 #include "model.h"
 #include "table.h"
-#include "column.h"
+#include "array.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -69,6 +69,7 @@ ent_session_free (
 	{
 		// TODO: separate "commit" from "deallocate"
 		// TODO: concatenate "insert" tables to their destinations
+		/*
 		for (size_t i = 0; i < s->inserts_len; ++i)
 		{
 			size_t start = ent_table_len (s->inserts[i].dst);
@@ -76,6 +77,7 @@ ent_session_free (
 			    s->inserts[i].dst,
 			    ent_table_len (s->inserts[i].src));
 		}
+		*/
 
 		for (size_t i = 0; i < s->tables_len; ++i)
 		{
@@ -145,18 +147,18 @@ ent_session_column (
 	}
 
 	struct ent_table * t = s->tables[index];
-	struct ent_column * c = ent_table_column (t, column_name, width);
+	struct ent_array * a = ent_table_column (t, column_name, width);
 
-	if (!c)
+	if (!a)
 	{
-		c = ent_table_add_column (t, column_name, width);
+		a = ent_table_add_column (t, column_name, width);
 	}
 	else
 	{
 		// TODO: make sure it's up to date e.g. w.r.t. len
 	}
 
-	if (!c)
+	if (!a)
 	{
 		return -1;
 	}
@@ -295,16 +297,16 @@ ent_session_column_write (
 
 	struct ent_table * t = s->tables[t_index];
 
-	struct ent_column * c =
+	struct ent_array * a =
 	    ent_table_add_column (
 	        t,
 	        info->name,
 	        info->width);
 
-	if (!c)
+	if (!a)
 	{
 		return NULL;
 	}
 
-	return ent_column_ref (c);
+	return ent_array_ref (a);
 }

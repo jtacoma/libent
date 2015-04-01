@@ -1,6 +1,6 @@
 #include "test/ent_test.h"
 #include "table.h"
-#include "column.h"
+#include "array.h"
 
 void
 table_test()
@@ -12,12 +12,12 @@ table_test()
 	assert_true (ent_table_len (NULL) == 0);
 
 	// Add two columns
-	struct ent_column * names = ent_table_add_column (table, "name",  sizeof (char*));
+	struct ent_array * names = ent_table_add_column (table, "name",  sizeof (char*));
 	assert_true (names != NULL);
-	assert_true (ent_column_len (names) == 4);
-	struct ent_column * score = ent_table_add_column (table, "hits", sizeof (uint8_t));
+	assert_true (ent_array_len (names) == 4);
+	struct ent_array * score = ent_table_add_column (table, "hits", sizeof (uint8_t));
 	assert_true (table != NULL);
-	assert_true (ent_column_len (score) == 4);
+	assert_true (ent_array_len (score) == 4);
 
 	// NULL/zero arguments will not work
 	assert_true (ent_table_add_column (table, "name", 0) == NULL);
@@ -28,9 +28,9 @@ table_test()
 	assert_true (ent_table_add_column (table, "name", sizeof (char*)) == NULL);
 
 	// Get pointers to the initially zero-filled column data
-	void const ** names_dst = ent_column_ref (names);
+	void const ** names_dst = ent_array_ref (names);
 	assert_true (names_dst != NULL);
-	uint8_t * scores_dst = ent_column_ref (score);
+	uint8_t * scores_dst = ent_array_ref (score);
 	assert_true (scores_dst != NULL);
 
 	// Replace the zero values with some sample data
@@ -57,16 +57,16 @@ table_test()
 	assert_true (ent_table_len (table) == 2);
 	names = ent_table_column (table, "name", sizeof (char*));
 	assert_true (names != NULL);
-	assert_true (ent_column_len (names) == 2);
+	assert_true (ent_array_len (names) == 2);
 	score = ent_table_column (table, "hits", sizeof (uint8_t));
 	assert_true (table != NULL);
-	assert_true (ent_column_len (score) == 2);
+	assert_true (ent_array_len (score) == 2);
 
 	names = ent_table_column (table, "name", sizeof (char*));
-	names_dst = ent_column_ref (names);
+	names_dst = ent_array_ref (names);
 	assert_true (names_dst != NULL);
 	score = ent_table_column (table, "hits", sizeof (uint8_t));
-	scores_dst = ent_column_ref (score);
+	scores_dst = ent_array_ref (score);
 	assert_true (scores_dst != NULL);
 
 	ent_table_decref (table);

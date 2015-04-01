@@ -15,7 +15,7 @@ void build_model (struct ent_model * model)
 
 	// Declare that we want to set the "mass" on items appended to the
 	// "entities" table.
-	struct ent_column * column_mass =
+	struct ent_array * column_mass =
 	    ent_session_column_a (s, entities, "mass", 8);
 	assert (column_mass);
 
@@ -29,7 +29,7 @@ void build_model (struct ent_model * model)
 	assert (ent_session_table_grow (s, entities, appending) == 0);
 
 	// Get a non-const pointer to the appended "mass" data.
-	double * masses = ent_column_ref (column_mass);
+	double * masses = ent_array_ref (column_mass);
 	assert (masses);
 
 	// This array of float64 values can be used as normal.
@@ -55,13 +55,13 @@ void print_model (struct ent_model * model)
 
 	// This time we use the "_r" variant because we're only interested in
 	// reading existing data.
-	struct ent_column const * column_mass = ent_session_column_r (s, entities, "mass", 8);
+	struct ent_array const * column_mass = ent_session_column_r (s, entities, "mass", 8);
 	assert (column_mass != NULL);
 
 	assert (ent_session_lock (s) == 0);
 
 	size_t len = ent_session_table_len (s, entities);
-	double const * masses = ent_column_get (column_mass);
+	double const * masses = ent_array_get (column_mass);
 	assert (masses);
 
 	for (size_t i = 0; i < len; ++i)
