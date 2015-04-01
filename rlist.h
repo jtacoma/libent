@@ -8,7 +8,8 @@ struct ent_rlist_range
 };
 
 struct ent_rlist_range const *
-ent_rlist_ranges (struct ent_rlist const * rlist,
-                  size_t *len);
+ent_rlist_ranges (
+    struct ent_rlist const * rlist,
+    size_t *len);
 
 #endif//ENTLIB_RLIST_H
