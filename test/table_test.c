@@ -12,20 +12,23 @@ table_test()
 	assert_true (ent_table_len (NULL) == 0);
 
 	// Add two columns
-	struct ent_array * names = ent_table_add_column (table, "name",  sizeof (char*));
+	struct ent_array * names = ent_table_column (table, "name",  sizeof (char*));
 	assert_true (names != NULL);
 	assert_true (ent_array_len (names) == 4);
-	struct ent_array * score = ent_table_add_column (table, "hits", sizeof (uint8_t));
+	struct ent_array * score = ent_table_column (table, "hits", sizeof (uint8_t));
 	assert_true (table != NULL);
 	assert_true (ent_array_len (score) == 4);
 
 	// NULL/zero arguments will not work
-	assert_true (ent_table_add_column (table, "name", 0) == NULL);
-	assert_true (ent_table_add_column (table, NULL, sizeof (char*)) == NULL);
-	assert_true (ent_table_add_column (NULL, "name", sizeof (char*)) == NULL);
+	assert_true (ent_table_column (table, "name", 0) == NULL);
+	assert_true (ent_table_column (table, NULL, sizeof (char*)) == NULL);
+	assert_true (ent_table_column (NULL, "name", sizeof (char*)) == NULL);
 
-	// Add a duplicate column
-	assert_true (ent_table_add_column (table, "name", sizeof (char*)) == NULL);
+	// A duplicate column of different size
+	assert_true (ent_table_column (table, "name", sizeof (char*) * 2) == NULL);
+
+	// A duplicate column of same size
+	assert_true (ent_table_column (table, "name", sizeof (char*)) != NULL);
 
 	// Get pointers to the initially zero-filled column data
 	void const ** names_dst = ent_array_ref (names);

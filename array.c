@@ -24,12 +24,10 @@ ent_array_alloc (
 
 	struct ent_array * array = malloc (sizeof (*array));
 
-	if (!array)
+	if (array)
 	{
-		return NULL; // out of memory
+		*array = (struct ent_array) {.width = width };
 	}
-
-	*array = (struct ent_array) {.width = width };
 
 	return array;
 }
@@ -96,7 +94,7 @@ int ent_array_set_len (struct ent_array * a, size_t len)
 	{
 		size_t cap = a->cap
 		             ? a->cap / 2 * 3 + 1
-		             : 4;
+		             : 64 / a->width;
 
 		if (len > cap)
 		{
@@ -117,11 +115,13 @@ int ent_array_set_len (struct ent_array * a, size_t len)
 		    a->width * added);
 
 		a->start = mem;
+		a->cap = cap;
 	}
 	else if (!len && a->start)
 	{
 		free (a->start);
 		a->start = NULL;
+		a->cap = 0;
 	}
 
 	a->len = len;

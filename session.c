@@ -151,15 +151,6 @@ ent_session_column (
 
 	if (!a)
 	{
-		a = ent_table_add_column (t, column_name, width);
-	}
-	else
-	{
-		// TODO: make sure it's up to date e.g. w.r.t. len
-	}
-
-	if (!a)
-	{
 		return -1;
 	}
 
@@ -297,11 +288,7 @@ ent_session_column_write (
 
 	struct ent_table * t = s->tables[t_index];
 
-	struct ent_array * a =
-	    ent_table_add_column (
-	        t,
-	        info->name,
-	        info->width);
+	struct ent_array * a = ent_table_column (t, info->name, info->width);
 
 	if (!a)
 	{

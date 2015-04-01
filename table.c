@@ -6,12 +6,16 @@
 #include <stdlib.h>
 #include <string.h>
 
+struct column_info
+{
+	char * name;
+	struct ent_array * array;
+};
+
 struct ent_table
 {
 	size_t len;
-	char ** column_names;
-	struct ent_array ** columns;
-	size_t columns_len;
+	struct ent_array * columns;
 	int refcount;
 };
 
@@ -19,14 +23,23 @@ struct ent_table *
 ent_table_alloc (
     size_t len)
 {
-	struct ent_table * table = calloc (1, sizeof (*table));
+	struct ent_table * t = malloc (sizeof (*t));
 
-	if (table)
+	if (t)
 	{
-		table->len = len;
+		*t = (struct ent_table) {0};
+		t->len = len;
+		t->columns =  ent_array_alloc (sizeof (struct column_info));
+
+		if (!t->columns)
+		{
+			free (t);
+		}
+
+		t->refcount += 1;
 	}
 
-	return table;
+	return t;
 }
 
 void
@@ -42,18 +55,18 @@ ent_table_decref (
 {
 	if (t && --t->refcount < 0)
 	{
-		size_t columns_len = t->columns_len;
+		size_t columns_len = ent_array_len (t->columns);
+		struct column_info * columns = ent_array_ref (t->columns);
 
 		if (columns_len)
 		{
 			for (size_t i = 0; i < columns_len; ++i)
 			{
-				free (t->column_names[i]);
-				ent_array_free (t->columns[i]);
+				free (columns[i].name);
+				ent_array_free (columns[i].array);
 			}
 
-			free (t->column_names);
-			free (t->columns);
+			ent_array_free (t->columns);
 		}
 
 		free (t);
@@ -74,17 +87,19 @@ ent_table_len (
 
 bool
 ent_table_has_column_name (
-    struct ent_table * table,
+    struct ent_table * t,
     char const * name)
 {
-	if (! (table && name))
+	if (! (t && name))
 	{
 		return false;
 	}
 
-	for (size_t i = 0; i < table->columns_len; ++i)
+	size_t columns_len = ent_array_len (t->columns);
+	struct column_info * columns = ent_array_ref (t->columns);
+	for (size_t i = 0; i < columns_len; ++i)
 	{
-		if (strcmp (table->column_names[i], name) == 0)
+		if (strcmp (columns[i].name, name) == 0)
 		{
 			return true;
 		}
@@ -94,110 +109,81 @@ ent_table_has_column_name (
 }
 
 struct ent_array *
-ent_table_add_column (
-    struct ent_table * table,
-    char const * name,
-    size_t width)
-{
-	if (! (table && name && width))
-	{
-		return NULL;
-	}
-
-	if (ent_table_has_column_name (table, name))
-	{
-		return NULL;
-	}
-
-	struct ent_array ** newcolumns =
-	    realloc (table->columns,
-	             sizeof (*table->columns) * (table->columns_len + 1));
-
-	if (!newcolumns)
-	{
-		return NULL; // out of memory
-	}
-
-	table->columns = newcolumns;
-	newcolumns[table->columns_len] = NULL;
-
-	char ** newnames =
-	    realloc (table->column_names,
-	             (sizeof (*newnames)) * (table->columns_len + 1));
-
-	if (!newnames)
-	{
-		// table->columns: is bigger and zero-padded, no problem
-		return NULL; // out of memory
-	}
-
-	table->column_names = newnames;
-	newnames[table->columns_len] = NULL;
-
-	size_t name_size = strlen (name) + 1;
-	newnames[table->columns_len] = malloc (name_size);
-
-	if (!newnames[table->columns_len])
-	{
-		// table->columns: is bigger and zero-padded, no problem
-		// table->column_names: is bigger and zero-padded, no problem
-		return NULL; // out of memory
-	}
-
-	strncpy (newnames[table->columns_len], name, name_size);
-	newcolumns[table->columns_len] = ent_array_alloc (width);
-
-	if (!newcolumns[table->columns_len])
-	{
-		// table->columns: is bigger and zero-padded, no problem
-		// table->column_names: is bigger and zero-padded, no problem
-		newnames[table->columns_len] = NULL;
-		return NULL; // out of memory
-	}
-
-	if (table->len && ent_array_set_len (newcolumns[table->columns_len], table->len) == -1)
-	{
-		free (newnames[table->columns_len]);
-		newnames[table->columns_len] = NULL;
-		return NULL; // out of memory
-	}
-
-	return table->columns[table->columns_len++];
-}
-
-struct ent_array *
 ent_table_column (
-    struct ent_table * table,
+    struct ent_table * t,
     char const * name,
     size_t width)
 {
-	if (! (table && name && width))
+	if (! (t && name && width))
 	{
 		return NULL;
 	}
 
-	for (size_t i = 0; i < table->columns_len; ++i)
+	size_t columns_len = ent_array_len (t->columns);
+	struct column_info * columns = ent_array_ref (t->columns);
+
+	for (size_t i = 0; i < columns_len; ++i)
 	{
-		if (strcmp (table->column_names[i], name) == 0)
+		if (strcmp (columns[i].name, name) == 0)
 		{
-			if (width != ent_array_width (table->columns[i]))
+			if (ent_array_width (columns[i].array) == width)
+			{
+				return columns[i].array;
+			}
+			else
 			{
 				return NULL;
 			}
-
-			return table->columns[i];
 		}
 	}
 
-	return NULL;
+	if (ent_array_set_len (t->columns, columns_len + 1) == -1)
+	{
+		return NULL;
+	}
+
+	columns = ent_array_ref (t->columns);
+
+	size_t name_size = strlen (name) + 1;
+	columns[columns_len].name = malloc (name_size);
+
+	if (!columns[columns_len].name)
+	{
+		ent_array_set_len (t->columns, columns_len);
+		// t->columns: is bigger and zero-padded, no problem
+		// t->column_names: is bigger and zero-padded, no problem
+		return NULL; // out of memory
+	}
+
+	memcpy (columns[columns_len].name, name, name_size);
+
+	columns[columns_len].array = ent_array_alloc (width);
+
+	if (!columns[columns_len].array)
+	{
+		// t->columns: is bigger and zero-padded, no problem
+		// t->column_names: is bigger and zero-padded, no problem
+		free (columns[columns_len].name);
+		ent_array_set_len (t->columns, columns_len);
+		return NULL; // out of memory
+	}
+
+	if (t->len && ent_array_set_len (columns[columns_len].array, t->len) == -1)
+	{
+		ent_array_free (columns[columns_len].array);
+		free (columns[columns_len].name);
+		return NULL; // out of memory
+	}
+
+	return columns[columns_len].array;
 }
 
 int
 ent_table_delete (
-    struct ent_table * table,
+    struct ent_table * t,
     struct ent_rlist const * rlist)
 {
-	if (! (table && rlist))
+	if (! (t && rlist))
 	{
 		return -1;
 	}
@@ -206,10 +192,6 @@ ent_table_delete (
 	size_t del_ranges_len = 0;
 	struct ent_rlist_range const * del_ranges =
 	    ent_rlist_ranges (rlist, &del_ranges_len);
-
-	size_t columns_len = table->columns_len;
-	struct ent_array ** newcolumns =
-	    calloc (columns_len, sizeof (*newcolumns));
 
 	for (size_t i = 0; i < del_ranges_len; ++i)
 	{
@@ -223,73 +205,90 @@ ent_table_delete (
 		ent_rlist_append (keep, begin, end);
 	}
 
+	size_t columns_len = ent_array_len (t->columns);
+
+	struct column_info * src_columns = ent_array_ref (t->columns);
+
+	struct ent_array * new_columns =
+	    ent_array_alloc (sizeof (struct column_info));
+
+	ent_array_set_len (new_columns, columns_len);
+
+	struct column_info * dst_columns = ent_array_ref (new_columns);
+
+	size_t new_len = t->len - ent_rlist_len (rlist);
+
 	for (size_t i = 0; i < columns_len; ++i)
 	{
-		newcolumns[i] = ent_array_alloc (ent_array_width (table->columns[i]));
+		dst_columns[i].array =
+		    ent_array_alloc (ent_array_width (src_columns[i].array));
 
-		if (!newcolumns[i] || ent_array_set_len (newcolumns[i], table->len - ent_rlist_len (rlist)))
+		ent_array_set_len (dst_columns[i].array, new_len);
+
+		if (!dst_columns[i].array)
 		{
-			if (newcolumns[i])
-			{
-				++i;
-			}
-
-			ent_rlist_free (keep);
-
 			for (size_t k = 0; k < i; ++k)
 			{
-				ent_array_free (newcolumns[i]);
+				ent_array_free (dst_columns[i].array);
 			}
 
-			free (newcolumns);
+			ent_array_free (new_columns);
+			ent_rlist_free (keep);
 			return -1;
 		}
 	}
 
 	for (size_t i = 0; i < columns_len; ++i)
 	{
-		void * dst = ent_array_ref (newcolumns[i]);
-		void const * src = ent_array_get (table->columns[i]);
-		size_t width = ent_array_width (newcolumns[i]);
+		void * dst = ent_array_ref (dst_columns[i].array);
+		void const * src = ent_array_get (src_columns[i].array);
+		size_t width = ent_array_width (dst_columns[i].array);
+
 		if (ent_rlist_select (keep, dst, src, width) == -1)
 		{
-			ent_rlist_free (keep);
-
-			for (size_t k = 0; k < columns_len; ++k)
+			for (size_t k = 0; k < i; ++k)
 			{
-				ent_array_free (newcolumns[i]);
+				ent_array_free (dst_columns[i].array);
 			}
 
-			free (newcolumns);
+			ent_array_free (new_columns);
+			ent_rlist_free (keep);
 			return -1;
 		}
 	}
 
+	ent_rlist_free (keep);
+
 	for (size_t i = 0; i < columns_len; ++i)
 	{
-		ent_array_free (table->columns[i]);
+		dst_columns[i].name = src_columns[i].name;
+		src_columns[i].name = NULL;
+		ent_array_free (src_columns[i].array);
 	}
 
-	free (table->columns);
-	table->columns = newcolumns;
-	table->len = ent_rlist_len (rlist);
-
-	ent_rlist_free (keep);
+	ent_array_free (t->columns);
+	t->columns = new_columns;
+	t->len = new_len;
 	return 0;
 }
 
-int ent_table_grow (struct ent_table * table,
-                    size_t add)
+int
+ent_table_grow (
+    struct ent_table * t,
+    size_t add)
 {
-	if (! (table && add > 0))
+	if (! (t && add > 0))
 	{
 		return -1;
 	}
 
-	table->len += add;
-	for (size_t i = 0; i < table->columns_len; ++i)
+	t->len += add;
+
+	size_t columns_len = ent_array_len (t->columns);
+	struct column_info * columns = ent_array_ref (t->columns);
+	for (size_t i = 0; i < columns_len; ++i)
 	{
-		if (ent_array_set_len (table->columns[i], table->len) == -1)
+		if (ent_array_set_len (columns[i].array, t->len) == -1)
 		{
 			return -1;
 		}
