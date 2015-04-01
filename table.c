@@ -74,6 +74,29 @@ ent_table_decref (
 }
 
 size_t
+ent_table_columns_len (
+    struct ent_table const * t)
+{
+	return ent_array_len (t->columns);
+}
+
+char const *
+ent_table_column_info (
+    struct ent_table const * t,
+    size_t column_index,
+    size_t * width)
+{
+	if (column_index >= ent_array_len (t->columns))
+	{
+		*width = 0;
+		return NULL;
+	}
+	struct column_info * columns = ent_array_ref (t->columns);
+	*width = ent_array_width (columns[column_index].array);
+	return columns[column_index].name;
+}
+
+size_t
 ent_table_len (
     struct ent_table const * table)
 {

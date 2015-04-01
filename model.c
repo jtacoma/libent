@@ -66,6 +66,7 @@ struct ent_table * ent_model_get (struct ent_model * m, char const * table_name)
 	{
 		if (strcmp (m->tables[i].name, table_name) == 0)
 		{
+			ent_table_incref (m->tables[i].table);
 			return m->tables[i].table;
 		}
 	}
@@ -98,5 +99,6 @@ struct ent_table * ent_model_get (struct ent_model * m, char const * table_name)
 	m->tables_len += 1;
 	m->tables[m->tables_len - 1].table = t;
 	m->tables[m->tables_len - 1].name = newname;
+	ent_table_incref (m->tables[m->tables_len - 1].table);
 	return m->tables[m->tables_len - 1].table;
 }

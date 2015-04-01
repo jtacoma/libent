@@ -68,16 +68,34 @@ ent_session_free (
 	if (s)
 	{
 		// TODO: separate "commit" from "deallocate"
-		// TODO: concatenate "insert" tables to their destinations
-		/*
+
 		for (size_t i = 0; i < s->inserts_len; ++i)
 		{
 			size_t start = ent_table_len (s->inserts[i].dst);
 			ent_table_grow (
 			    s->inserts[i].dst,
 			    ent_table_len (s->inserts[i].src));
+			size_t columns_len = ent_table_columns_len (s->inserts[i].src);
+			for (size_t k = 0; k < columns_len; ++k)
+			{
+				size_t width;
+				char const * name =
+				    ent_table_column_info (s->inserts[i].src, k, &width);
+				struct ent_array * src_array =
+				    ent_table_column (s->inserts[i].src, name, width);
+				struct ent_array * dst_array =
+				    ent_table_column (s->inserts[i].dst, name, width);
+				if (dst_array == NULL)
+				{
+					// um....
+				}
+				uint8_t * dst = ent_array_ref (dst_array);
+				dst += width * start;
+				uint8_t const * src = ent_array_get (src_array);
+				memcpy (dst, src, width * ent_table_len (s->inserts[i].dst));
+			}
 		}
-		*/
+
 
 		for (size_t i = 0; i < s->tables_len; ++i)
 		{
@@ -296,4 +314,43 @@ ent_session_column_write (
 	}
 
 	return ent_array_ref (a);
+}
+
+void const *
+ent_session_column_read (
+    struct ent_session * s,
+    int table,
+    int column)
+{
+	if (!s || !s->locked)
+	{
+		return NULL;
+	}
+
+	size_t c_index = (size_t)column - column_zero;
+
+	if (s->columns_len <= c_index)
+	{
+		return NULL;
+	}
+
+	struct column_info const * info = &s->columns[c_index];
+
+	size_t t_index = (size_t)table - table_zero;
+
+	if (s->tables_len <= t_index)
+	{
+		return NULL;
+	}
+
+	struct ent_table * t = s->tables[t_index];
+
+	struct ent_array * a = ent_table_column (t, info->name, info->width);
+
+	if (!a)
+	{
+		return NULL;
+	}
+
+	return ent_array_get (a);
 }

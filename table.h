@@ -16,6 +16,16 @@ ent_table_decref (
     struct ent_table * table);
 
 size_t
+ent_table_columns_len (
+    struct ent_table const * table);
+
+char const *
+ent_table_column_info (
+    struct ent_table const * table,
+    size_t column_index,
+    size_t * width);
+
+size_t
 ent_table_len (
     struct ent_table const * table);
 
