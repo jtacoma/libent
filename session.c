@@ -252,17 +252,22 @@ ent_session_table_insert (
 		return -1;
 	}
 
-	struct ent_table ** tables = realloc (s->tables, s->tables_len + 1);
+	struct ent_table ** tables = realloc (
+	                                 s->tables,
+	                                 (s->tables_len + 1) * sizeof (*tables));
 	if (tables == NULL)
 	{
 		ent_table_decref (t);
 		return -1;
 	}
+	s->tables = tables;
 	s->tables[s->tables_len] = t;
 
 	// TODO: setup appropriate schema based on pre-specified columns
 
-	struct insert * inserts = realloc (s->inserts, s->inserts_len + 1);
+	struct insert * inserts = realloc (
+	                              s->inserts,
+	                              (s->inserts_len + 1) * sizeof (*inserts));
 	if (inserts == NULL)
 	{
 		ent_table_decref (t);

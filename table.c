@@ -53,13 +53,13 @@ void
 ent_table_decref (
     struct ent_table * t)
 {
-	if (t && --t->refcount < 0)
+	if (t && --t->refcount <= 0)
 	{
-		size_t columns_len = ent_array_len (t->columns);
-		struct column_info * columns = ent_array_ref (t->columns);
-
-		if (columns_len)
+		if (t->columns)
 		{
+			size_t columns_len = ent_array_len (t->columns);
+			struct column_info * columns = ent_array_ref (t->columns);
+
 			for (size_t i = 0; i < columns_len; ++i)
 			{
 				free (columns[i].name);

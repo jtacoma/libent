@@ -12,6 +12,8 @@ void model_test()
 
 	struct ent_table * items = ent_model_get (m, "items");
 	assert_true (items != NULL);
+	ent_table_decref (items);
+
 	assert_true (ent_model_has (m, "items"));
 	assert_true (ent_model_has (m, NULL) == false);
 	assert_true (ent_model_has (NULL, "items") == false);
