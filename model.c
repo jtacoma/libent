@@ -2,6 +2,7 @@
 #include "table.h"
 #include "array.h"
 #include "processor.h"
+#include "session.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -143,6 +144,44 @@ ent_model_set_processor (
 	{
 		return -1;
 	}
+
+	return 0;
+}
+
+int
+ent_model_invoke (
+    struct ent_model * model,
+    char const * processor_name)
+{
+	size_t processors_len = ent_array_len (model->processors);
+	struct ent_processor ** processors = ent_array_ref (model->processors);
+	struct ent_processor * processor = NULL;
+
+	for (size_t i = 0; i < processors_len; ++i)
+	{
+		char const * this_name = ent_processor_name (processors[i]);
+
+		if (strcmp (this_name, processor_name) == 0)
+		{
+			processor = processors[i];
+		}
+	}
+
+	if (!processor)
+	{
+		return -1;
+	}
+
+	struct ent_session * session = ent_session_alloc (processor);
+
+	if (!session)
+	{
+		return -1;
+	}
+
+	// TODO: call processor function
+
+	ent_session_free (session);
 
 	return 0;
 }

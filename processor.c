@@ -35,6 +35,8 @@ ent_processor_alloc (
 	if (p)
 	{
 		*p = (struct ent_processor) {.model = m};
+		p->tables = ent_array_alloc (sizeof (struct ent_table *));
+		p->columns = ent_array_alloc (sizeof (struct column_info));
 	}
 
 	return p;

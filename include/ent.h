@@ -54,6 +54,11 @@ ent_model_set_processor (
     char const * name,
     struct ent_processor const * info);
 
+int
+ent_model_invoke (
+    struct ent_model * model,
+    char const * processor_name);
+
 struct ent_processor *
 ent_processor_alloc (
     struct ent_model * m);
