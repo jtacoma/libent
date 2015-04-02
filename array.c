@@ -32,6 +32,28 @@ ent_array_alloc (
 	return array;
 }
 
+struct ent_array *
+ent_array_cpy_alloc (
+    struct ent_array const * src)
+{
+	if (!src)
+	{
+		return NULL;
+	}
+
+	struct ent_array * dst = ent_array_alloc (src->width);
+
+	if (ent_array_set_len (dst, src->len) == -1)
+	{
+		free (dst);
+		return NULL;
+	}
+
+	memcpy (dst->start, src->start, src->width * src->len);
+
+	return dst;
+}
+
 void
 ent_array_free (
     struct ent_array * a)

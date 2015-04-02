@@ -7,6 +7,10 @@ struct ent_array *
 ent_array_alloc (
     size_t width);
 
+struct ent_array *
+ent_array_cpy_alloc (
+    struct ent_array const * src);
+
 void
 ent_array_free (
     struct ent_array * a);

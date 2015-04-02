@@ -1,14 +1,14 @@
 #include "ent.h"
 #include "model.h"
 #include "table.h"
+#include "processor.h"
 #include "array.h"
 
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
 
-#define table_zero (256)
-#define column_zero (INT_MAX/4)
+#define inserts_zero ((INT_MAX/4) * 3)
 
 struct insert
 {
@@ -16,37 +16,18 @@ struct insert
 	struct ent_table * src;
 };
 
-enum mode
-{
-	MODE_CREATE = 1 << 0,
-	MODE_READ = 1 << 1,
-	MODE_UPDATE = 1 << 2,
-	MODE_DELETE = 1 << 3,
-};
-
-struct column_info
-{
-	char * name;
-	size_t width;
-};
-
 struct ent_session
 {
-	struct ent_model * model;
+	struct ent_processor const * processor;
 	bool locked;
-	size_t tables_len;
-	struct ent_table ** tables;
-	size_t columns_len;
-	struct column_info * columns;
-	size_t inserts_len;
-	struct insert * inserts;
+	struct ent_array * inserts;
 };
 
 struct ent_session *
 ent_session_alloc (
-    struct ent_model * m)
+    struct ent_processor * p)
 {
-	if (!m)
+	if (!p)
 	{
 		return NULL;
 	}
@@ -55,7 +36,13 @@ ent_session_alloc (
 
 	if (s)
 	{
-		*s = (struct ent_session) {.model = m};
+		*s = (struct ent_session) {.processor = p};
+		s->inserts = ent_array_alloc (sizeof (struct insert));
+		if (!s->inserts)
+		{
+			free (s);
+			s = NULL;
+		}
 	}
 
 	return s;
@@ -67,132 +54,9 @@ ent_session_free (
 {
 	if (s)
 	{
-		// TODO: separate "commit" from "deallocate"
-
-		for (size_t i = 0; i < s->inserts_len; ++i)
-		{
-			size_t start = ent_table_len (s->inserts[i].dst);
-			ent_table_grow (
-			    s->inserts[i].dst,
-			    ent_table_len (s->inserts[i].src));
-			size_t columns_len = ent_table_columns_len (s->inserts[i].src);
-			for (size_t k = 0; k < columns_len; ++k)
-			{
-				size_t width;
-				char const * name =
-				    ent_table_column_info (s->inserts[i].src, k, &width);
-				struct ent_array * src_array =
-				    ent_table_column (s->inserts[i].src, name, width);
-				struct ent_array * dst_array =
-				    ent_table_column (s->inserts[i].dst, name, width);
-				if (dst_array == NULL)
-				{
-					// um....
-				}
-				uint8_t * dst = ent_array_ref (dst_array);
-				dst += width * start;
-				uint8_t const * src = ent_array_get (src_array);
-				memcpy (dst, src, width * ent_table_len (s->inserts[i].dst));
-			}
-		}
-
-
-		for (size_t i = 0; i < s->tables_len; ++i)
-		{
-			ent_table_decref (s->tables[i]);
-		}
-
-		for (size_t i = 0; i < s->columns_len; ++i)
-		{
-			free (s->columns[i].name);
-		}
-
-		free (s->tables);
-		free (s->columns);
 		free (s->inserts);
 		free (s);
 	}
-}
-
-int
-ent_session_table (
-    struct ent_session * s,
-    char const * table_name,
-    char const * mode)
-{
-	if (!s || s->locked)
-	{
-		return -1;
-	}
-
-	(void)mode;//TODO: stop ignoring mode
-
-	struct ent_table ** tables = realloc (s->tables, (s->tables_len + 1) * sizeof (*tables));
-	if (!tables)
-	{
-		return -1;
-	}
-	s->tables = tables;
-	tables[s->tables_len] = ent_model_get (s->model, table_name);
-	if (!tables[s->tables_len])
-	{
-		return -1;
-	}
-	s->tables_len += 1;
-	return table_zero - 1 + s->tables_len;
-}
-
-int
-ent_session_column (
-    struct ent_session * s,
-    int table,
-    char const * column_name,
-    size_t width,
-    char const * mode)
-{
-	if (!s || s->locked)
-	{
-		return -1;
-	}
-
-	(void)mode;//TODO: stop ignoring mode
-
-	size_t index = (size_t)table - table_zero;
-
-	if (s->tables_len <= index)
-	{
-		return -1;
-	}
-
-	struct ent_table * t = s->tables[index];
-	struct ent_array * a = ent_table_column (t, column_name, width);
-
-	if (!a)
-	{
-		return -1;
-	}
-
-	struct column_info * columns =
-	    realloc (s->columns, (s->columns_len + 1) * sizeof (*columns));
-
-	if (columns == NULL)
-	{
-		return -1;
-	}
-
-	s->columns = columns;
-	columns[s->columns_len] = (struct column_info) { .width = width };
-
-	size_t name_len = strlen (column_name) + 1;
-	columns[s->columns_len].name = malloc (name_len);
-	if (!columns[s->columns_len].name)
-	{
-		return -1;
-	}
-	memcpy (columns[s->columns_len].name, column_name, name_len);
-
-	s->columns_len += 1;
-	return column_zero - 1 + s->columns_len;
 }
 
 int
@@ -211,28 +75,29 @@ ent_session_lock (
 size_t
 ent_session_table_len (
     struct ent_session * s,
-    int table)
+    int table_id)
 {
-	if (!s || !s->locked)
+	size_t len = 0;
+
+	if (s)
 	{
-		return 0;
+		struct ent_table * table = ent_processor_table (
+		                               s->processor,
+		                               table_id);
+
+		if (table)
+		{
+			len = ent_table_len (table);
+		}
 	}
 
-	size_t index = (size_t)table - table_zero;
-
-	if (s->tables_len <= index)
-	{
-		return 0;
-	}
-
-	struct ent_table * t = s->tables[index];
-	return ent_table_len (t);
+	return len;
 }
 
 int
 ent_session_table_insert (
     struct ent_session * s,
-    int table,
+    int table_id,
     size_t add)
 {
 	if (!s || !s->locked || !add)
@@ -240,85 +105,63 @@ ent_session_table_insert (
 		return -1;
 	}
 
-	size_t index = (size_t)table - table_zero;
-	if (s->tables_len <= index)
+	struct ent_table * existing = ent_processor_table (s->processor, table_id);
+
+	if (!existing)
 	{
 		return -1;
 	}
 
-	struct ent_table * t = ent_table_alloc (add);
-	if (t == NULL)
+	struct ent_table * buffer = ent_table_alloc (add);
+
+	if (buffer == NULL)
 	{
 		return -1;
 	}
 
-	struct ent_table ** tables = realloc (
-	                                 s->tables,
-	                                 (s->tables_len + 1) * sizeof (*tables));
-	if (tables == NULL)
+	size_t inserts_len = ent_array_len (s->inserts);
+	if (ent_array_set_len (s->inserts, inserts_len + 1) == -1)
 	{
-		ent_table_decref (t);
+		ent_table_decref (buffer);
 		return -1;
 	}
-	s->tables = tables;
-	s->tables[s->tables_len] = t;
 
-	// TODO: setup appropriate schema based on pre-specified columns
-
-	struct insert * inserts = realloc (
-	                              s->inserts,
-	                              (s->inserts_len + 1) * sizeof (*inserts));
-	if (inserts == NULL)
-	{
-		ent_table_decref (t);
-		s->tables[s->tables_len] = NULL;
-		return -1;
-	}
-	inserts[s->inserts_len].dst = s->tables[index];
-	inserts[s->inserts_len].src = t;
-	s->inserts = inserts;
-	s->inserts_len += 1;
-	s->tables_len += 1;
-	return table_zero - 1 + s->tables_len;
+	struct insert * inserts = ent_array_ref (s->inserts);
+	inserts[inserts_len].dst = existing;
+	inserts[inserts_len].src = buffer;
+	return inserts_zero + (int) inserts_len;
 }
 
 void *
 ent_session_column_write (
     struct ent_session * s,
-    int table,
-    int column)
+    int table_id,
+    int column_id)
 {
-	if (!s || !s->locked)
+	void * mem = NULL;
+
+	if (s)
 	{
-		return NULL;
+		struct column_info const column_info = ent_processor_column (
+		        s->processor,
+		        column_id);
+
+		struct ent_table * table = ent_processor_table (
+		                               s->processor,
+		                               table_id);
+
+		struct ent_array * array = ent_table_column (
+		                               table,
+		                               column_info.name,
+		                               column_info.width);
+
+		if (array)
+		{
+			mem = ent_array_ref (array);
+		}
 	}
 
-	size_t c_index = (size_t)column - column_zero;
-
-	if (s->columns_len <= c_index)
-	{
-		return NULL;
-	}
-
-	struct column_info const * info = &s->columns[c_index];
-
-	size_t t_index = (size_t)table - table_zero;
-
-	if (s->tables_len <= t_index)
-	{
-		return NULL;
-	}
-
-	struct ent_table * t = s->tables[t_index];
-
-	struct ent_array * a = ent_table_column (t, info->name, info->width);
-
-	if (!a)
-	{
-		return NULL;
-	}
-
-	return ent_array_ref (a);
+	return mem;
 }
 
 void const *
@@ -327,35 +170,59 @@ ent_session_column_read (
     int table,
     int column)
 {
-	if (!s || !s->locked)
-	{
-		return NULL;
-	}
-
-	size_t c_index = (size_t)column - column_zero;
-
-	if (s->columns_len <= c_index)
-	{
-		return NULL;
-	}
-
-	struct column_info const * info = &s->columns[c_index];
-
-	size_t t_index = (size_t)table - table_zero;
-
-	if (s->tables_len <= t_index)
-	{
-		return NULL;
-	}
-
-	struct ent_table * t = s->tables[t_index];
-
-	struct ent_array * a = ent_table_column (t, info->name, info->width);
-
-	if (!a)
-	{
-		return NULL;
-	}
-
-	return ent_array_get (a);
+	return ent_session_column_write (s, table, column);
 }
+
+int
+ent_session_commit (
+    struct ent_session * s)
+{
+	if (!s)
+	{
+		return -1;
+	}
+
+	size_t inserts_len = ent_array_len (s->inserts);
+	struct insert const * inserts = ent_array_get (s->inserts);
+
+	for (size_t i = 0; i < inserts_len; ++i)
+	{
+		struct ent_table * dst_table = inserts[i].dst;
+		struct ent_table * src_table = inserts[i].src;
+
+		size_t start = ent_table_len (dst_table);
+
+		ent_table_grow (dst_table, ent_table_len (src_table));
+
+		size_t columns_len = ent_table_columns_len (src_table);
+
+		for (size_t k = 0; k < columns_len; ++k)
+		{
+			size_t width;
+			char const * name =
+			    ent_table_column_info (src_table, k, &width);
+
+			struct ent_array * src_array =
+			    ent_table_column (src_table, name, width);
+
+			struct ent_array * dst_array =
+			    ent_table_column (dst_table, name, width);
+
+			if (dst_array == NULL)
+			{
+				// um....
+			}
+
+			uint8_t * dst = ent_array_ref (dst_array);
+
+			dst += width * start;
+
+			uint8_t const * src = ent_array_get (src_array);
+
+			memcpy (dst, src, width * ent_table_len (dst_table));
+		}
+	}
+
+	return 0;
+}
+

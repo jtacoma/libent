@@ -37,7 +37,9 @@ ent_rlist_select (
     size_t width);
 
 struct ent_model;
+struct ent_processor;
 struct ent_session;
+typedef int (* ent_procfunc) (struct ent_session *, void *);
 
 struct ent_model *
 ent_model_alloc();
@@ -46,31 +48,39 @@ void
 ent_model_free (
     struct ent_model * m);
 
-struct ent_session *
-ent_session_alloc (
+int
+ent_model_set_processor (
+    struct ent_model * model,
+    char const * name,
+    struct ent_processor const * info);
+
+struct ent_processor *
+ent_processor_alloc (
     struct ent_model * m);
 
 void
-ent_session_free (
-    struct ent_session * s);
+ent_processor_free (
+    struct ent_processor * p);
 
 int
-ent_session_table (
-    struct ent_session * s,
+ent_processor_use_table (
+    struct ent_processor * p,
     char const * table_name,
     char const * mode);
 
 int
-ent_session_column (
-    struct ent_session * s,
+ent_processor_use_column (
+    struct ent_processor * p,
     int table,
     char const * column_name,
     size_t width,
     char const * mode);
 
 int
-ent_session_lock (
-    struct ent_session * s);
+ent_processor_set_function (
+    struct ent_processor * p,
+    ent_procfunc function,
+    void * arg);
 
 size_t
 ent_session_table_len (

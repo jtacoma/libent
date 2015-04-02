@@ -1,5 +1,7 @@
 #include "ent.h"
 #include "table.h"
+#include "array.h"
+#include "processor.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -12,11 +14,24 @@ struct ent_model
 		struct ent_table * table;
 	} * tables;
 	size_t tables_len;
+	struct ent_array * processors;
 };
 
 struct ent_model * ent_model_alloc()
 {
-	return calloc (1, sizeof (struct ent_model));
+	struct ent_model * model = calloc (1, sizeof (struct ent_model));
+	if (model)
+	{
+		*model = (struct ent_model) {0};
+		model->processors = ent_array_alloc (sizeof (struct processor *));
+
+		if (!model->processors)
+		{
+			free (model);
+			model = NULL;
+		}
+	}
+	return model;
 }
 
 void ent_model_free (struct ent_model * m)
@@ -101,4 +116,33 @@ struct ent_table * ent_model_get (struct ent_model * m, char const * table_name)
 	m->tables[m->tables_len - 1].name = newname;
 	ent_table_incref (m->tables[m->tables_len - 1].table);
 	return m->tables[m->tables_len - 1].table;
+}
+
+int
+ent_model_set_processor (
+    struct ent_model * model,
+    char const * name,
+    struct ent_processor const * processor)
+{
+	if (! (model && name && processor))
+	{
+		return -1;
+	}
+
+	size_t processors_len = ent_array_len (model->processors);
+
+	if (ent_array_set_len (model->processors, processors_len + 1) == -1)
+	{
+		return -1;
+	}
+
+	struct ent_processor ** processors = ent_array_ref (model->processors);
+	processors[processors_len] = ent_processor_cpy_alloc (processor);
+
+	if (!processors[processors_len])
+	{
+		return -1;
+	}
+
+	return 0;
 }

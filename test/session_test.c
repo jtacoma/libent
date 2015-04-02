@@ -1,35 +1,21 @@
 #include "test/ent_test.h"
 #include "table.h"
 
-void session_test()
+struct my_info
 {
-	assert_true (ent_session_alloc (NULL) == NULL);
+	int items;
+	int column_b;
+};
 
-	struct ent_model * model = ent_model_alloc();
-	assert_true (model != NULL);
+static int
+my_loader (
+    struct ent_session * s,
+    void * void_info)
+{
+	struct my_info * info = void_info;
+	int items = info->items;
+	int column_b = info->column_b;
 
-	struct ent_session * s = ent_session_alloc (model);
-	assert_true (s != NULL);
-
-	int items = ent_session_table (s, "items", "w");
-	assert_true (items >= 0);
-	assert_true (ent_session_table (s, NULL, "w") == -1);
-	assert_true (ent_session_table (NULL, "items", "w") == -1);
-
-	assert_true (ent_session_column (s, items, "a", 0, "r") == -1);
-	assert_true (ent_session_column (s, items, NULL, 1, "r") == -1);
-	assert_true (ent_session_column (s, -1, "a", 1, "r") == -1);
-	assert_true (ent_session_column (NULL, items, "a", 1, "r") == -1);
-
-	assert_true (ent_session_column (s, items, "b", 0, "w") == -1);
-	assert_true (ent_session_column (s, items, NULL, 8, "w") == -1);
-	assert_true (ent_session_column (s, -1, "b", 8, "w") == -1);
-	assert_true (ent_session_column (NULL, items, "b", 8, "w") == -1);
-	int column_b = ent_session_column (s, items, "b", 8, "w");
-	assert_true (column_b >= 0);
-
-	assert_true (ent_session_lock (s) == 0);
-	assert_true (ent_session_lock (NULL) == -1);
 	assert_true (ent_session_table_len (s, items) == 0);
 	assert_true (ent_session_table_len (s, -1) == 0);
 	assert_true (ent_session_table_len (NULL, items) == 0);
@@ -43,27 +29,80 @@ void session_test()
 	assert_true (b);
 	b[0] = 42;
 	b[1] = 43;
-	ent_session_free (s);
 
-	s = ent_session_alloc (model);
-	assert_true (s != NULL);
-	items = ent_session_table (s, "items", "w");
-	assert_true (items >= 0);
-	assert_true (ent_session_column (s, items, NULL, 8, "w") == -1);
-	assert_true (ent_session_column (s, -1, "b", 8, "w") == -1);
-	assert_true (ent_session_column (NULL, items, "b", 8, "w") == -1);
-	column_b = ent_session_column (s, items, "b", 8, "w");
-	assert_true (column_b != -1);
+	return 0;
+}
 
-	assert_true (ent_session_lock (s) == 0);
+static int
+my_checker (
+    struct ent_session * s,
+    void * void_info)
+{
+	struct my_info * info = void_info;
+	int items = info->items;
+	int column_b = info->column_b;
+
 	assert_true (ent_session_table_len (s, items) == 2);
 
-	b = ent_session_column_write (s, items, column_b);
+	double * b = ent_session_column_write (s, items, column_b);
 	assert_true (b);
 	assert_true (b[0] == 42);
 	assert_true (b[1] == 43);
 
-	ent_session_free (s);
-	ent_session_free (NULL);
+	return 0;
+}
+
+void session_test()
+{
+	assert_true (ent_processor_alloc (NULL) == NULL);
+
+	struct ent_model * model = ent_model_alloc();
+	assert_true (model != NULL);
+
+	struct ent_processor * p = ent_processor_alloc (model);
+	assert_true (p != NULL);
+
+	struct my_info info;
+
+	info.items = ent_processor_use_table (p, "items", "w");
+	assert_true (info.items >= 0);
+	assert_true (ent_processor_use_table (p, NULL, "w") == -1);
+	assert_true (ent_processor_use_table (NULL, "items", "w") == -1);
+
+	assert_true (ent_processor_use_column (p, info.items, "a", 0, "r") == -1);
+	assert_true (ent_processor_use_column (p, info.items, NULL, 1, "r") == -1);
+	assert_true (ent_processor_use_column (p, -1, "a", 1, "r") == -1);
+	assert_true (ent_processor_use_column (NULL, info.items, "a", 1, "r") == -1);
+
+	assert_true (ent_processor_use_column (p, info.items, "b", 0, "w") == -1);
+	assert_true (ent_processor_use_column (p, info.items, NULL, 8, "w") == -1);
+	assert_true (ent_processor_use_column (p, -1, "b", 8, "w") == -1);
+	assert_true (ent_processor_use_column (NULL, info.items, "b", 8, "w") == -1);
+	info.column_b = ent_processor_use_column (p, info.items, "b", 8, "w");
+	assert_true (info.column_b >= 0);
+
+	ent_processor_set_function (p, my_loader, &info);
+
+	ent_model_set_processor ("load", p);
+
+	ent_processor_free (p);
+
+	p = ent_processor_alloc (model);
+	assert_true (p != NULL);
+	info.items = ent_processor_use_table (p, "items", "w");
+	assert_true (info.items >= 0);
+	assert_true (ent_processor_use_column (p, info.items, NULL, 8, "w") == -1);
+	assert_true (ent_processor_use_column (p, -1, "b", 8, "w") == -1);
+	assert_true (ent_processor_use_column (NULL, info.items, "b", 8, "w") == -1);
+	info.column_b = ent_processor_use_column (p, info.items, "b", 8, "w");
+	assert_true (info.column_b != -1);
+
+	ent_processor_set_function (p, my_checker, &info);
+
+	ent_model_set_processor ("check", p);
+
+	ent_processor_free (p);
+	ent_processor_free (NULL);
+
 	ent_model_free (model);
 }
