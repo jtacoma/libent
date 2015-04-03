@@ -1,4 +1,5 @@
 #include "ent.h"
+#include "alloc.h"
 #include "model.h"
 #include "table.h"
 #include "processor.h"
@@ -41,9 +42,9 @@ ent_session_alloc (
 		return NULL;
 	}
 
-	struct ent_session * s = malloc (sizeof (*s));
+	struct ent_session * s = NULL;
 
-	if (!s)
+	if (ent_alloc ((void**)&s, sizeof (*s)) == -1)
 	{
 		return NULL;
 	}

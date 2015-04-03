@@ -1,4 +1,5 @@
 #include "ent.h"
+#include "alloc.h"
 #include "model.h"
 #include "array.h"
 #include "table.h"
@@ -27,9 +28,9 @@ ent_processor_alloc (
 		return NULL;
 	}
 
-	struct ent_processor * p = malloc (sizeof (*p));
+	struct ent_processor * p = NULL;
 
-	if (p)
+	if (ent_alloc ((void**)&p, sizeof (*p)) == 0)
 	{
 		*p = (struct ent_processor) {.model = m};
 		p->tables = ent_array_alloc (sizeof (struct ent_table *));
@@ -52,7 +53,7 @@ ent_processor_cpy_alloc (
 
 		if (!dst->tables)
 		{
-			free (dst);
+			ent_alloc ((void**)&dst, 0);
 			return NULL;
 		}
 
@@ -61,7 +62,7 @@ ent_processor_cpy_alloc (
 		if (!dst->columns)
 		{
 			ent_array_free (dst->tables);
-			free (dst);
+			ent_alloc ((void**)&dst, 0);
 			return NULL;
 		}
 	}
@@ -88,12 +89,12 @@ ent_processor_free (
 
 		for (size_t i = 0; i < columns_len; ++i)
 		{
-			free (columns[i].name);
+			ent_alloc ((void**)&columns[i].name, 0);
 		}
 
 		ent_array_free (p->tables);
 		ent_array_free (p->columns);
-		free (p);
+		ent_alloc ((void**)&p, 0);
 	}
 }
 
@@ -184,8 +185,8 @@ ent_processor_use_column (
 	columns[columns_len] = (struct column_info) { .width = width };
 
 	size_t name_len = strlen (column_name) + 1;
-	columns[columns_len].name = malloc (name_len);
-	if (!columns[columns_len].name)
+	columns[columns_len].name = NULL;
+	if (ent_alloc ((void**)&columns[columns_len].name , name_len) == -1)
 	{
 		return -1;
 	}

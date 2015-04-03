@@ -1,4 +1,5 @@
 #include "ent.h"
+#include "alloc.h"
 #include "rlist.h"
 #include "array.h"
 
@@ -17,9 +18,9 @@ struct ent_rlist
 struct ent_rlist *
 ent_rlist_alloc()
 {
-	struct ent_rlist * rlist = malloc (sizeof (*rlist));
+	struct ent_rlist * rlist = NULL;
 
-	if (rlist)
+	if (ent_alloc ((void**)&rlist, sizeof (*rlist)) == 0)
 	{
 		*rlist = (struct ent_rlist) {0};
 		rlist->ranges = ent_range_array_alloc();

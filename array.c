@@ -1,4 +1,5 @@
 #include "ent.h"
+#include "alloc.h"
 #include "array.h"
 #include "rlist.h"
 
@@ -22,9 +23,9 @@ ent_array_alloc (
 		return NULL;
 	}
 
-	struct ent_array * array = malloc (sizeof (*array));
+	struct ent_array * array = NULL;
 
-	if (array)
+	if (ent_alloc ((void**)&array, sizeof (*array)) == 0)
 	{
 		*array = (struct ent_array) {.width = width };
 	}
@@ -45,7 +46,7 @@ ent_array_cpy_alloc (
 
 	if (ent_array_set_len (dst, src->len) == -1)
 	{
-		free (dst);
+		ent_alloc ((void**)&dst, 0);
 		return NULL;
 	}
 
@@ -62,10 +63,10 @@ ent_array_free (
 	{
 		if (a->start)
 		{
-			free (a->start);
+			ent_alloc (&a->start, 0);
 		}
 
-		free (a);
+		ent_alloc ((void**)&a, 0);
 	}
 }
 
@@ -123,26 +124,23 @@ int ent_array_set_len (struct ent_array * a, size_t len)
 			cap = len;
 		}
 
-		void * mem = realloc (a->start, a->width * cap);
-
-		if (!mem)
+		if (ent_alloc (&a->start, a->width * cap) == -1)
 		{
 			return -1; // out of memory
 		}
 
 		size_t added = len - a->len;
+
 		memset (
-		    ((uint8_t*)mem) + (a->width * a->len),
+		    ((uint8_t*)a->start) + (a->width * a->len),
 		    0,
 		    a->width * added);
 
-		a->start = mem;
 		a->cap = cap;
 	}
 	else if (!len && a->start)
 	{
-		free (a->start);
-		a->start = NULL;
+		ent_alloc (&a->start, 0);
 		a->cap = 0;
 	}
 

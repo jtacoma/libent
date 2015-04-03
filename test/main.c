@@ -16,6 +16,8 @@ main()
 {
 	// Roughly in dependency order so that failures in the most
 	// depended-upon modules will be discovered first.
+	alloc_test();
+	printf ("alloc: passed\n");
 	rlist_test();
 	printf ("rlist: passed\n");
 	array_test();

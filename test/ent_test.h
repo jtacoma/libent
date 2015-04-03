@@ -11,6 +11,7 @@ void true_or_exit (bool value, char const * file, int line,
 #define assert_true(expr) \
 	true_or_exit((expr), __FILE__, __LINE__, "false: " #expr)
 
+void alloc_test();
 void array_test();
 void model_test();
 void rlist_test();
