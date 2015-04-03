@@ -5,10 +5,13 @@
 #include <string.h>
 #include <stdlib.h>
 
+typedef struct ent_rlist_range range;
+ent_array_typed (range);
+
 struct ent_rlist
 {
 	size_t vlen;
-	struct ent_array * ranges;
+	struct ent_range_array * ranges;
 };
 
 struct ent_rlist *
@@ -19,7 +22,7 @@ ent_rlist_alloc()
 	if (rlist)
 	{
 		*rlist = (struct ent_rlist) {0};
-		rlist->ranges = ent_array_alloc (sizeof (struct ent_rlist_range));
+		rlist->ranges = ent_range_array_alloc();
 	}
 
 	return rlist;
@@ -33,7 +36,7 @@ ent_rlist_free (
 	{
 		if (rlist->ranges)
 		{
-			ent_array_free (rlist->ranges);
+			ent_range_array_free (rlist->ranges);
 			rlist->ranges = NULL;
 		}
 
@@ -63,8 +66,8 @@ ent_rlist_ranges (
 		return NULL;
 	}
 
-	*len = ent_array_len (rlist->ranges);
-	return ent_array_get (rlist->ranges);
+	*len = ent_range_array_len (rlist->ranges);
+	return ent_range_array_get (rlist->ranges);
 }
 
 int
@@ -78,8 +81,8 @@ ent_rlist_append (
 		return -1; // null rlist or invalid begin,end values
 	}
 
-	size_t len = ent_array_len (rlist->ranges);
-	struct ent_rlist_range * ranges = ent_array_ref (rlist->ranges);
+	size_t len = ent_range_array_len (rlist->ranges);
+	struct ent_rlist_range * ranges = ent_range_array_ref (rlist->ranges);
 
 	if (ranges && begin < ranges[len - 1].begin)
 	{
@@ -98,12 +101,12 @@ ent_rlist_append (
 	}
 	else
 	{
-		if (ent_array_set_len (rlist->ranges, len + 1) == -1)
+		if (ent_range_array_set_len (rlist->ranges, len + 1) == -1)
 		{
 			return -1; // out of memory
 		}
 
-		ranges = ent_array_ref (rlist->ranges);
+		ranges = ent_range_array_ref (rlist->ranges);
 		ranges[len].begin = begin;
 		ranges[len].end = end;
 		rlist->vlen += end - begin;

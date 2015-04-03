@@ -1,4 +1,3 @@
-array.c:22:		return NULL;
 array.c:36:ent_array_cpy_alloc (
 array.c:39:	if (!src)
 array.c:41:		return NULL;
@@ -12,8 +11,6 @@ array.c:78:		return NULL;
 array.c:90:		return 0;
 array.c:102:		return 0;
 array.c:112:		return -1;
-array.c:118:		             ? a->cap / 2 * 3 + 1
-array.c:123:			cap = len;
 array.c:130:			return -1; // out of memory
 array.c:144:		free (a->start);
 array.c:145:		a->start = NULL;
@@ -79,8 +76,8 @@ processor.c:210:	return 0;
 processor.c:234:		return NULL;
 processor.c:256:		return (struct column_info) {0};
 processor.c:265:		return (struct column_info) {0};
-rlist.c:63:		return NULL;
-rlist.c:103:			return -1; // out of memory
+rlist.c:66:		return NULL;
+rlist.c:106:			return -1; // out of memory
 session.c:31:		return NULL;
 session.c:42:			free (s);
 session.c:43:			s = NULL;
