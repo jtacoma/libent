@@ -27,7 +27,7 @@ static void build (struct ent_model * model)
 	assert (new_entities >= 0);
 
 	// Get a non-const pointer to the appended "mass" data.
-	double * masses = ent_session_column_write (building, new_entities, column_mass);
+	double * masses = ent_session_column_ref (building, new_entities, column_mass);
 	assert (masses);
 
 	// This array of float64 values can be used as normal.
@@ -62,7 +62,7 @@ static void print (struct ent_model * model)
 	size_t len = ent_session_table_len (printing, entities);
 	assert (len > 0);
 
-	double const * masses = ent_session_column_read (printing, entities, column_mass);
+	double const * masses = ent_session_column_get (printing, entities, column_mass);
 	assert (masses);
 
 	for (size_t i = 0; i < len; ++i)

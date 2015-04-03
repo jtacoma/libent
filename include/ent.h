@@ -90,7 +90,7 @@ ent_session_table_insert (
     size_t add_size);
 
 void const *
-ent_session_column_read (
+ent_session_column_get (
     struct ent_session * s,
     int table,
     int column);
@@ -101,7 +101,7 @@ ent_session_column_width (
     int column);
 
 void *
-ent_session_column_write (
+ent_session_column_ref (
     struct ent_session * s,
     int table,
     int column);

@@ -44,7 +44,7 @@ void session_test()
 		int new_items = ent_session_table_insert (loading, items, 2);
 		assert_true (new_items >= 0);
 
-		double * b = ent_session_column_write (loading, new_items, column_b);
+		double * b = ent_session_column_ref (loading, new_items, column_b);
 		assert_true (b);
 		b[0] = 42;
 		b[1] = 43;
@@ -70,7 +70,7 @@ void session_test()
 
 		assert_true (ent_session_table_len (checking, items) == 2);
 
-		double * b = ent_session_column_write (checking, items, column_b);
+		double * b = ent_session_column_ref (checking, items, column_b);
 		assert_true (b);
 		assert_true (b[0] == 42);
 		assert_true (b[1] == 43);

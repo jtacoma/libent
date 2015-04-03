@@ -163,7 +163,7 @@ ent_session_table_insert (
 }
 
 void *
-ent_session_column_write (
+ent_session_column_ref (
     struct ent_session * s,
     int table_id,
     int column_id)
@@ -194,12 +194,12 @@ ent_session_column_write (
 }
 
 void const *
-ent_session_column_read (
+ent_session_column_get (
     struct ent_session * s,
     int table,
     int column)
 {
-	return ent_session_column_write (s, table, column);
+	return ent_session_column_ref (s, table, column);
 }
 
 int
