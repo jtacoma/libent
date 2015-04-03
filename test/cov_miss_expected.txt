@@ -78,6 +78,7 @@ processor.c:256:		return (struct column_info) {0};
 processor.c:265:		return (struct column_info) {0};
 rlist.c:66:		return NULL;
 rlist.c:106:			return -1; // out of memory
+rlist.c:127:		return -1;
 session.c:31:		return NULL;
 session.c:42:			free (s);
 session.c:43:			s = NULL;
