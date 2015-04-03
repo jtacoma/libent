@@ -5,6 +5,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+struct test_context
+{
+	int expected_errno;
+};
+
 void true_or_exit (bool value, char const * file, int line,
                    char const * literal);
 

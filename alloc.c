@@ -1,5 +1,7 @@
 #include "alloc.h"
 
+#include <errno.h>
+#include <stdbool.h>
 #include <stdlib.h>
 
 static size_t fail_at = 0;
@@ -19,6 +21,7 @@ ent_alloc (void ** ptr, size_t size)
 
 		if (allocs == fail_at)
 		{
+			errno = ENOMEM;
 			return -1;
 		}
 
@@ -31,14 +34,14 @@ ent_alloc (void ** ptr, size_t size)
 				*ptr = newptr;
 				return 0;
 			}
-
-			return -1;
 		}
-		else
+		else if ((bool) (*ptr = malloc (size)))
 		{
-			*ptr = malloc (size);
-			return *ptr ? 0 : -1;
+			return 0;
 		}
+
+		errno = ENOMEM;
+		return -1;
 	}
 	else
 	{
