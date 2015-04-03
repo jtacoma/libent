@@ -48,17 +48,6 @@ void
 ent_model_free (
     struct ent_model * m);
 
-int
-ent_model_set_processor (
-    struct ent_model * model,
-    char const * name,
-    struct ent_processor const * info);
-
-int
-ent_model_invoke (
-    struct ent_model * model,
-    char const * processor_name);
-
 struct ent_processor *
 ent_processor_alloc (
     struct ent_model * m);
@@ -81,11 +70,13 @@ ent_processor_use_column (
     size_t width,
     char const * mode);
 
-int
-ent_processor_set_function (
-    struct ent_processor * p,
-    ent_procfunc function,
-    void * arg);
+struct ent_session *
+ent_session_alloc (
+    struct ent_processor * p);
+
+void
+ent_session_free (
+    struct ent_session * s);
 
 size_t
 ent_session_table_len (
@@ -114,5 +105,9 @@ ent_session_column_write (
     struct ent_session * s,
     int table,
     int column);
+
+int
+ent_session_commit (
+    struct ent_session * s);
 
 #endif//LIBENT_ENT_H

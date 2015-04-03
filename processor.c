@@ -9,9 +9,6 @@
 #include <string.h>
 #include <limits.h>
 
-#define table_zero ((INT_MAX/4) * 1)
-#define column_zero ((INT_MAX/4) * 2)
-
 struct ent_processor
 {
 	struct ent_model * model;
@@ -135,7 +132,7 @@ ent_processor_use_table (
 		return -1;
 	}
 
-	return table_zero + tables_len;
+	return (int) tables_len;
 }
 
 int
@@ -153,8 +150,7 @@ ent_processor_use_column (
 
 	(void)mode;//TODO: stop ignoring mode
 
-	size_t index = (size_t)table_id - table_zero;
-
+	size_t index = (size_t) table_id;
 	size_t tables_len = ent_array_len (p->tables);
 
 	if (tables_len <= index)
@@ -195,7 +191,7 @@ ent_processor_use_column (
 	}
 	memcpy (columns[columns_len].name, column_name, name_len);
 
-	return column_zero + columns_len;
+	return (int) columns_len;
 }
 
 int
@@ -214,25 +210,39 @@ ent_processor_set_function (
 	return 0;
 }
 
+size_t
+ent_processor_tables_len (
+    struct ent_processor const * processor)
+{
+	size_t len = 0;
+
+	if (processor)
+	{
+		len = ent_array_len (processor->tables);
+	}
+
+	return len;
+}
+
 struct ent_table *
 ent_processor_table (
     struct ent_processor const * processor,
-    int table)
+    int table_id)
 {
 	if (!processor)
 	{
 		return NULL;
 	}
 
-	size_t index = (size_t)table ;
+	size_t index = (size_t) table_id;
 	size_t tables_len = ent_array_len (processor->tables);
-	struct ent_table ** tables = ent_array_ref (processor->tables);
 
 	if (tables_len <= index)
 	{
 		return NULL;
 	}
 
+	struct ent_table ** tables = ent_array_ref (processor->tables);
 	return tables[index];
 }
 
@@ -246,7 +256,7 @@ ent_processor_column (
 		return (struct column_info) {0};
 	}
 
-	size_t index = (size_t) (column_id - column_zero);
+	size_t index = (size_t) column_id;
 	size_t columns_len = ent_array_len (processor->columns);
 	struct column_info * columns = ent_array_ref (processor->columns);
 

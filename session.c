@@ -19,7 +19,6 @@ struct insert
 struct ent_session
 {
 	struct ent_processor const * processor;
-	bool locked;
 	struct ent_array * inserts;
 };
 
@@ -59,17 +58,36 @@ ent_session_free (
 	}
 }
 
-int
-ent_session_lock (
-    struct ent_session * s)
+static struct ent_table *
+ent_session_table (
+    struct ent_session const * s,
+    int table_id)
 {
-	if (!s)
+	struct ent_table * table = NULL;
+
+	if (s)
 	{
-		return -1;
+		size_t index = (size_t) table_id;
+		size_t tables_len = ent_processor_tables_len (s->processor);
+		if (index < tables_len)
+		{
+			table = ent_processor_table (
+			            s->processor,
+			            table_id);
+		}
+		else
+		{
+			index -= tables_len;
+			size_t inserts_len = ent_array_len (s->inserts);
+			if (index < inserts_len)
+			{
+				struct insert const * inserts = ent_array_get (s->inserts);
+				table = inserts[index].src;
+			}
+		}
 	}
 
-	s->locked = true;
-	return 0;
+	return table;
 }
 
 size_t
@@ -81,9 +99,8 @@ ent_session_table_len (
 
 	if (s)
 	{
-		struct ent_table * table = ent_processor_table (
-		                               s->processor,
-		                               table_id);
+		struct ent_table * table =
+		    ent_session_table (s, table_id);
 
 		if (table)
 		{
@@ -100,7 +117,7 @@ ent_session_table_insert (
     int table_id,
     size_t add)
 {
-	if (!s || !s->locked || !add)
+	if (!s || !add)
 	{
 		return -1;
 	}
@@ -120,6 +137,7 @@ ent_session_table_insert (
 	}
 
 	size_t inserts_len = ent_array_len (s->inserts);
+
 	if (ent_array_set_len (s->inserts, inserts_len + 1) == -1)
 	{
 		ent_table_decref (buffer);
@@ -127,9 +145,13 @@ ent_session_table_insert (
 	}
 
 	struct insert * inserts = ent_array_ref (s->inserts);
+
 	inserts[inserts_len].dst = existing;
 	inserts[inserts_len].src = buffer;
-	return inserts_zero + (int) inserts_len;
+
+	size_t processor_tables_len = ent_processor_tables_len (s->processor);
+
+	return (int) (processor_tables_len + inserts_len);
 }
 
 void *
@@ -142,18 +164,17 @@ ent_session_column_write (
 
 	if (s)
 	{
-		struct column_info const column_info = ent_processor_column (
-		        s->processor,
-		        column_id);
+		struct column_info const column_info =
+		    ent_processor_column (s->processor, column_id);
 
-		struct ent_table * table = ent_processor_table (
-		                               s->processor,
-		                               table_id);
+		struct ent_table * table =
+		    ent_session_table (s, table_id);
 
-		struct ent_array * array = ent_table_column (
-		                               table,
-		                               column_info.name,
-		                               column_info.width);
+		struct ent_array * array =
+		    ent_table_column (
+		        table,
+		        column_info.name,
+		        column_info.width);
 
 		if (array)
 		{
@@ -225,4 +246,3 @@ ent_session_commit (
 
 	return 0;
 }
-

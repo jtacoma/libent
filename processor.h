@@ -23,6 +23,10 @@ struct ent_processor *
 ent_processor_cpy_alloc (
     struct ent_processor const * processor);
 
+size_t
+ent_processor_tables_len (
+    struct ent_processor const * processor);
+
 struct ent_table *
 ent_processor_table (
     struct ent_processor const * processor,
