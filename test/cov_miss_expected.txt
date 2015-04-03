@@ -1,78 +1,95 @@
 array.c:22:		return NULL;
-array.c:56:		return NULL;
-array.c:68:		return 0;
-array.c:80:		return 0;
-array.c:90:		return -1;
-array.c:96:		             ? a->cap / 2 * 3 + 1
-array.c:101:			cap = len;
-array.c:108:			return -1; // out of memory
-array.c:122:		free (a->start);
-array.c:123:		a->start = NULL;
-array.c:124:		a->cap = 0;
-array.c:137:		return NULL;
-array.c:144:ent_array_select (
-array.c:149:	if (! (dst && src && rlist && src->width == dst->width))
-array.c:151:		return -1;
-array.c:154:	size_t width = src->width;
-array.c:156:	size_t dst_cap = ent_array_len (dst);
-array.c:157:	uint8_t * dst_ptr = ent_array_ref (dst);
-array.c:158:	uint8_t * dst_next = dst_ptr;
-array.c:160:	size_t src_len = ent_array_len (src);
-array.c:161:	uint8_t const * src_ptr = ent_array_get (src);
-array.c:163:	size_t ranges_len = 0;
-array.c:164:	struct ent_rlist_range const * ranges =
-array.c:167:	size_t required_dst_len = ent_rlist_len (rlist);
-array.c:168:	size_t required_src_len = ranges_len
-array.c:169:	                          ? ranges[ranges_len - 1].end
-array.c:170:	                          : 0;
-array.c:172:	if (required_src_len > src_len)
-array.c:174:		return -1;
-array.c:177:	if (required_dst_len != dst_cap)
-array.c:181:		return -1;
-array.c:184:	for (size_t i = 0; i < ranges_len; ++i)
-array.c:186:		size_t n = (ranges[i].end - ranges[i].begin) * width;
-array.c:187:		uint8_t const * src_range = src_ptr + ranges[i].begin * width;
-array.c:188:		memcpy (dst_next, src_range, n);
-array.c:189:		dst_next += n;
-array.c:192:	return 0;
+array.c:36:ent_array_cpy_alloc (
+array.c:39:	if (!src)
+array.c:41:		return NULL;
+array.c:44:	struct ent_array * dst = ent_array_alloc (src->width);
+array.c:46:	if (ent_array_set_len (dst, src->len) == -1)
+array.c:48:		free (dst);
+array.c:49:		return NULL;
+array.c:52:	memcpy (dst->start, src->start, src->width * src->len);
+array.c:54:	return dst;
+array.c:78:		return NULL;
+array.c:90:		return 0;
+array.c:102:		return 0;
+array.c:112:		return -1;
+array.c:118:		             ? a->cap / 2 * 3 + 1
+array.c:123:			cap = len;
+array.c:130:			return -1; // out of memory
+array.c:144:		free (a->start);
+array.c:145:		a->start = NULL;
+array.c:146:		a->cap = 0;
+array.c:159:		return NULL;
+array.c:166:ent_array_select (
+array.c:171:	if (! (dst && src && rlist && src->width == dst->width))
+array.c:173:		return -1;
+array.c:176:	size_t width = src->width;
+array.c:178:	size_t dst_cap = ent_array_len (dst);
+array.c:179:	uint8_t * dst_ptr = ent_array_ref (dst);
+array.c:180:	uint8_t * dst_next = dst_ptr;
+array.c:182:	size_t src_len = ent_array_len (src);
+array.c:183:	uint8_t const * src_ptr = ent_array_get (src);
+array.c:185:	size_t ranges_len = 0;
+array.c:186:	struct ent_rlist_range const * ranges =
+array.c:189:	size_t required_dst_len = ent_rlist_len (rlist);
+array.c:190:	size_t required_src_len = ranges_len
+array.c:191:	                          ? ranges[ranges_len - 1].end
+array.c:192:	                          : 0;
+array.c:194:	if (required_src_len > src_len)
+array.c:196:		return -1;
+array.c:199:	if (required_dst_len != dst_cap)
+array.c:203:		return -1;
+array.c:206:	for (size_t i = 0; i < ranges_len; ++i)
+array.c:208:		size_t n = (ranges[i].end - ranges[i].begin) * width;
+array.c:209:		uint8_t const * src_range = src_ptr + ranges[i].begin * width;
+array.c:210:		memcpy (dst_next, src_range, n);
+array.c:211:		dst_next += n;
+array.c:214:	return 0;
 main.c:8:		fprintf (stderr, "%s:%d: %s\n",
 main.c:10:		exit (1);
-model.c:78:		return NULL;
-model.c:85:		free (newname);
-model.c:86:		return NULL;
-model.c:93:		free (newname);
-model.c:94:		ent_table_decref (t);
-model.c:95:		return NULL;
+model.c:88:		return NULL;
+model.c:95:		free (newname);
+model.c:96:		return NULL;
+model.c:103:		free (newname);
+model.c:104:		ent_table_decref (t);
+model.c:105:		return NULL;
+processor.c:43:ent_processor_cpy_alloc (
+processor.c:46:	struct ent_processor * dst = ent_processor_alloc (src->model);
+processor.c:48:	if (dst)
+processor.c:50:		*dst = *src;
+processor.c:51:		dst->tables = ent_array_cpy_alloc (dst->tables);
+processor.c:53:		if (!dst->tables)
+processor.c:55:			free (dst);
+processor.c:56:			return NULL;
+processor.c:59:		dst->columns = ent_array_cpy_alloc (dst->columns);
+processor.c:61:		if (!dst->columns)
+processor.c:63:			ent_array_free (dst->tables);
+processor.c:64:			free (dst);
+processor.c:65:			return NULL;
+processor.c:69:	return dst;
+processor.c:117:		return -1;
+processor.c:124:		return -1;
+processor.c:179:		return -1;
+processor.c:190:		return -1;
+processor.c:198:ent_processor_set_function (
+processor.c:203:	if (! (p && function))
+processor.c:205:		return -1;
+processor.c:208:	p->func = function;
+processor.c:209:	p->func_arg = arg;
+processor.c:210:	return 0;
+processor.c:234:		return NULL;
+processor.c:256:		return (struct column_info) {0};
+processor.c:265:		return (struct column_info) {0};
 rlist.c:63:		return NULL;
 rlist.c:103:			return -1; // out of memory
-session.c:133:		return -1;
-session.c:180:		return -1;
-session.c:190:		return -1;
-session.c:252:		return -1;
-session.c:260:		ent_table_decref (t);
-session.c:261:		return -1;
-session.c:273:		ent_table_decref (t);
-session.c:274:		s->tables[s->tables_len] = NULL;
-session.c:275:		return -1;
-session.c:293:		return NULL;
-session.c:300:		return NULL;
-session.c:309:		return NULL;
-session.c:318:		return NULL;
-session.c:325:ent_session_column_read (
-session.c:330:	if (!s || !s->locked)
-session.c:332:		return NULL;
-session.c:335:	size_t c_index = (size_t)column - column_zero;
-session.c:337:	if (s->columns_len <= c_index)
-session.c:339:		return NULL;
-session.c:342:	struct column_info const * info = &s->columns[c_index];
-session.c:344:	size_t t_index = (size_t)table - table_zero;
-session.c:346:	if (s->tables_len <= t_index)
-session.c:348:		return NULL;
-session.c:351:	struct ent_table * t = s->tables[t_index];
-session.c:353:	struct ent_array * a = ent_table_column (t, info->name, info->width);
-session.c:355:	if (!a)
-session.c:357:		return NULL;
-session.c:360:	return ent_array_get (a);
+session.c:31:		return NULL;
+session.c:42:			free (s);
+session.c:43:			s = NULL;
+session.c:144:		return -1;
+session.c:151:		ent_table_decref (buffer);
+session.c:152:		return -1;
+session.c:197:ent_session_column_read (
+session.c:202:	return ent_session_column_write (s, table, column);
+session.c:211:		return -1;
 table.c:36:			free (t);
 table.c:91:		*width = 0;
 table.c:92:		return NULL;

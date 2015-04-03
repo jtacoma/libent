@@ -15,23 +15,17 @@ struct ent_model
 		struct ent_table * table;
 	} * tables;
 	size_t tables_len;
-	struct ent_array * processors;
 };
 
 struct ent_model * ent_model_alloc()
 {
-	struct ent_model * model = calloc (1, sizeof (struct ent_model));
+	struct ent_model * model = malloc (sizeof (struct ent_model));
+
 	if (model)
 	{
 		*model = (struct ent_model) {0};
-		model->processors = ent_array_alloc (sizeof (struct processor *));
-
-		if (!model->processors)
-		{
-			free (model);
-			model = NULL;
-		}
 	}
+
 	return model;
 }
 

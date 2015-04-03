@@ -53,7 +53,15 @@ ent_session_free (
 {
 	if (s)
 	{
-		free (s->inserts);
+		size_t inserts_len = ent_array_len (s->inserts);
+		struct insert * inserts = ent_array_ref (s->inserts);
+
+		for (size_t i = 0; i < inserts_len; ++i)
+		{
+			ent_table_decref (inserts[i].src);
+		}
+
+		ent_array_free (s->inserts);
 		free (s);
 	}
 }
