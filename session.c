@@ -3,6 +3,7 @@
 #include "table.h"
 #include "processor.h"
 #include "array.h"
+#include "rlist.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -16,10 +17,19 @@ struct insert
 	struct ent_table * src;
 };
 
+typedef struct deletion
+{
+	struct ent_table * dst;
+	struct ent_rlist * rlist;
+} deletion;
+
+ent_array_typed (deletion);
+
 struct ent_session
 {
 	struct ent_processor const * processor;
 	struct ent_array * inserts;
+	struct ent_deletion_array * deletions;
 };
 
 struct ent_session *
@@ -33,15 +43,27 @@ ent_session_alloc (
 
 	struct ent_session * s = malloc (sizeof (*s));
 
-	if (s)
+	if (!s)
 	{
-		*s = (struct ent_session) {.processor = p};
-		s->inserts = ent_array_alloc (sizeof (struct insert));
-		if (!s->inserts)
-		{
-			free (s);
-			s = NULL;
-		}
+		return NULL;
+	}
+
+	*s = (struct ent_session) {.processor = p};
+	s->inserts = ent_array_alloc (sizeof (struct insert));
+
+	if (!s->inserts)
+	{
+		free (s);
+		return NULL;
+	}
+
+	s->deletions = ent_deletion_array_alloc();
+
+	if (!s->deletions)
+	{
+		ent_array_free (s->inserts);
+		free (s);
+		return NULL;
 	}
 
 	return s;
@@ -53,6 +75,16 @@ ent_session_free (
 {
 	if (s)
 	{
+		size_t deletions_len = ent_deletion_array_len (s->deletions);
+		struct deletion * deletions = ent_deletion_array_ref (s->deletions);
+
+		for (size_t i = 0; i < deletions_len; ++i)
+		{
+			ent_rlist_free (deletions[i].rlist);
+		}
+
+		ent_deletion_array_free (s->deletions);
+
 		size_t inserts_len = ent_array_len (s->inserts);
 		struct insert * inserts = ent_array_ref (s->inserts);
 
@@ -130,7 +162,8 @@ ent_session_table_insert (
 		return -1;
 	}
 
-	struct ent_table * existing = ent_processor_table (s->processor, table_id);
+	struct ent_table * existing =
+	    ent_processor_table (s->processor, table_id);
 
 	if (!existing)
 	{
@@ -160,6 +193,51 @@ ent_session_table_insert (
 	size_t processor_tables_len = ent_processor_tables_len (s->processor);
 
 	return (int) (processor_tables_len + inserts_len);
+}
+
+int
+ent_session_table_delete (
+    struct ent_session * s,
+    int table_id,
+    struct ent_rlist const * rlist)
+{
+	if (!s || !rlist)
+	{
+		return -1;
+	}
+
+	struct ent_table * table =
+	    ent_processor_table (s->processor, table_id);
+
+	if (!table)
+	{
+		return -1;
+	}
+
+	// TODO: copy rlist into rlist_cpy
+	struct ent_rlist * rlist_cpy = ent_rlist_alloc();
+	size_t ranges_len;
+	struct ent_rlist_range const * ranges =
+	    ent_rlist_ranges (rlist, &ranges_len);
+
+	for (size_t i = 0; i < ranges_len; ++i)
+	{
+		ent_rlist_append (rlist_cpy, ranges[i].begin, ranges[i].end);
+	}
+
+	size_t deletions_len = ent_deletion_array_len (s->deletions);
+
+	if (ent_deletion_array_set_len (s->deletions, deletions_len + 1) == -1)
+	{
+		return -1;
+	}
+
+	struct deletion * deletions =
+	    ent_deletion_array_ref (s->deletions);
+
+	deletions[deletions_len].dst = table;
+	deletions[deletions_len].rlist = rlist_cpy;
+	return 0;
 }
 
 void *
@@ -209,6 +287,18 @@ ent_session_commit (
 	if (!s)
 	{
 		return -1;
+	}
+
+	size_t deletions_len = ent_deletion_array_len (s->deletions);
+	struct deletion * deletions = ent_deletion_array_ref (s->deletions);
+
+	for (size_t i = 0; i < deletions_len; ++i)
+	{
+		if (ent_table_delete (deletions[i].dst, deletions[i].rlist) == -1)
+		{
+			// atomicity violation!
+			return -1;
+		}
 	}
 
 	size_t inserts_len = ent_array_len (s->inserts);

@@ -1,8 +1,51 @@
 #include "test/ent_test.h"
 #include "table.h"
 
+void session_supports_deletion()
+{
+	struct ent_model * model = ent_model_alloc();
+	struct ent_processor * processor = ent_processor_alloc (model);
+	int table =
+	    ent_processor_use_table (processor, "table", "w");
+	int column =
+	    ent_processor_use_column (
+	        processor, table, "column", sizeof (int), "w");
+
+	struct ent_session * creating = ent_session_alloc (processor);
+	int new_table = ent_session_table_insert (creating, table, 8);
+	int * new_ints = ent_session_column_ref (creating, new_table, column);
+	for (int i = 0; i < 8; ++i)
+	{
+		new_ints[i] = i;
+	}
+	ent_session_commit (creating);
+	ent_session_free (creating);
+
+	struct ent_session * deleting = ent_session_alloc (processor);
+	struct ent_rlist * rlist = ent_rlist_alloc();
+	ent_rlist_append (rlist, 2, 6);
+	ent_session_table_delete (deleting, table, rlist);
+	ent_rlist_free (rlist);
+	ent_session_commit (deleting);
+	ent_session_free (deleting);
+
+	struct ent_session * checking = ent_session_alloc (processor);
+	assert_true (ent_session_table_len (checking, table) == 4);
+	int * ints = ent_session_column_ref (checking, table, column);
+	assert_true (ints[0] == 0);
+	assert_true (ints[1] == 1);
+	assert_true (ints[2] == 6);
+	assert_true (ints[3] == 7);
+	ent_session_free (checking);
+
+	ent_processor_free (processor);
+	ent_model_free (model);
+}
+
 void session_test()
 {
+	session_supports_deletion();
+
 	assert_true (ent_processor_alloc (NULL) == NULL);
 
 	struct ent_model * model = ent_model_alloc();

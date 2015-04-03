@@ -89,6 +89,12 @@ ent_session_table_insert (
     int table,
     size_t add_size);
 
+int
+ent_session_table_delete (
+    struct ent_session * s,
+    int table,
+    struct ent_rlist const * rlist);
+
 void const *
 ent_session_column_get (
     struct ent_session * s,

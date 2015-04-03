@@ -228,6 +228,14 @@ ent_table_delete (
 		ent_rlist_append (keep, begin, end);
 	}
 
+	if (del_ranges_len && del_ranges[del_ranges_len - 1].end < t->len)
+	{
+		ent_rlist_append (
+		    keep,
+		    del_ranges[del_ranges_len - 1].end,
+		    t->len);
+	}
+
 	size_t columns_len = ent_array_len (t->columns);
 
 	struct column_info * src_columns = ent_array_ref (t->columns);
