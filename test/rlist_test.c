@@ -67,7 +67,7 @@ inverted_range_is_invalid()
 	return 0;
 }
 
-int
+static int
 rlist_general_tests()
 {
 	struct ent_rlist * rlist = ent_rlist_alloc();
@@ -82,6 +82,7 @@ rlist_general_tests()
 	// Append range to empty rlist
 	if (ent_rlist_append (rlist, 2, 5) == -1)
 	{
+		ent_rlist_free (rlist);
 		return -1;
 	}
 
@@ -100,21 +101,33 @@ rlist_general_tests()
 	assert_true (errno = EINVAL);
 
 	// Overlapping range is ok (?)
-	assert_true (ent_rlist_append (rlist, 3, 4) == 0);
+	if (ent_rlist_append (rlist, 3, 4) == -1)
+	{
+		ent_rlist_free (rlist);
+		return -1;
+	}
 	ranges = ent_rlist_ranges (rlist, &ranges_len);
 	assert_true (ranges_len == 1);
 	assert_true (ranges[0].begin == 2);
 	assert_true (ranges[0].end == 5);
 
 	// Extend existing range
-	assert_true (ent_rlist_append (rlist, 5, 7) == 0);
+	if (ent_rlist_append (rlist, 5, 7) == -1)
+	{
+		ent_rlist_free (rlist);
+		return -1;
+	}
 	ranges = ent_rlist_ranges (rlist, &ranges_len);
 	assert_true (ranges_len == 1);
 	assert_true (ranges[0].begin == 2);
 	assert_true (ranges[0].end == 7);
 
 	// Additional range
-	assert_true (ent_rlist_append (rlist, 9, 10) == 0);
+	if (ent_rlist_append (rlist, 9, 10) == -1)
+	{
+		ent_rlist_free (rlist);
+		return -1;
+	}
 	ranges = ent_rlist_ranges (rlist, &ranges_len);
 	assert_true (ranges_len == 2);
 	assert_true (ranges[0].begin == 2);
