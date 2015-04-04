@@ -50,7 +50,7 @@ void ent_model_free (struct ent_model * m)
 
 			for (size_t i = 0; i < tables_len; ++i)
 			{
-				ent_table_decref (tables[i].table);
+				ent_table_free (tables[i].table);
 				ent_alloc ((void**)&tables[i].name, 0);
 			}
 
@@ -122,7 +122,7 @@ struct ent_table * ent_model_get (struct ent_model * m, char const * table_name)
 	if (ent_table_array_set_len (m->tables, tables_len + 1) == -1)
 	{
 		ent_alloc ((void**)&newname, 0);
-		ent_table_decref (t);
+		ent_table_free (t);
 		return NULL;
 	}
 

@@ -50,7 +50,7 @@ ent_table_incref (
 }
 
 void
-ent_table_decref (
+ent_table_free (
     struct ent_table * t)
 {
 	if (t && --t->refcount <= 0)

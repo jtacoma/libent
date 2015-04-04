@@ -12,7 +12,7 @@ ent_table_incref (
     struct ent_table * table);
 
 void
-ent_table_decref (
+ent_table_free (
     struct ent_table * table);
 
 size_t

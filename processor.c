@@ -51,7 +51,7 @@ ent_processor_free (
 
 		for (size_t i = 0; i < tables_len; ++i)
 		{
-			ent_table_decref (tables[i]);
+			ent_table_free (tables[i]);
 		}
 
 		size_t columns_len = ent_array_len (p->columns);

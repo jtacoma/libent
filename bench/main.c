@@ -111,7 +111,7 @@ void update_table_bench (bench_count n)
 
 	update (a, b, c, n);
 
-	ent_table_decref (table);
+	ent_table_free (table);
 }
 
 struct bench_info

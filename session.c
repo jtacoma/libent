@@ -94,7 +94,7 @@ ent_session_free (
 
 		for (size_t i = 0; i < insertions_len; ++i)
 		{
-			ent_table_decref (insertions[i].src);
+			ent_table_free (insertions[i].src);
 		}
 
 		ent_insertion_array_free (s->insertions);
@@ -188,7 +188,7 @@ ent_session_table_insert (
 	if (-1 == ent_insertion_array_set_len (
 	            s->insertions, insertions_len + 1))
 	{
-		ent_table_decref (buffer);
+		ent_table_free (buffer);
 		return -1;
 	}
 

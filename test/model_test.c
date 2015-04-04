@@ -12,7 +12,7 @@ void model_test()
 
 	struct ent_table * items = ent_model_get (m, "items");
 	assert_true (items != NULL);
-	ent_table_decref (items);
+	ent_table_free (items);
 
 	assert_true (ent_model_has (m, "items"));
 	assert_true (ent_model_has (m, NULL) == false);
