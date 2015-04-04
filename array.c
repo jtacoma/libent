@@ -144,10 +144,10 @@ int ent_array_set_len (struct ent_array * a, size_t len)
 			return -1; // out of memory
 		}
 
-		size_t added = len - a->len;
+		size_t added = cap - a->cap;
 
 		memset (
-		    ((uint8_t*)a->start) + (a->width * a->len),
+		    ((uint8_t*)a->start) + (a->width * a->cap),
 		    0,
 		    a->width * added);
 
@@ -157,6 +157,13 @@ int ent_array_set_len (struct ent_array * a, size_t len)
 	{
 		ent_alloc (&a->start, 0);
 		a->cap = 0;
+	}
+	else if (len < a->len)
+	{
+		memset (
+		    ((uint8_t*)a->start) + (a->width * len),
+		    0,
+		    a->width * (a->len - len));
 	}
 
 	a->len = len;

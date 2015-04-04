@@ -56,7 +56,7 @@ ent_session_alloc (
 
 	if (!s->insertions)
 	{
-		free (s);
+		ent_alloc ((void**)&s, 0);
 		return NULL;
 	}
 
@@ -65,7 +65,7 @@ ent_session_alloc (
 	if (!s->deletions)
 	{
 		ent_insertion_array_free (s->insertions);
-		free (s);
+		ent_alloc ((void**)&s, 0);
 		return NULL;
 	}
 
@@ -98,7 +98,7 @@ ent_session_free (
 		}
 
 		ent_insertion_array_free (s->insertions);
-		free (s);
+		ent_alloc ((void**)&s, 0);
 	}
 }
 

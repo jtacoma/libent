@@ -54,7 +54,7 @@ void ent_model_free (struct ent_model * m)
 				ent_alloc ((void**)&tables[i].name, 0);
 			}
 
-			ent_alloc ((void**)&m->tables, 0);
+			ent_table_array_free (m->tables);
 		}
 
 		ent_alloc ((void**)&m, 0);
