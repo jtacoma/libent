@@ -67,8 +67,11 @@ For each allocation function there is a correponding "free" function.
 Out-of-memory conditions are handled in such a way that data structures are left
 in a coherent state and an error value is returned.  For functions returning
 pointers, a return value of NULL indicates an error.  For functions returning
-int, a return value of zero indicates an error.  For simple query functions that
+int, a return value of -1 indicates an error.  For simple query functions that
 return data, a default (zero) value is returned.
+
+In any case, errno is always set to ENOMEM in case of out-of-memory conditions
+and to EINVAL for invalid arguments.
 
 Never (ever) cast away const.
 
