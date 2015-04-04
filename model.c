@@ -8,14 +8,17 @@
 #include <string.h>
 #include <stdlib.h>
 
+typedef struct table
+{
+	char * name;
+	struct ent_table * table;
+} table;
+
+ent_array_typed (table);
+
 struct ent_model
 {
-	struct
-	{
-		char * name;
-		struct ent_table * table;
-	} * tables;
-	size_t tables_len;
+	struct ent_table_array * tables;
 };
 
 struct ent_model * ent_model_alloc()
@@ -25,6 +28,12 @@ struct ent_model * ent_model_alloc()
 	if (ent_alloc ((void**)&model, sizeof (struct ent_model)) == 0)
 	{
 		*model = (struct ent_model) {0};
+		model->tables = ent_table_array_alloc();
+		if (!model->tables)
+		{
+			ent_alloc ((void**)&model, 0);
+			return NULL;
+		}
 	}
 
 	return model;
@@ -36,14 +45,18 @@ void ent_model_free (struct ent_model * m)
 	{
 		if (m->tables)
 		{
-			for (size_t i = 0; i < m->tables_len; ++i)
+			size_t tables_len = ent_table_array_len (m->tables);
+			struct table * tables = ent_table_array_ref (m->tables);
+
+			for (size_t i = 0; i < tables_len; ++i)
 			{
-				ent_table_decref (m->tables[i].table);
-				ent_alloc ((void**)&m->tables[i].name, 0);
+				ent_table_decref (tables[i].table);
+				ent_alloc ((void**)&tables[i].name, 0);
 			}
 
 			ent_alloc ((void**)&m->tables, 0);
 		}
+
 		ent_alloc ((void**)&m, 0);
 	}
 }
@@ -55,9 +68,12 @@ bool ent_model_has (struct ent_model * m, char const * table_name)
 		return false;
 	}
 
-	for (size_t i = 0; i < m->tables_len; ++i)
+	size_t tables_len = ent_table_array_len (m->tables);
+	struct table * tables = ent_table_array_ref (m->tables);
+
+	for (size_t i = 0; i < tables_len; ++i)
 	{
-		if (strcmp (m->tables[i].name, table_name) == 0)
+		if (strcmp (tables[i].name, table_name) == 0)
 		{
 			return true;
 		}
@@ -73,12 +89,15 @@ struct ent_table * ent_model_get (struct ent_model * m, char const * table_name)
 		return NULL;
 	}
 
-	for (size_t i = 0; i < m->tables_len; ++i)
+	size_t tables_len = ent_table_array_len (m->tables);
+	struct table * tables = ent_table_array_ref (m->tables);
+
+	for (size_t i = 0; i < tables_len; ++i)
 	{
-		if (strcmp (m->tables[i].name, table_name) == 0)
+		if (strcmp (tables[i].name, table_name) == 0)
 		{
-			ent_table_incref (m->tables[i].table);
-			return m->tables[i].table;
+			ent_table_incref (tables[i].table);
+			return tables[i].table;
 		}
 	}
 
@@ -93,22 +112,23 @@ struct ent_table * ent_model_get (struct ent_model * m, char const * table_name)
 	memcpy (newname, table_name, name_size);
 
 	struct ent_table * t = ent_table_alloc (0);
+
 	if (!t)
 	{
 		ent_alloc ((void**)&newname, 0);
 		return NULL;
 	}
 
-	if (ent_alloc ((void**)&m->tables, sizeof (*m->tables) * (m->tables_len + 1)) == -1)
+	if (ent_table_array_set_len (m->tables, tables_len + 1) == -1)
 	{
 		ent_alloc ((void**)&newname, 0);
 		ent_table_decref (t);
 		return NULL;
 	}
 
-	m->tables_len += 1;
-	m->tables[m->tables_len - 1].table = t;
-	m->tables[m->tables_len - 1].name = newname;
-	ent_table_incref (m->tables[m->tables_len - 1].table);
-	return m->tables[m->tables_len - 1].table;
+	tables = ent_table_array_ref (m->tables);
+	tables[tables_len].table = t;
+	tables[tables_len].name = newname;
+	ent_table_incref (t);
+	return t;
 }

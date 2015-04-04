@@ -12,11 +12,13 @@
 
 #define inserts_zero ((INT_MAX/4) * 3)
 
-struct insert
+typedef struct insertion
 {
 	struct ent_table * dst;
 	struct ent_table * src;
-};
+} insertion;
+
+ent_array_typed (insertion);
 
 typedef struct deletion
 {
@@ -29,7 +31,7 @@ ent_array_typed (deletion);
 struct ent_session
 {
 	struct ent_processor const * processor;
-	struct ent_array * inserts;
+	struct ent_insertion_array * insertions;
 	struct ent_deletion_array * deletions;
 };
 
@@ -50,9 +52,9 @@ ent_session_alloc (
 	}
 
 	*s = (struct ent_session) {.processor = p};
-	s->inserts = ent_array_alloc (sizeof (struct insert));
+	s->insertions = ent_insertion_array_alloc (sizeof (struct insertion));
 
-	if (!s->inserts)
+	if (!s->insertions)
 	{
 		free (s);
 		return NULL;
@@ -62,7 +64,7 @@ ent_session_alloc (
 
 	if (!s->deletions)
 	{
-		ent_array_free (s->inserts);
+		ent_insertion_array_free (s->insertions);
 		free (s);
 		return NULL;
 	}
@@ -77,7 +79,8 @@ ent_session_free (
 	if (s)
 	{
 		size_t deletions_len = ent_deletion_array_len (s->deletions);
-		struct deletion * deletions = ent_deletion_array_ref (s->deletions);
+		struct deletion * deletions =
+		    ent_deletion_array_ref (s->deletions);
 
 		for (size_t i = 0; i < deletions_len; ++i)
 		{
@@ -86,15 +89,15 @@ ent_session_free (
 
 		ent_deletion_array_free (s->deletions);
 
-		size_t inserts_len = ent_array_len (s->inserts);
-		struct insert * inserts = ent_array_ref (s->inserts);
+		size_t insertions_len = ent_insertion_array_len (s->insertions);
+		struct insertion * insertions = ent_insertion_array_ref (s->insertions);
 
-		for (size_t i = 0; i < inserts_len; ++i)
+		for (size_t i = 0; i < insertions_len; ++i)
 		{
-			ent_table_decref (inserts[i].src);
+			ent_table_decref (insertions[i].src);
 		}
 
-		ent_array_free (s->inserts);
+		ent_insertion_array_free (s->insertions);
 		free (s);
 	}
 }
@@ -119,11 +122,13 @@ ent_session_table (
 		else
 		{
 			index -= tables_len;
-			size_t inserts_len = ent_array_len (s->inserts);
-			if (index < inserts_len)
+			size_t insertions_len =
+			    ent_insertion_array_len (s->insertions);
+			if (index < insertions_len)
 			{
-				struct insert const * inserts = ent_array_get (s->inserts);
-				table = inserts[index].src;
+				struct insertion const * insertions =
+				    ent_insertion_array_get (s->insertions);
+				table = insertions[index].src;
 			}
 		}
 	}
@@ -178,22 +183,23 @@ ent_session_table_insert (
 		return -1;
 	}
 
-	size_t inserts_len = ent_array_len (s->inserts);
+	size_t insertions_len = ent_insertion_array_len (s->insertions);
 
-	if (ent_array_set_len (s->inserts, inserts_len + 1) == -1)
+	if (-1 == ent_insertion_array_set_len (
+	            s->insertions, insertions_len + 1))
 	{
 		ent_table_decref (buffer);
 		return -1;
 	}
 
-	struct insert * inserts = ent_array_ref (s->inserts);
+	struct insertion * insertions = ent_insertion_array_ref (s->insertions);
 
-	inserts[inserts_len].dst = existing;
-	inserts[inserts_len].src = buffer;
+	insertions[insertions_len].dst = existing;
+	insertions[insertions_len].src = buffer;
 
 	size_t processor_tables_len = ent_processor_tables_len (s->processor);
 
-	return (int) (processor_tables_len + inserts_len);
+	return (int) (processor_tables_len + insertions_len);
 }
 
 int
@@ -295,24 +301,26 @@ ent_session_commit (
 
 	for (size_t i = 0; i < deletions_len; ++i)
 	{
-		if (ent_table_delete (deletions[i].dst, deletions[i].rlist) == -1)
+		if (-1 == ent_table_delete (
+		            deletions[i].dst, deletions[i].rlist))
 		{
 			// atomicity violation!
 			return -1;
 		}
 	}
 
-	size_t inserts_len = ent_array_len (s->inserts);
-	struct insert const * inserts = ent_array_get (s->inserts);
+	size_t inserts_len = ent_insertion_array_len (s->insertions);
+	struct insertion const * insertions = ent_insertion_array_get (s->insertions);
 
 	for (size_t i = 0; i < inserts_len; ++i)
 	{
-		struct ent_table * dst_table = inserts[i].dst;
-		struct ent_table * src_table = inserts[i].src;
+		struct ent_table * dst_table = insertions[i].dst;
+		struct ent_table * src_table = insertions[i].src;
 
 		size_t start = ent_table_len (dst_table);
 
-		if (ent_table_grow (dst_table, ent_table_len (src_table)) == -1)
+		if (-1 == ent_table_grow (
+		            dst_table, ent_table_len (src_table)))
 		{
 			// atomicity violation!
 			return -1;
