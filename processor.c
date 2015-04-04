@@ -40,36 +40,6 @@ ent_processor_alloc (
 	return p;
 }
 
-struct ent_processor *
-ent_processor_cpy_alloc (
-    struct ent_processor const * src)
-{
-	struct ent_processor * dst = ent_processor_alloc (src->model);
-
-	if (dst)
-	{
-		*dst = *src;
-		dst->tables = ent_array_cpy_alloc (dst->tables);
-
-		if (!dst->tables)
-		{
-			ent_alloc ((void**)&dst, 0);
-			return NULL;
-		}
-
-		dst->columns = ent_array_cpy_alloc (dst->columns);
-
-		if (!dst->columns)
-		{
-			ent_array_free (dst->tables);
-			ent_alloc ((void**)&dst, 0);
-			return NULL;
-		}
-	}
-
-	return dst;
-}
-
 void
 ent_processor_free (
     struct ent_processor * p)
