@@ -9,16 +9,18 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct column_info
+typedef struct column
 {
 	char * name;
 	struct ent_array * array;
-};
+} column;
+
+ent_array_typed (column);
 
 struct ent_table
 {
 	size_t len;
-	struct ent_array * columns;
+	struct ent_column_array * columns;
 	int refcount;
 };
 
@@ -33,7 +35,7 @@ ent_table_alloc (
 		*t = (struct ent_table) {0};
 		t->len = len;
 		t->refcount = 1;
-		t->columns =  ent_array_alloc (sizeof (struct column_info));
+		t->columns =  ent_column_array_alloc();
 
 		if (!t->columns)
 		{
@@ -68,12 +70,14 @@ ent_table_free (
 		return;
 	}
 
-	if (--t->refcount <= 0)
+	assert (--t->refcount >= 0);
+
+	if (!t->refcount)
 	{
 		if (t->columns)
 		{
-			size_t columns_len = ent_array_len (t->columns);
-			struct column_info * columns = ent_array_ref (t->columns);
+			size_t columns_len = ent_column_array_len (t->columns);
+			struct column * columns = ent_column_array_ref (t->columns);
 
 			for (size_t i = 0; i < columns_len; ++i)
 			{
@@ -81,7 +85,7 @@ ent_table_free (
 				ent_array_free (columns[i].array);
 			}
 
-			ent_array_free (t->columns);
+			ent_column_array_free (t->columns);
 		}
 
 		ent_alloc ((void**)&t, 0);
@@ -98,7 +102,7 @@ ent_table_columns_len (
 		return 0;
 	}
 
-	return ent_array_len (t->columns);
+	return ent_column_array_len (t->columns);
 }
 
 char const *
@@ -113,14 +117,14 @@ ent_table_column_info (
 		return NULL;
 	}
 
-	if (column_index >= ent_array_len (t->columns))
+	if (column_index >= ent_column_array_len (t->columns))
 	{
 		errno = EINVAL;
 		*width = 0;
 		return NULL;
 	}
 
-	struct column_info * columns = ent_array_ref (t->columns);
+	struct column * columns = ent_column_array_ref (t->columns);
 	*width = ent_array_width (columns[column_index].array);
 	return columns[column_index].name;
 }
@@ -150,8 +154,8 @@ ent_table_column (
 		return NULL;
 	}
 
-	size_t columns_len = ent_array_len (t->columns);
-	struct column_info * columns = ent_array_ref (t->columns);
+	size_t columns_len = ent_column_array_len (t->columns);
+	struct column * columns = ent_column_array_ref (t->columns);
 
 	for (size_t i = 0; i < columns_len; ++i)
 	{
@@ -168,17 +172,17 @@ ent_table_column (
 		}
 	}
 
-	if (ent_array_set_len (t->columns, columns_len + 1) == -1)
+	if (ent_column_array_set_len (t->columns, columns_len + 1) == -1)
 	{
 		return NULL;
 	}
 
-	columns = ent_array_ref (t->columns);
+	columns = ent_column_array_ref (t->columns);
 
 	size_t name_size = strlen (name) + 1;
 	if (ent_alloc ((void**)& columns[columns_len].name, name_size) == -1)
 	{
-		ent_array_set_len (t->columns, columns_len);
+		ent_column_array_set_len (t->columns, columns_len);
 		return NULL;
 	}
 
@@ -189,7 +193,7 @@ ent_table_column (
 	if (!columns[columns_len].array)
 	{
 		ent_alloc ((void**)&columns[columns_len].name, 0);
-		ent_array_set_len (t->columns, columns_len);
+		ent_column_array_set_len (t->columns, columns_len);
 		return NULL;
 	}
 
@@ -197,7 +201,7 @@ ent_table_column (
 	{
 		ent_alloc ((void**)&columns[columns_len].name, 0);
 		ent_array_free (columns[columns_len].array);
-		ent_array_set_len (t->columns, columns_len);
+		ent_column_array_set_len (t->columns, columns_len);
 		return NULL;
 	}
 
@@ -254,12 +258,11 @@ ent_table_delete (
 		}
 	}
 
-	size_t columns_len = ent_array_len (t->columns);
+	size_t columns_len = ent_column_array_len (t->columns);
 
-	struct column_info * src_columns = ent_array_ref (t->columns);
+	struct column * src_columns = ent_column_array_ref (t->columns);
 
-	struct ent_array * new_columns =
-	    ent_array_alloc (sizeof (struct column_info));
+	struct ent_column_array * new_columns = ent_column_array_alloc();
 
 	if (!new_columns)
 	{
@@ -267,14 +270,14 @@ ent_table_delete (
 		return -1;
 	}
 
-	if (ent_array_set_len (new_columns, columns_len) == -1)
+	if (ent_column_array_set_len (new_columns, columns_len) == -1)
 	{
 		ent_rlist_free (keep);
-		ent_array_free (new_columns);
+		ent_column_array_free (new_columns);
 		return -1;
 	}
 
-	struct column_info * dst_columns = ent_array_ref (new_columns);
+	struct column * dst_columns = ent_column_array_ref (new_columns);
 
 	size_t new_len = t->len - ent_rlist_len (rlist);
 
@@ -285,12 +288,17 @@ ent_table_delete (
 		if (!dst_columns[i].array ||
 		        ent_array_set_len (dst_columns[i].array, new_len) == -1)
 		{
+			if (dst_columns[i].array)
+			{
+				i += 1;
+			}
+
 			for (size_t k = 0; k < i; ++k)
 			{
 				ent_array_free (dst_columns[k].array);
 			}
 
-			ent_array_free (new_columns);
+			ent_column_array_free (new_columns);
 			ent_rlist_free (keep);
 			return -1;
 		}
@@ -314,7 +322,7 @@ ent_table_delete (
 		ent_array_free (src_columns[i].array);
 	}
 
-	ent_array_free (t->columns);
+	ent_column_array_free (t->columns);
 	t->columns = new_columns;
 	t->len = new_len;
 	return 0;
@@ -333,8 +341,8 @@ ent_table_grow (
 
 	t->len += add;
 
-	size_t columns_len = ent_array_len (t->columns);
-	struct column_info * columns = ent_array_ref (t->columns);
+	size_t columns_len = ent_column_array_len (t->columns);
+	struct column * columns = ent_column_array_ref (t->columns);
 
 	for (size_t i = 0; i < columns_len; ++i)
 	{
