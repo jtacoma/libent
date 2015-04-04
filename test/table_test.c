@@ -4,6 +4,50 @@
 #include "alloc.h"
 #include <errno.h>
 
+static void
+invalid_column_id_sets_einval()
+{
+	struct ent_table * table = ent_table_alloc (4);
+	size_t width = 1;
+	errno = 0;
+	assert_true (ent_table_column_info (table, 1, &width) == NULL);
+	assert_true (width == 0);
+	assert_true (errno == EINVAL);
+	ent_table_free (table);
+}
+
+static void
+null_table_sets_einval()
+{
+	errno = 0;
+	assert_true (ent_table_len (NULL) == 0);
+	assert_true (errno == EINVAL);
+
+	errno = 0;
+	assert_true (ent_table_column (NULL, "test", 1) == NULL);
+	assert_true (errno == EINVAL);
+
+	errno = 0;
+	ent_table_free (NULL);
+	assert_true (errno == EINVAL);
+
+	errno = 0;
+	ent_table_delete (NULL, NULL);
+	assert_true (errno == EINVAL);
+
+	errno = 0;
+	ent_table_column_info (NULL, 0, NULL);
+	assert_true (errno == EINVAL);
+
+	errno = 0;
+	ent_table_incref (NULL);
+	assert_true (errno == EINVAL);
+
+	errno = 0;
+	assert_true (ent_table_columns_len (NULL) == 0);
+	assert_true (errno == EINVAL);
+}
+
 static int
 table_general_test()
 {
@@ -128,6 +172,9 @@ table_general_test()
 
 void table_test()
 {
+	invalid_column_id_sets_einval();
+	null_table_sets_einval();
+
 	size_t zero = ent_alloc_count();
 	assert_true (table_general_test() == 0);
 	size_t used = ent_alloc_count() - zero;

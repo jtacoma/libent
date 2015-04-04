@@ -4,6 +4,8 @@
 #include "array.h"
 #include "alloc.h"
 
+#include <assert.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -47,6 +49,12 @@ void
 ent_table_incref (
     struct ent_table *t)
 {
+	if (!t)
+	{
+		errno = EINVAL;
+		return;
+	}
+
 	t->refcount += 1;
 }
 
@@ -54,7 +62,13 @@ void
 ent_table_free (
     struct ent_table * t)
 {
-	if (t && --t->refcount <= 0)
+	if (!t)
+	{
+		errno = EINVAL;
+		return;
+	}
+
+	if (--t->refcount <= 0)
 	{
 		if (t->columns)
 		{
@@ -78,6 +92,12 @@ size_t
 ent_table_columns_len (
     struct ent_table const * t)
 {
+	if (!t)
+	{
+		errno = EINVAL;
+		return 0;
+	}
+
 	return ent_array_len (t->columns);
 }
 
@@ -87,11 +107,19 @@ ent_table_column_info (
     size_t column_index,
     size_t * width)
 {
+	if (! (t && width))
+	{
+		errno = EINVAL;
+		return NULL;
+	}
+
 	if (column_index >= ent_array_len (t->columns))
 	{
+		errno = EINVAL;
 		*width = 0;
 		return NULL;
 	}
+
 	struct column_info * columns = ent_array_ref (t->columns);
 	*width = ent_array_width (columns[column_index].array);
 	return columns[column_index].name;
@@ -103,6 +131,7 @@ ent_table_len (
 {
 	if (!table)
 	{
+		errno = EINVAL;
 		return 0;
 	}
 
@@ -117,6 +146,7 @@ ent_table_column (
 {
 	if (! (t && name && width))
 	{
+		errno = EINVAL;
 		return NULL;
 	}
 
@@ -181,6 +211,7 @@ ent_table_delete (
 {
 	if (! (t && rlist))
 	{
+		errno = EINVAL;
 		return -1;
 	}
 
@@ -204,6 +235,7 @@ ent_table_delete (
 
 		size_t begin = i == 0 ? 0 : del_ranges[i - 1].end;
 		size_t end = del_ranges[i].begin;
+
 		if (ent_rlist_append (keep, begin, end) == -1)
 		{
 			ent_rlist_free (keep);
@@ -213,10 +245,9 @@ ent_table_delete (
 
 	if (del_ranges_len && del_ranges[del_ranges_len - 1].end < t->len)
 	{
-		if (-1 == ent_rlist_append (
-		            keep,
-		            del_ranges[del_ranges_len - 1].end,
-		            t->len))
+		size_t begin = del_ranges[del_ranges_len - 1].end;
+
+		if (ent_rlist_append (keep, begin, t->len) == -1)
 		{
 			ent_rlist_free (keep);
 			return -1;
@@ -271,17 +302,7 @@ ent_table_delete (
 		void const * src = ent_array_get (src_columns[i].array);
 		size_t width = ent_array_width (dst_columns[i].array);
 
-		if (ent_rlist_select (keep, dst, src, width) == -1)
-		{
-			for (size_t k = 0; k < i; ++k)
-			{
-				ent_array_free (dst_columns[k].array);
-			}
-
-			ent_array_free (new_columns);
-			ent_rlist_free (keep);
-			return -1;
-		}
+		assert (ent_rlist_select (keep, dst, src, width) == 0);
 	}
 
 	ent_rlist_free (keep);
@@ -306,6 +327,7 @@ ent_table_grow (
 {
 	if (! (t && add > 0))
 	{
+		errno = EINVAL;
 		return -1;
 	}
 
@@ -313,6 +335,7 @@ ent_table_grow (
 
 	size_t columns_len = ent_array_len (t->columns);
 	struct column_info * columns = ent_array_ref (t->columns);
+
 	for (size_t i = 0; i < columns_len; ++i)
 	{
 		if (ent_array_set_len (columns[i].array, t->len) == -1)
