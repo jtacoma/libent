@@ -9,6 +9,16 @@ all: .styled tags test bench bin/ent-demo
 .PHONY: test
 test: bin/ent-test
 	./bin/ent-test
+	gcov *.gcda > /dev/null
+	ls *.gcov \
+		| grep -v '_test\|main' \
+		| xargs grep '#####' \
+		| cut -d: -f1,3,4- \
+		| sed -e 's/: */:/' -e 's/\.gcov//' \
+		| grep -v 'EOF' \
+		> test/cov_miss_actual.txt
+	diff test/cov_miss_expected.txt test/cov_miss_actual.txt
+
 
 .PHONY: bench
 bench: bin/ent-bench
