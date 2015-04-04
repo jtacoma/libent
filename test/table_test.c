@@ -1,21 +1,43 @@
 #include "test/ent_test.h"
 #include "table.h"
 #include "array.h"
+#include "alloc.h"
+#include <errno.h>
 
-void
-table_test()
+static int
+table_general_test()
 {
 	// Create a table
 	struct ent_table * table = ent_table_alloc (4);
+
+	if (table == NULL)
+	{
+		return -1;
+	}
+
 	assert_true (table != NULL);
 	assert_true (ent_table_len (table) == 4);
 	assert_true (ent_table_len (NULL) == 0);
 
 	// Add two columns
 	struct ent_array * names = ent_table_column (table, "name",  sizeof (char*));
+
+	if (names == NULL)
+	{
+		ent_table_free (table);
+		return -1;
+	}
+
 	assert_true (names != NULL);
 	assert_true (ent_array_len (names) == 4);
 	struct ent_array * score = ent_table_column (table, "hits", sizeof (uint8_t));
+
+	if (score == NULL)
+	{
+		ent_table_free (table);
+		return -1;
+	}
+
 	assert_true (table != NULL);
 	assert_true (ent_array_len (score) == 4);
 
@@ -38,6 +60,7 @@ table_test()
 
 	// Replace the zero values with some sample data
 	char const * names_src[] = { "Lana", "Archer", "Cyril", "Carol" };
+
 	for (size_t i = 0; i < 4; ++i)
 	{
 		assert_true (names_dst[i] == NULL);
@@ -48,10 +71,36 @@ table_test()
 
 	// Delete some entities
 	struct ent_rlist * delete = ent_rlist_alloc();
+
+	if (delete == NULL)
+	{
+		ent_table_free (table);
+		return -1;
+	}
+
 	assert_true (delete != NULL);
-	assert_true (ent_rlist_append (delete, 0, 1) == 0);
-	assert_true (ent_rlist_append (delete, 3, 4) == 0);
-	assert_true (ent_table_delete (table, delete) == 0);
+
+	if (ent_rlist_append (delete, 0, 1) == -1)
+	{
+		ent_rlist_free (delete);
+		ent_table_free (table);
+		return -1;
+	}
+
+	if (ent_rlist_append (delete, 3, 4) == -1)
+	{
+		ent_rlist_free (delete);
+		ent_table_free (table);
+		return -1;
+	}
+
+	if (ent_table_delete (table, delete) == -1)
+	{
+		ent_rlist_free (delete);
+		ent_table_free (table);
+		return -1;
+	}
+
 	assert_true (ent_table_delete (table, NULL) == -1);
 	assert_true (ent_table_delete (NULL, delete) == -1);
 	ent_rlist_free (delete);
@@ -74,4 +123,20 @@ table_test()
 
 	ent_table_free (table);
 	ent_table_free (NULL);
+	return 0;
+}
+
+void table_test()
+{
+	size_t zero = ent_alloc_count();
+	assert_true (table_general_test() == 0);
+	size_t used = ent_alloc_count() - zero;
+
+	for (size_t i = 1; i <= used; ++i)
+	{
+		ent_alloc_artificial_fail (ent_alloc_count() + i);
+		errno = 0;
+		assert_true (table_general_test() == -1);
+		assert_true (errno == ENOMEM);
+	}
 }

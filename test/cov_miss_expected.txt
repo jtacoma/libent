@@ -41,36 +41,14 @@ session.c:296:		return -1;
 session.c:308:			return -1;
 session.c:326:			return -1;
 session.c:347:				return -1;
-table.c:36:			free (t);
-table.c:91:		*width = 0;
-table.c:92:		return NULL;
-table.c:112:ent_table_has_column_name (
-table.c:116:	if (! (t && name))
-table.c:118:		return false;
-table.c:121:	size_t columns_len = ent_array_len (t->columns);
-table.c:122:	struct column_info * columns = ent_array_ref (t->columns);
-table.c:123:	for (size_t i = 0; i < columns_len; ++i)
-table.c:125:		if (strcmp (columns[i].name, name) == 0)
-table.c:127:			return true;
-table.c:131:	return false;
-table.c:165:		return NULL;
-table.c:175:		ent_array_set_len (t->columns, columns_len);
-table.c:178:		return NULL; // out of memory
-table.c:189:		free (columns[columns_len].name);
-table.c:190:		ent_array_set_len (t->columns, columns_len);
-table.c:191:		return NULL; // out of memory
-table.c:196:		ent_array_free (columns[columns_len].array);
-table.c:197:		free (columns[columns_len].name);
-table.c:198:		return NULL; // out of memory
-table.c:261:			for (size_t k = 0; k < i; ++k)
-table.c:263:				ent_array_free (dst_columns[i].array);
-table.c:266:			ent_array_free (new_columns);
-table.c:267:			ent_rlist_free (keep);
-table.c:268:			return -1;
-table.c:280:			for (size_t k = 0; k < i; ++k)
-table.c:282:				ent_array_free (dst_columns[i].array);
-table.c:285:			ent_array_free (new_columns);
-table.c:286:			ent_rlist_free (keep);
-table.c:287:			return -1;
-table.c:313:		return -1;
-table.c:324:			return -1;
+table.c:92:		*width = 0;
+table.c:93:		return NULL;
+table.c:221:			ent_rlist_free (keep);
+table.c:222:			return -1;
+table.c:276:			for (size_t k = 0; k < i; ++k)
+table.c:278:				ent_array_free (dst_columns[k].array);
+table.c:281:			ent_array_free (new_columns);
+table.c:282:			ent_rlist_free (keep);
+table.c:283:			return -1;
+table.c:309:		return -1;
+table.c:320:			return -1;
