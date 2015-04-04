@@ -3,6 +3,7 @@
 #include "rlist.h"
 #include "array.h"
 
+#include <errno.h>
 #include <string.h>
 #include <stdlib.h>
 
@@ -24,6 +25,12 @@ ent_rlist_alloc()
 	{
 		*rlist = (struct ent_rlist) {0};
 		rlist->ranges = ent_range_array_alloc();
+
+		if (rlist->ranges == NULL)
+		{
+			ent_alloc ((void**)rlist, 0);
+			return NULL;
+		}
 	}
 
 	return rlist;
@@ -33,16 +40,19 @@ void
 ent_rlist_free (
     struct ent_rlist * rlist)
 {
-	if (rlist)
+	if (!rlist)
 	{
-		if (rlist->ranges)
-		{
-			ent_range_array_free (rlist->ranges);
-			rlist->ranges = NULL;
-		}
-
-		free (rlist);
+		errno = EINVAL;
+		return;
 	}
+
+	if (rlist->ranges)
+	{
+		ent_range_array_free (rlist->ranges);
+		rlist->ranges = NULL;
+	}
+
+	ent_alloc ((void**)&rlist, 0);
 }
 
 size_t
@@ -51,6 +61,7 @@ ent_rlist_len (
 {
 	if (!rlist)
 	{
+		errno = EINVAL;
 		return 0;
 	}
 
@@ -64,6 +75,7 @@ ent_rlist_ranges (
 {
 	if (!rlist)
 	{
+		errno = EINVAL;
 		return NULL;
 	}
 
@@ -79,7 +91,8 @@ ent_rlist_append (
 {
 	if (!rlist || end <= begin)
 	{
-		return -1; // null rlist or invalid begin,end values
+		errno = EINVAL;
+		return -1;
 	}
 
 	size_t len = ent_range_array_len (rlist->ranges);
@@ -87,7 +100,8 @@ ent_rlist_append (
 
 	if (ranges && begin < ranges[len - 1].begin)
 	{
-		return -1; // invalid being value
+		errno = EINVAL;
+		return -1;
 	}
 
 	if (ranges && end <= ranges[len - 1].end)
@@ -125,6 +139,7 @@ ent_rlist_select (
 {
 	if (! (rlist && dst && src && width))
 	{
+		errno = EINVAL;
 		return -1;
 	}
 

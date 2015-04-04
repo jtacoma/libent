@@ -6,7 +6,7 @@ valgrind -v --leak-check=full ./bin/ent-test \
 gcov *.gcda > /dev/null
 
 ls *.gcov \
-	| grep -v '_test' \
+	| grep -v '_test\|main' \
 	| xargs grep '#####' \
 	| cut -d: -f1,3,4- \
 	| sed -e 's/: */:/' -e 's/\.gcov//' \
