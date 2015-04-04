@@ -13,6 +13,7 @@ test: bin/ent-test
 	ls *.gcov \
 		| grep -v '_test\|main' \
 		| xargs grep '#####' \
+		| grep -v 'out of memory (for real)' \
 		| cut -d: -f1,3,4- \
 		| sed -e 's/: */:/' -e 's/\.gcov//' \
 		| grep -v 'EOF' \

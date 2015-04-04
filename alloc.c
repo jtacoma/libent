@@ -12,6 +12,7 @@ ent_alloc (void ** ptr, size_t size)
 {
 	if (!ptr)
 	{
+		errno = EINVAL;
 		return -1;
 	}
 
@@ -40,8 +41,8 @@ ent_alloc (void ** ptr, size_t size)
 			return 0;
 		}
 
-		errno = ENOMEM;
-		return -1;
+		errno = ENOMEM; // out of memory (for real)
+		return -1; // out of memory (for real)
 	}
 	else
 	{

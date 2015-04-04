@@ -1,7 +1,8 @@
 #include "test/ent_test.h"
 #include "alloc.h"
+#include <errno.h>
 
-void
+static void
 alloc_counts_allocations()
 {
 	// Note: this test is not thead-safe because the number of allocations
@@ -17,7 +18,7 @@ alloc_counts_allocations()
 	}
 }
 
-void
+static void
 alloc_fails_when_told_to_fail()
 {
 	// Note: this test is not thead-safe because the number of allocations
@@ -36,9 +37,22 @@ alloc_fails_when_told_to_fail()
 	assert_true (ent_alloc_count() - zero == 2);
 }
 
+static void
+null_ptr_set_einval()
+{
+	errno = 0;
+	ent_alloc (NULL, 16);
+	assert_true (errno == EINVAL);
+
+	errno = 0;
+	ent_alloc (NULL, 0);
+	assert_true (errno == EINVAL);
+}
+
 void
 alloc_test()
 {
 	alloc_counts_allocations();
 	alloc_fails_when_told_to_fail();
+	null_ptr_set_einval();
 }
