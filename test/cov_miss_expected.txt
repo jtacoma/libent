@@ -37,6 +37,8 @@ session.c:276:ent_session_column_get (
 session.c:281:	return ent_session_column_ref (s, table, column);
 session.c:290:		return -1;
 session.c:301:			return -1;
+session.c:318:			return -1;
+session.c:339:				return -1;
 table.c:36:			free (t);
 table.c:91:		*width = 0;
 table.c:92:		return NULL;

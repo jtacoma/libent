@@ -312,13 +312,18 @@ ent_session_commit (
 
 		size_t start = ent_table_len (dst_table);
 
-		ent_table_grow (dst_table, ent_table_len (src_table));
+		if (ent_table_grow (dst_table, ent_table_len (src_table)) == -1)
+		{
+			// atomicity violation!
+			return -1;
+		}
 
 		size_t columns_len = ent_table_columns_len (src_table);
 
 		for (size_t k = 0; k < columns_len; ++k)
 		{
 			size_t width;
+
 			char const * name =
 			    ent_table_column_info (src_table, k, &width);
 
@@ -330,7 +335,8 @@ ent_session_commit (
 
 			if (dst_array == NULL)
 			{
-				// um....
+				// atomicity violation!
+				return -1;
 			}
 
 			uint8_t * dst = ent_array_ref (dst_array);
@@ -339,7 +345,7 @@ ent_session_commit (
 
 			uint8_t const * src = ent_array_get (src_array);
 
-			memcpy (dst, src, width * ent_table_len (dst_table));
+			memcpy (dst, src, width * ent_table_len (src_table));
 		}
 	}
 
