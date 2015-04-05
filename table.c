@@ -302,7 +302,7 @@ ent_table_delete (
 		}
 	}
 
-	for (size_t i = 0; i < columns_len; ++i)
+	for (size_t i = 0; new_len && i < columns_len; ++i)
 	{
 		void * dst = ent_array_get (dst_columns[i].array);
 		void const * src = ent_array_get_const (src_columns[i].array);

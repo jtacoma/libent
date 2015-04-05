@@ -98,7 +98,7 @@ invalid_column_id_sets_einval()
 }
 
 static int
-deletion_handles_out_of_memory()
+deletion_handles_out_of_memory (size_t len, size_t start, size_t end)
 {
 	struct ent_table * table = ent_table_alloc();
 
@@ -115,14 +115,14 @@ deletion_handles_out_of_memory()
 		return -1;
 	}
 
-	if (ent_table_grow (table, 64) == -1)
+	if (ent_table_grow (table, len) == -1)
 	{
 		ent_table_free (table);
 		return -1;
 	}
 
-	assert (ent_table_len (table) == 64);
-	assert (ent_array_len (numbers) == 64);
+	assert (ent_table_len (table) == len);
+	assert (ent_array_len (numbers) == len);
 
 	struct ent_rlist * delete = ent_rlist_alloc();
 
@@ -132,7 +132,7 @@ deletion_handles_out_of_memory()
 		return -1;
 	}
 
-	if (ent_rlist_append (delete, 0, 1) == -1)
+	if (ent_rlist_append (delete, start, end) == -1)
 	{
 		ent_rlist_free (delete);
 		ent_table_free (table);
@@ -148,12 +148,55 @@ deletion_handles_out_of_memory()
 
 	ent_rlist_free (delete);
 
-	assert (ent_table_len (table) == 63);
+	assert (ent_table_len (table) == len - (end - start));
 	numbers = ent_table_column (table, "number", sizeof (int));
 	assert (numbers != NULL);
-	assert (ent_array_len (numbers) == 63);
+	assert (ent_array_len (numbers) == len - (end - start));
 
 	ent_table_free (table);
+	return 0;
+}
+
+static int
+table_deletion_edge_cases()
+{
+	struct
+	{
+		size_t len;
+		size_t start;
+		size_t end;
+	} rows [] =
+	{
+		{
+			.len = 64,
+			.start = 0,
+			.end = 1,
+		},
+		{
+			.len = 64,
+			.start = 1,
+			.end = 63,
+		},
+		{
+			.len = 64,
+			.start = 63,
+			.end = 64,
+		},
+		{
+			.len = 64,
+			.start = 0,
+			.end = 64,
+		},
+	};
+
+	for (size_t i = 0; i < sizeof (rows) / sizeof (*rows); ++i)
+	{
+		if (deletion_handles_out_of_memory (rows[i].len, rows[i].start, rows[i].end) == -1)
+		{
+			return -1;
+		}
+	}
+
 	return 0;
 }
 
@@ -297,7 +340,7 @@ void table_test()
 	int (* functions[])() =
 	{
 		table_general_test,
-		deletion_handles_out_of_memory,
+		table_deletion_edge_cases,
 	};
 
 	for (size_t f = 0; f < sizeof (functions) / sizeof (*functions); ++f)
