@@ -104,7 +104,8 @@ void update_arrays_bench (bench_count n)
 
 void update_table_bench (bench_count n)
 {
-	struct ent_table * table = ent_table_alloc ((size_t)n);
+	struct ent_table * table = ent_table_alloc();
+	ent_table_grow (table, (size_t)n);
 	double * a = ent_array_ref (ent_table_column (table, "a", 8));
 	double * b = ent_array_ref (ent_table_column (table, "b", 8));
 	double * c = ent_array_ref (ent_table_column (table, "c", 8));

@@ -111,7 +111,7 @@ struct ent_table * ent_model_get (struct ent_model * m, char const * table_name)
 
 	memcpy (newname, table_name, name_size);
 
-	struct ent_table * t = ent_table_alloc (0);
+	struct ent_table * t = ent_table_alloc();
 
 	if (!t)
 	{

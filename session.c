@@ -176,10 +176,16 @@ ent_session_table_insert (
 		return -1;
 	}
 
-	struct ent_table * buffer = ent_table_alloc (add);
+	struct ent_table * buffer = ent_table_alloc();
 
-	if (buffer == NULL)
+	if (!buffer)
 	{
+		return -1;
+	}
+
+	if (ent_table_grow (buffer, add) == -1)
+	{
+		ent_table_free (buffer);
 		return -1;
 	}
 

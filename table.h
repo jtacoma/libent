@@ -4,8 +4,7 @@
 struct ent_table;
 
 struct ent_table *
-ent_table_alloc (
-    size_t len);
+ent_table_alloc (void);
 
 void
 ent_table_incref (

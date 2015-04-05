@@ -7,7 +7,7 @@
 static void
 invalid_column_id_sets_einval()
 {
-	struct ent_table * table = ent_table_alloc (4);
+	struct ent_table * table = ent_table_alloc();
 	size_t width = 1;
 	errno = 0;
 	assert_true (ent_table_column_info (table, 1, &width) == NULL);
@@ -52,7 +52,7 @@ static int
 table_general_test()
 {
 	// Create a table
-	struct ent_table * table = ent_table_alloc (4);
+	struct ent_table * table = ent_table_alloc();
 
 	if (table == NULL)
 	{
@@ -60,8 +60,7 @@ table_general_test()
 	}
 
 	assert_true (table != NULL);
-	assert_true (ent_table_len (table) == 4);
-	assert_true (ent_table_len (NULL) == 0);
+	assert_true (ent_table_len (table) == 0);
 
 	// Add two columns
 	struct ent_array * names = ent_table_column (table, "name",  sizeof (char*));
@@ -73,7 +72,16 @@ table_general_test()
 	}
 
 	assert_true (names != NULL);
+
+	if (ent_table_grow (table, 4) == -1)
+	{
+		ent_table_free (table);
+		return -1;
+	}
+
+	assert_true (ent_table_len (table) == 4);
 	assert_true (ent_array_len (names) == 4);
+
 	struct ent_array * score = ent_table_column (table, "hits", sizeof (uint8_t));
 
 	if (score == NULL)
