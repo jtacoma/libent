@@ -9,7 +9,7 @@ ent_array_typed (index);
 typedef char const * string;
 ent_array_typed (string);
 
-static void
+static int
 new_array_has_specified_width()
 {
 	errno = 0;
@@ -18,15 +18,17 @@ new_array_has_specified_width()
 
 	if (!array && errno == ENOMEM)
 	{
-		return;
+		return -1;
 	}
 
 	assert (ent_array_width (array) == 32);
 
 	ent_array_free (array);
+
+	return 0;
 }
 
-static void
+static int
 new_array_is_empty()
 {
 	errno = 0;
@@ -35,7 +37,7 @@ new_array_is_empty()
 
 	if (!array && errno == ENOMEM)
 	{
-		return;
+		return -1;
 	}
 
 	assert (errno == 0);
@@ -45,9 +47,11 @@ new_array_is_empty()
 	assert (ent_array_get_const (array) == NULL);
 	assert (ent_array_get (array) == NULL);
 	ent_array_free (array);
+
+	return 0;
 }
 
-static void
+static int
 resized_array_is_set_to_zero()
 {
 	errno = 0;
@@ -56,7 +60,7 @@ resized_array_is_set_to_zero()
 
 	if (!array && errno == ENOMEM)
 	{
-		return;
+		return -1;
 	}
 
 	assert (errno == 0);
@@ -69,7 +73,7 @@ resized_array_is_set_to_zero()
 		if (errno == ENOMEM)
 		{
 			ent_index_array_free (array);
-			return;
+			return -1;
 		}
 
 		assert (errno == 0);
@@ -89,7 +93,7 @@ resized_array_is_set_to_zero()
 		if (errno == ENOMEM)
 		{
 			ent_index_array_free (array);
-			return;
+			return -1;
 		}
 
 		assert (errno == 0);
@@ -103,9 +107,11 @@ resized_array_is_set_to_zero()
 	}
 
 	ent_index_array_free (array);
+
+	return 0;
 }
 
-static void
+static int
 resized_array_retains_data()
 {
 	errno = 0;
@@ -114,7 +120,7 @@ resized_array_retains_data()
 
 	if (!array && errno == ENOMEM)
 	{
-		return;
+		return -1;
 	}
 
 	assert (errno == 0);
@@ -125,7 +131,7 @@ resized_array_retains_data()
 		if (errno == ENOMEM)
 		{
 			ent_index_array_free (array);
-			return;
+			return -1;
 		}
 
 		assert (errno == 0);
@@ -142,7 +148,7 @@ resized_array_retains_data()
 		if (errno == ENOMEM)
 		{
 			ent_index_array_free (array);
-			return;
+			return -1;
 		}
 
 		assert (errno == 0);
@@ -159,9 +165,11 @@ resized_array_retains_data()
 	}
 
 	ent_index_array_free (array);
+
+	return 0;
 }
 
-static void
+static int
 copied_array_keeps_original_data()
 {
 	errno = 0;
@@ -170,7 +178,7 @@ copied_array_keeps_original_data()
 
 	if (!array && errno == ENOMEM)
 	{
-		return;
+		return -1;
 	}
 
 	assert (errno == 0);
@@ -181,7 +189,7 @@ copied_array_keeps_original_data()
 		if (errno == ENOMEM)
 		{
 			ent_array_free (array);
-			return;
+			return -1;
 		}
 
 		assert (errno == 0);
@@ -192,7 +200,7 @@ copied_array_keeps_original_data()
 	if (!copy && errno == ENOMEM)
 	{
 		ent_array_free (array);
-		return;
+		return -1;
 	}
 
 	assert (errno == 0);
@@ -205,9 +213,11 @@ copied_array_keeps_original_data()
 
 	ent_array_free (copy);
 	ent_array_free (array);
+
+	return 0;
 }
 
-static void
+static int
 invalid_arguments_set_EINVAL()
 {
 	errno = 0;
@@ -241,9 +251,11 @@ invalid_arguments_set_EINVAL()
 	errno = 0;
 	ent_array_free (NULL);
 	assert (errno == EINVAL);
+
+	return 0;
 }
 
-static void
+static int
 truncated_array_returns_null()
 {
 	errno = 0;
@@ -252,7 +264,7 @@ truncated_array_returns_null()
 
 	if (!array && errno == ENOMEM)
 	{
-		return;
+		return -1;
 	}
 
 	assert (errno == 0);
@@ -261,7 +273,7 @@ truncated_array_returns_null()
 	if (ent_array_set_len (array, 4) == -1 && errno == ENOMEM)
 	{
 		ent_array_free (array);
-		return;
+		return -1;
 	}
 
 	assert (ent_array_len (array) == 4);
@@ -277,9 +289,11 @@ truncated_array_returns_null()
 	assert (errno == 0);
 
 	ent_array_free (array);
+
+	return 0;
 }
 
-typedef void (*test_function)();
+typedef int (*test_function)();
 
 test_function functions [] =
 {
@@ -308,7 +322,7 @@ array_test()
 			size_t zero = ent_alloc_count();
 			ent_alloc_artificial_fail (zero + 1 + allow);
 			errno = 0;
-			functions[i]();
+			assert (functions[i]() == -1);
 			assert (errno == ENOMEM);
 		}
 
