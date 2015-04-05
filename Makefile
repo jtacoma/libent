@@ -18,8 +18,9 @@ test: bin/ent-test
 		| sed -e 's/: */:/' -e 's/\.gcov//' \
 		| grep -v 'EOF' \
 		> test/cov_miss_actual.txt
-	diff test/cov_miss_expected.txt test/cov_miss_actual.txt
-
+	@diff test/cov_miss_expected.txt test/cov_miss_actual.txt \
+		| grep '^>' \
+		| sed -e 's/^..//' -e 's:$$: // <-- not executed during testing:'
 
 .PHONY: bench
 bench: bin/ent-bench
