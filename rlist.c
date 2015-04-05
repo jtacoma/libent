@@ -7,8 +7,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-typedef struct ent_rlist_range range;
-ent_array_typed (range);
+ent_array_typed (struct ent_rlist_range, range);
 
 struct ent_rlist
 {

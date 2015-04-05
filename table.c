@@ -9,13 +9,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef struct column
+struct column
 {
 	char * name;
 	struct ent_array * array;
-} column;
+};
 
-ent_array_typed (column);
+ent_array_typed (struct column, column);
 
 struct ent_table
 {

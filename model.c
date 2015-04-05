@@ -8,13 +8,13 @@
 #include <string.h>
 #include <stdlib.h>
 
-typedef struct table
+struct table
 {
 	char * name;
 	struct ent_table * table;
-} table;
+};
 
-ent_array_typed (table);
+ent_array_typed (struct table, table);
 
 struct ent_model
 {

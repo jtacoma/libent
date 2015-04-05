@@ -3,11 +3,7 @@
 #include "array.h"
 #include "errno.h"
 
-typedef size_t index;
-ent_array_typed (index);
-
-typedef char const * string;
-ent_array_typed (string);
+ent_array_typed (size_t, index);
 
 static int
 new_array_has_specified_width()

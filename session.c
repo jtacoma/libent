@@ -12,21 +12,21 @@
 
 #define inserts_zero ((INT_MAX/4) * 3)
 
-typedef struct insertion
+struct insertion
 {
 	struct ent_table * dst;
 	struct ent_table * src;
-} insertion;
+};
 
-ent_array_typed (insertion);
+ent_array_typed (struct insertion, insertion);
 
-typedef struct deletion
+struct deletion
 {
 	struct ent_table * dst;
 	struct ent_rlist * rlist;
-} deletion;
+};
 
-ent_array_typed (deletion);
+ent_array_typed (struct deletion, deletion);
 
 struct ent_session
 {
