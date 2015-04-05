@@ -40,7 +40,3 @@ session.c:302:		return -1;
 session.c:314:			return -1;
 session.c:332:			return -1;
 session.c:353:				return -1;
-table.c:254:			ent_rlist_free (keep);
-table.c:255:			return -1;
-table.c:336:		errno = EINVAL;
-table.c:337:		return -1;
