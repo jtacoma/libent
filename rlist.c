@@ -28,7 +28,7 @@ ent_rlist_alloc()
 
 		if (rlist->ranges == NULL)
 		{
-			ent_alloc ((void**)rlist, 0);
+			ent_alloc ((void**)&rlist, 0);
 			return NULL;
 		}
 	}
