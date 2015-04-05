@@ -11,10 +11,10 @@ alloc_counts_allocations()
 	void * mem = NULL;
 	for (size_t i = 0; i < 20; ++i)
 	{
-		assert_true (ent_alloc (&mem, 4) == 0);
-		assert_true (mem);
+		assert (ent_alloc (&mem, 4) == 0);
+		assert (mem);
 		ent_alloc (&mem, 0);
-		assert_true (ent_alloc_count() - zero == i + 1);
+		assert (ent_alloc_count() - zero == i + 1);
 	}
 }
 
@@ -27,14 +27,14 @@ alloc_fails_when_told_to_fail()
 	ent_alloc_artificial_fail (zero + 2);
 
 	void * mem = NULL;
-	assert_true (ent_alloc (&mem, 4) == 0);
-	assert_true (mem);
+	assert (ent_alloc (&mem, 4) == 0);
+	assert (mem);
 	ent_alloc (&mem, 0);
 
 	void * fail = NULL;
-	assert_true (ent_alloc (&fail, 4) == -1);
-	assert_true (fail == NULL);
-	assert_true (ent_alloc_count() - zero == 2);
+	assert (ent_alloc (&fail, 4) == -1);
+	assert (fail == NULL);
+	assert (ent_alloc_count() - zero == 2);
 }
 
 static void
@@ -42,11 +42,11 @@ null_ptr_set_einval()
 {
 	errno = 0;
 	ent_alloc (NULL, 16);
-	assert_true (errno == EINVAL);
+	assert (errno == EINVAL);
 
 	errno = 0;
 	ent_alloc (NULL, 0);
-	assert_true (errno == EINVAL);
+	assert (errno == EINVAL);
 }
 
 void

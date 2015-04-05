@@ -21,7 +21,7 @@ new_array_has_specified_width()
 		return;
 	}
 
-	assert_true (ent_array_width (array) == 32);
+	assert (ent_array_width (array) == 32);
 
 	ent_array_free (array);
 }
@@ -38,12 +38,12 @@ new_array_is_empty()
 		return;
 	}
 
-	assert_true (errno == 0);
-	assert_true (array);
+	assert (errno == 0);
+	assert (array);
 
-	assert_true (ent_array_len (array) == 0);
-	assert_true (ent_array_get (array) == NULL);
-	assert_true (ent_array_ref (array) == NULL);
+	assert (ent_array_len (array) == 0);
+	assert (ent_array_get (array) == NULL);
+	assert (ent_array_ref (array) == NULL);
 	ent_array_free (array);
 }
 
@@ -59,8 +59,8 @@ resized_array_is_set_to_zero()
 		return;
 	}
 
-	assert_true (errno == 0);
-	assert_true (array);
+	assert (errno == 0);
+	assert (array);
 
 	errno = 0;
 
@@ -72,14 +72,14 @@ resized_array_is_set_to_zero()
 			return;
 		}
 
-		assert_true (errno == 0);
+		assert (errno == 0);
 	}
 
-	assert_true (ent_index_array_len (array) == 4);
+	assert (ent_index_array_len (array) == 4);
 
 	for (size_t i = 0; i < 4; ++i)
 	{
-		assert_true (ent_index_array_get (array)[i] == 0);
+		assert (ent_index_array_get (array)[i] == 0);
 	}
 
 	errno = 0;
@@ -92,14 +92,14 @@ resized_array_is_set_to_zero()
 			return;
 		}
 
-		assert_true (errno == 0);
+		assert (errno == 0);
 	}
 
-	assert_true (ent_index_array_len (array) == 16);
+	assert (ent_index_array_len (array) == 16);
 
 	for (size_t i = 0; i < 16; ++i)
 	{
-		assert_true (ent_index_array_get (array)[i] == 0);
+		assert (ent_index_array_get (array)[i] == 0);
 	}
 
 	ent_index_array_free (array);
@@ -117,8 +117,8 @@ resized_array_retains_data()
 		return;
 	}
 
-	assert_true (errno == 0);
-	assert_true (array);
+	assert (errno == 0);
+	assert (array);
 
 	if (ent_index_array_set_len (array, 8) == -1)
 	{
@@ -128,13 +128,13 @@ resized_array_retains_data()
 			return;
 		}
 
-		assert_true (errno == 0);
+		assert (errno == 0);
 	}
 
 	for (size_t i = 0; i < 8; ++i)
 	{
 		ent_index_array_ref (array)[i] = i + 1;
-		assert_true (ent_index_array_get (array)[i] == i + 1);
+		assert (ent_index_array_get (array)[i] == i + 1);
 	}
 
 	if (ent_index_array_set_len (array, 16) == -1)
@@ -145,17 +145,17 @@ resized_array_retains_data()
 			return;
 		}
 
-		assert_true (errno == 0);
+		assert (errno == 0);
 	}
 
 	for (size_t i = 0; i < 8; ++i)
 	{
-		assert_true (ent_index_array_get (array)[i] == i + 1);
+		assert (ent_index_array_get (array)[i] == i + 1);
 	}
 
 	for (size_t i = 8; i < 16; ++i)
 	{
-		assert_true (ent_index_array_get (array)[i] == 0);
+		assert (ent_index_array_get (array)[i] == 0);
 	}
 
 	ent_index_array_free (array);
@@ -173,8 +173,8 @@ copied_array_keeps_original_data()
 		return;
 	}
 
-	assert_true (errno == 0);
-	assert_true (array);
+	assert (errno == 0);
+	assert (array);
 
 	if (ent_array_set_len (array, 8) == -1)
 	{
@@ -184,7 +184,7 @@ copied_array_keeps_original_data()
 			return;
 		}
 
-		assert_true (errno == 0);
+		assert (errno == 0);
 	}
 
 	struct ent_array * copy = ent_array_cpy_alloc (array);
@@ -195,11 +195,11 @@ copied_array_keeps_original_data()
 		return;
 	}
 
-	assert_true (errno == 0);
-	assert_true (copy);
+	assert (errno == 0);
+	assert (copy);
 
-	assert_true (ent_array_get (copy) != ent_array_get (array));
-	assert_true (ent_array_len (copy) == 8);
+	assert (ent_array_get (copy) != ent_array_get (array));
+	assert (ent_array_len (copy) == 8);
 
 	// TODO: verify contents of memory
 
@@ -211,36 +211,36 @@ static void
 invalid_arguments_set_EINVAL()
 {
 	errno = 0;
-	assert_true (ent_array_cpy_alloc (NULL) == NULL);
-	assert_true (errno == EINVAL);
+	assert (ent_array_cpy_alloc (NULL) == NULL);
+	assert (errno == EINVAL);
 
 	errno = 0;
-	assert_true (ent_array_alloc (0) == NULL);
-	assert_true (errno == EINVAL);
+	assert (ent_array_alloc (0) == NULL);
+	assert (errno == EINVAL);
 
 	errno = 0;
-	assert_true (ent_array_get (NULL) == NULL);
-	assert_true (errno == EINVAL);
+	assert (ent_array_get (NULL) == NULL);
+	assert (errno == EINVAL);
 
 	errno = 0;
-	assert_true (ent_array_len (NULL) == 0);
-	assert_true (errno == EINVAL);
+	assert (ent_array_len (NULL) == 0);
+	assert (errno == EINVAL);
 
 	errno = 0;
-	assert_true (ent_array_ref (NULL) == NULL);
-	assert_true (errno == EINVAL);
+	assert (ent_array_ref (NULL) == NULL);
+	assert (errno == EINVAL);
 
 	errno = 0;
-	assert_true (ent_array_set_len (NULL, 1) == -1);
-	assert_true (errno == EINVAL);
+	assert (ent_array_set_len (NULL, 1) == -1);
+	assert (errno == EINVAL);
 
 	errno = 0;
-	assert_true (ent_array_width (NULL) == 0);
-	assert_true (errno == EINVAL);
+	assert (ent_array_width (NULL) == 0);
+	assert (errno == EINVAL);
 
 	errno = 0;
 	ent_array_free (NULL);
-	assert_true (errno == EINVAL);
+	assert (errno == EINVAL);
 }
 
 static void
@@ -255,8 +255,8 @@ truncated_array_returns_null()
 		return;
 	}
 
-	assert_true (errno == 0);
-	assert_true (array);
+	assert (errno == 0);
+	assert (array);
 
 	if (ent_array_set_len (array, 4) == -1 && errno == ENOMEM)
 	{
@@ -264,17 +264,17 @@ truncated_array_returns_null()
 		return;
 	}
 
-	assert_true (ent_array_len (array) == 4);
-	assert_true (ent_array_set_len (array, 0) == 0);
-	assert_true (ent_array_len (array) == 0);
+	assert (ent_array_len (array) == 4);
+	assert (ent_array_set_len (array, 0) == 0);
+	assert (ent_array_len (array) == 0);
 
 	errno = 0;
-	assert_true (ent_array_get (array) == NULL);
-	assert_true (errno == 0);
+	assert (ent_array_get (array) == NULL);
+	assert (errno == 0);
 
 	errno = 0;
-	assert_true (ent_array_ref (array) == NULL);
-	assert_true (errno == 0);
+	assert (ent_array_ref (array) == NULL);
+	assert (errno == 0);
 
 	ent_array_free (array);
 }
@@ -309,7 +309,7 @@ array_test()
 			ent_alloc_artificial_fail (zero + 1 + allow);
 			errno = 0;
 			functions[i]();
-			assert_true (errno == ENOMEM);
+			assert (errno == ENOMEM);
 		}
 
 		ent_alloc_artificial_fail (0);

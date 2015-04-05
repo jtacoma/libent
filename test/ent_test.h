@@ -13,7 +13,7 @@ struct test_context
 void true_or_exit (bool value, char const * file, int line,
                    char const * literal);
 
-#define assert_true(expr) \
+#define assert(expr) \
 	true_or_exit((expr), __FILE__, __LINE__, "false: " #expr)
 
 void alloc_test();
