@@ -82,7 +82,7 @@ ent_array_free (
 }
 
 void const *
-ent_array_get (
+ent_array_get_const (
     struct ent_array const * a)
 {
 	if (!a)
@@ -171,7 +171,7 @@ int ent_array_set_len (struct ent_array * a, size_t len)
 }
 
 void *
-ent_array_ref (
+ent_array_get (
     struct ent_array * a)
 {
 	if (!a)

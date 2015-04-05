@@ -96,7 +96,7 @@ ent_session_table_delete (
     struct ent_rlist const * rlist);
 
 void const *
-ent_session_column_get (
+ent_session_column_get_const (
     struct ent_session * s,
     int table,
     int column);
@@ -107,7 +107,7 @@ ent_session_column_width (
     int column);
 
 void *
-ent_session_column_ref (
+ent_session_column_get (
     struct ent_session * s,
     int table,
     int column);

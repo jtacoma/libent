@@ -46,7 +46,7 @@ void ent_model_free (struct ent_model * m)
 		if (m->tables)
 		{
 			size_t tables_len = ent_table_array_len (m->tables);
-			struct table * tables = ent_table_array_ref (m->tables);
+			struct table * tables = ent_table_array_get (m->tables);
 
 			for (size_t i = 0; i < tables_len; ++i)
 			{
@@ -69,7 +69,7 @@ bool ent_model_has (struct ent_model * m, char const * table_name)
 	}
 
 	size_t tables_len = ent_table_array_len (m->tables);
-	struct table * tables = ent_table_array_ref (m->tables);
+	struct table * tables = ent_table_array_get (m->tables);
 
 	for (size_t i = 0; i < tables_len; ++i)
 	{
@@ -82,7 +82,7 @@ bool ent_model_has (struct ent_model * m, char const * table_name)
 	return false;
 }
 
-struct ent_table * ent_model_get (struct ent_model * m, char const * table_name)
+struct ent_table * ent_model_get_const (struct ent_model * m, char const * table_name)
 {
 	if (! (m && table_name))
 	{
@@ -90,7 +90,7 @@ struct ent_table * ent_model_get (struct ent_model * m, char const * table_name)
 	}
 
 	size_t tables_len = ent_table_array_len (m->tables);
-	struct table * tables = ent_table_array_ref (m->tables);
+	struct table * tables = ent_table_array_get (m->tables);
 
 	for (size_t i = 0; i < tables_len; ++i)
 	{
@@ -126,7 +126,7 @@ struct ent_table * ent_model_get (struct ent_model * m, char const * table_name)
 		return NULL;
 	}
 
-	tables = ent_table_array_ref (m->tables);
+	tables = ent_table_array_get (m->tables);
 	tables[tables_len].table = t;
 	tables[tables_len].name = newname;
 	ent_table_incref (t);

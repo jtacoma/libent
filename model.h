@@ -7,7 +7,7 @@ ent_model_has (
     char const * table_name);
 
 struct ent_table *
-ent_model_get (
+ent_model_get_const (
     struct ent_model * m,
     char const * table_name);
 

@@ -16,7 +16,7 @@ ent_array_free (
     struct ent_array * a);
 
 void const *
-ent_array_get (
+ent_array_get_const (
     struct ent_array const * a);
 
 size_t
@@ -28,7 +28,7 @@ ent_array_width (
     struct ent_array const * a);
 
 void *
-ent_array_ref (
+ent_array_get (
     struct ent_array * a);
 
 int
@@ -50,17 +50,17 @@ ent_array_set_len (
 	{ \
 		ent_array_free ((struct ent_array *) array); \
 	} \
-	static inline T const * ent_ ## T ## _array_get (struct ent_ ## T ## _array const * array) \
+	static inline T const * ent_ ## T ## _array_get_const (struct ent_ ## T ## _array const * array) \
 	{ \
-		return ent_array_get ((struct ent_array const *) array); \
+		return ent_array_get_const ((struct ent_array const *) array); \
 	} \
 	static inline size_t ent_ ## T ## _array_len (struct ent_ ## T ## _array const * array) \
 	{ \
 		return ent_array_len ((struct ent_array const *) array); \
 	} \
-	static inline T * ent_ ## T ## _array_ref (struct ent_ ## T ## _array * array) \
+	static inline T * ent_ ## T ## _array_get (struct ent_ ## T ## _array * array) \
 	{ \
-		return ent_array_ref ((struct ent_array *) array); \
+		return ent_array_get ((struct ent_array *) array); \
 	} \
 	static inline int ent_ ## T ## _array_set_len (struct ent_ ## T ## _array * array, size_t len) \
 	{ \

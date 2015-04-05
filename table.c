@@ -75,7 +75,7 @@ ent_table_free (
 		if (t->columns)
 		{
 			size_t columns_len = ent_column_array_len (t->columns);
-			struct column * columns = ent_column_array_ref (t->columns);
+			struct column * columns = ent_column_array_get (t->columns);
 
 			for (size_t i = 0; i < columns_len; ++i)
 			{
@@ -122,7 +122,7 @@ ent_table_column_info (
 		return NULL;
 	}
 
-	struct column * columns = ent_column_array_ref (t->columns);
+	struct column * columns = ent_column_array_get (t->columns);
 	*width = ent_array_width (columns[column_index].array);
 	return columns[column_index].name;
 }
@@ -153,7 +153,7 @@ ent_table_column (
 	}
 
 	size_t columns_len = ent_column_array_len (t->columns);
-	struct column * columns = ent_column_array_ref (t->columns);
+	struct column * columns = ent_column_array_get (t->columns);
 
 	for (size_t i = 0; i < columns_len; ++i)
 	{
@@ -175,7 +175,7 @@ ent_table_column (
 		return NULL;
 	}
 
-	columns = ent_column_array_ref (t->columns);
+	columns = ent_column_array_get (t->columns);
 
 	size_t name_size = strlen (name) + 1;
 	if (ent_alloc ((void**)& columns[columns_len].name, name_size) == -1)
@@ -258,7 +258,7 @@ ent_table_delete (
 
 	size_t columns_len = ent_column_array_len (t->columns);
 
-	struct column * src_columns = ent_column_array_ref (t->columns);
+	struct column * src_columns = ent_column_array_get (t->columns);
 
 	struct ent_column_array * new_columns = ent_column_array_alloc();
 
@@ -275,7 +275,7 @@ ent_table_delete (
 		return -1;
 	}
 
-	struct column * dst_columns = ent_column_array_ref (new_columns);
+	struct column * dst_columns = ent_column_array_get (new_columns);
 
 	size_t new_len = t->len - ent_rlist_len (rlist);
 
@@ -304,8 +304,8 @@ ent_table_delete (
 
 	for (size_t i = 0; i < columns_len; ++i)
 	{
-		void * dst = ent_array_ref (dst_columns[i].array);
-		void const * src = ent_array_get (src_columns[i].array);
+		void * dst = ent_array_get (dst_columns[i].array);
+		void const * src = ent_array_get_const (src_columns[i].array);
 		size_t width = ent_array_width (dst_columns[i].array);
 
 		assert (ent_rlist_select (keep, dst, src, width) == 0);
@@ -340,7 +340,7 @@ ent_table_grow (
 	t->len += add;
 
 	size_t columns_len = ent_column_array_len (t->columns);
-	struct column * columns = ent_column_array_ref (t->columns);
+	struct column * columns = ent_column_array_get (t->columns);
 
 	for (size_t i = 0; i < columns_len; ++i)
 	{

@@ -34,8 +34,8 @@ session.c:198:		return -1;
 session.c:219:		return -1;
 session.c:227:		return -1;
 session.c:245:		return -1;
-session.c:288:ent_session_column_get (
-session.c:293:	return ent_session_column_ref (s, table, column);
+session.c:288:ent_session_column_get_const (
+session.c:293:	return ent_session_column_get (s, table, column);
 session.c:302:		return -1;
 session.c:314:			return -1;
 session.c:332:			return -1;

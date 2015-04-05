@@ -129,7 +129,7 @@ creator_execute (struct creator * creator, size_t appending)
 
 	// Get a non-const pointer to the appended "mass" data.
 	mass * mass =
-	    ent_session_column_ref (session, new_entities, creator->mass);
+	    ent_session_column_get (session, new_entities, creator->mass);
 
 	if (!mass)
 	{

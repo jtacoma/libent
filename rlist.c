@@ -80,7 +80,7 @@ ent_rlist_ranges (
 	}
 
 	*len = ent_range_array_len (rlist->ranges);
-	return ent_range_array_get (rlist->ranges);
+	return ent_range_array_get_const (rlist->ranges);
 }
 
 int
@@ -96,7 +96,7 @@ ent_rlist_append (
 	}
 
 	size_t len = ent_range_array_len (rlist->ranges);
-	struct ent_rlist_range * ranges = ent_range_array_ref (rlist->ranges);
+	struct ent_rlist_range * ranges = ent_range_array_get (rlist->ranges);
 
 	if (ranges && begin < ranges[len - 1].begin)
 	{
@@ -121,7 +121,7 @@ ent_rlist_append (
 			return -1; // out of memory
 		}
 
-		ranges = ent_range_array_ref (rlist->ranges);
+		ranges = ent_range_array_get (rlist->ranges);
 		ranges[len].begin = begin;
 		ranges[len].end = end;
 		rlist->vlen += end - begin;

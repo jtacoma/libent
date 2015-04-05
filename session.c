@@ -80,7 +80,7 @@ ent_session_free (
 	{
 		size_t deletions_len = ent_deletion_array_len (s->deletions);
 		struct deletion * deletions =
-		    ent_deletion_array_ref (s->deletions);
+		    ent_deletion_array_get (s->deletions);
 
 		for (size_t i = 0; i < deletions_len; ++i)
 		{
@@ -90,7 +90,7 @@ ent_session_free (
 		ent_deletion_array_free (s->deletions);
 
 		size_t insertions_len = ent_insertion_array_len (s->insertions);
-		struct insertion * insertions = ent_insertion_array_ref (s->insertions);
+		struct insertion * insertions = ent_insertion_array_get (s->insertions);
 
 		for (size_t i = 0; i < insertions_len; ++i)
 		{
@@ -127,7 +127,7 @@ ent_session_table (
 			if (index < insertions_len)
 			{
 				struct insertion const * insertions =
-				    ent_insertion_array_get (s->insertions);
+				    ent_insertion_array_get_const (s->insertions);
 				table = insertions[index].src;
 			}
 		}
@@ -198,7 +198,7 @@ ent_session_table_insert (
 		return -1;
 	}
 
-	struct insertion * insertions = ent_insertion_array_ref (s->insertions);
+	struct insertion * insertions = ent_insertion_array_get (s->insertions);
 
 	insertions[insertions_len].dst = existing;
 	insertions[insertions_len].src = buffer;
@@ -246,7 +246,7 @@ ent_session_table_delete (
 	}
 
 	struct deletion * deletions =
-	    ent_deletion_array_ref (s->deletions);
+	    ent_deletion_array_get (s->deletions);
 
 	deletions[deletions_len].dst = table;
 	deletions[deletions_len].rlist = rlist_cpy;
@@ -254,7 +254,7 @@ ent_session_table_delete (
 }
 
 void *
-ent_session_column_ref (
+ent_session_column_get (
     struct ent_session * s,
     int table_id,
     int column_id)
@@ -277,7 +277,7 @@ ent_session_column_ref (
 
 		if (array)
 		{
-			mem = ent_array_ref (array);
+			mem = ent_array_get (array);
 		}
 	}
 
@@ -285,12 +285,12 @@ ent_session_column_ref (
 }
 
 void const *
-ent_session_column_get (
+ent_session_column_get_const (
     struct ent_session * s,
     int table,
     int column)
 {
-	return ent_session_column_ref (s, table, column);
+	return ent_session_column_get (s, table, column);
 }
 
 int
@@ -303,7 +303,7 @@ ent_session_commit (
 	}
 
 	size_t deletions_len = ent_deletion_array_len (s->deletions);
-	struct deletion * deletions = ent_deletion_array_ref (s->deletions);
+	struct deletion * deletions = ent_deletion_array_get (s->deletions);
 
 	for (size_t i = 0; i < deletions_len; ++i)
 	{
@@ -316,7 +316,7 @@ ent_session_commit (
 	}
 
 	size_t inserts_len = ent_insertion_array_len (s->insertions);
-	struct insertion const * insertions = ent_insertion_array_get (s->insertions);
+	struct insertion const * insertions = ent_insertion_array_get_const (s->insertions);
 
 	for (size_t i = 0; i < inserts_len; ++i)
 	{
@@ -353,11 +353,11 @@ ent_session_commit (
 				return -1;
 			}
 
-			uint8_t * dst = ent_array_ref (dst_array);
+			uint8_t * dst = ent_array_get (dst_array);
 
 			dst += width * start;
 
-			uint8_t const * src = ent_array_get (src_array);
+			uint8_t const * src = ent_array_get_const (src_array);
 
 			memcpy (dst, src, width * ent_table_len (src_table));
 		}

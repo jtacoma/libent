@@ -13,7 +13,7 @@ void session_supports_deletion()
 
 	struct ent_session * creating = ent_session_alloc (processor);
 	int new_table = ent_session_table_insert (creating, table, 8);
-	int * new_ints = ent_session_column_ref (creating, new_table, column);
+	int * new_ints = ent_session_column_get (creating, new_table, column);
 	for (int i = 0; i < 8; ++i)
 	{
 		new_ints[i] = i;
@@ -31,7 +31,7 @@ void session_supports_deletion()
 
 	struct ent_session * checking = ent_session_alloc (processor);
 	assert (ent_session_table_len (checking, table) == 4);
-	int * ints = ent_session_column_ref (checking, table, column);
+	int * ints = ent_session_column_get (checking, table, column);
 	assert (ints[0] == 0);
 	assert (ints[1] == 1);
 	assert (ints[2] == 6);
@@ -87,7 +87,7 @@ void session_test()
 		int new_items = ent_session_table_insert (loading, items, 2);
 		assert (new_items >= 0);
 
-		double * b = ent_session_column_ref (loading, new_items, column_b);
+		double * b = ent_session_column_get (loading, new_items, column_b);
 		assert (b);
 		b[0] = 42;
 		b[1] = 43;
@@ -113,7 +113,7 @@ void session_test()
 
 		assert (ent_session_table_len (checking, items) == 2);
 
-		double * b = ent_session_column_ref (checking, items, column_b);
+		double * b = ent_session_column_get (checking, items, column_b);
 		assert (b);
 		assert (b[0] == 42);
 		assert (b[1] == 43);

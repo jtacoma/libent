@@ -214,9 +214,9 @@ table_general_test()
 	assert (ent_table_column (table, "name", sizeof (char*)) != NULL);
 
 	// Get pointers to the initially zero-filled column data
-	void const ** names_dst = ent_array_ref (names);
+	void const ** names_dst = ent_array_get (names);
 	assert (names_dst != NULL);
-	uint8_t * scores_dst = ent_array_ref (score);
+	uint8_t * scores_dst = ent_array_get (score);
 	assert (scores_dst != NULL);
 
 	// Replace the zero values with some sample data
@@ -276,10 +276,10 @@ table_general_test()
 	assert (ent_array_len (score) == 2);
 
 	names = ent_table_column (table, "name", sizeof (char*));
-	names_dst = ent_array_ref (names);
+	names_dst = ent_array_get (names);
 	assert (names_dst != NULL);
 	score = ent_table_column (table, "hits", sizeof (uint8_t));
-	scores_dst = ent_array_ref (score);
+	scores_dst = ent_array_get (score);
 	assert (scores_dst != NULL);
 
 	ent_table_free (table);

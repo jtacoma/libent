@@ -47,7 +47,7 @@ ent_processor_free (
 	if (p)
 	{
 		size_t tables_len = ent_array_len (p->tables);
-		struct ent_table ** tables = ent_array_ref (p->tables);
+		struct ent_table ** tables = ent_array_get (p->tables);
 
 		for (size_t i = 0; i < tables_len; ++i)
 		{
@@ -55,7 +55,7 @@ ent_processor_free (
 		}
 
 		size_t columns_len = ent_array_len (p->columns);
-		struct column_info * columns = ent_array_ref (p->columns);
+		struct column_info * columns = ent_array_get (p->columns);
 
 		for (size_t i = 0; i < columns_len; ++i)
 		{
@@ -88,14 +88,14 @@ ent_processor_use_table (
 		return -1;
 	}
 
-	struct ent_table ** tables = ent_array_ref (p->tables);
+	struct ent_table ** tables = ent_array_get (p->tables);
 
 	if (!tables)
 	{
 		return -1;
 	}
 
-	tables[tables_len] = ent_model_get (p->model, table_name);
+	tables[tables_len] = ent_model_get_const (p->model, table_name);
 
 	if (!tables[tables_len])
 	{
@@ -129,7 +129,7 @@ ent_processor_use_column (
 		return -1;
 	}
 
-	struct ent_table ** tables = ent_array_ref (p->tables);
+	struct ent_table ** tables = ent_array_get (p->tables);
 
 	struct ent_table * table = tables[index];
 
@@ -150,7 +150,7 @@ ent_processor_use_column (
 		return -1;
 	}
 
-	struct column_info * columns = ent_array_ref (p->columns);
+	struct column_info * columns = ent_array_get (p->columns);
 
 	columns[columns_len] = (struct column_info) { .width = width };
 
@@ -213,7 +213,7 @@ ent_processor_table (
 		return NULL;
 	}
 
-	struct ent_table ** tables = ent_array_ref (processor->tables);
+	struct ent_table ** tables = ent_array_get (processor->tables);
 	return tables[index];
 }
 
@@ -229,7 +229,7 @@ ent_processor_column (
 
 	size_t index = (size_t) column_id;
 	size_t columns_len = ent_array_len (processor->columns);
-	struct column_info * columns = ent_array_ref (processor->columns);
+	struct column_info * columns = ent_array_get (processor->columns);
 
 	if (columns_len <= index)
 	{

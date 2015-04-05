@@ -42,8 +42,8 @@ new_array_is_empty()
 	assert (array);
 
 	assert (ent_array_len (array) == 0);
+	assert (ent_array_get_const (array) == NULL);
 	assert (ent_array_get (array) == NULL);
-	assert (ent_array_ref (array) == NULL);
 	ent_array_free (array);
 }
 
@@ -79,7 +79,7 @@ resized_array_is_set_to_zero()
 
 	for (size_t i = 0; i < 4; ++i)
 	{
-		assert (ent_index_array_get (array)[i] == 0);
+		assert (ent_index_array_get_const (array)[i] == 0);
 	}
 
 	errno = 0;
@@ -99,7 +99,7 @@ resized_array_is_set_to_zero()
 
 	for (size_t i = 0; i < 16; ++i)
 	{
-		assert (ent_index_array_get (array)[i] == 0);
+		assert (ent_index_array_get_const (array)[i] == 0);
 	}
 
 	ent_index_array_free (array);
@@ -133,8 +133,8 @@ resized_array_retains_data()
 
 	for (size_t i = 0; i < 8; ++i)
 	{
-		ent_index_array_ref (array)[i] = i + 1;
-		assert (ent_index_array_get (array)[i] == i + 1);
+		ent_index_array_get (array)[i] = i + 1;
+		assert (ent_index_array_get_const (array)[i] == i + 1);
 	}
 
 	if (ent_index_array_set_len (array, 16) == -1)
@@ -150,12 +150,12 @@ resized_array_retains_data()
 
 	for (size_t i = 0; i < 8; ++i)
 	{
-		assert (ent_index_array_get (array)[i] == i + 1);
+		assert (ent_index_array_get_const (array)[i] == i + 1);
 	}
 
 	for (size_t i = 8; i < 16; ++i)
 	{
-		assert (ent_index_array_get (array)[i] == 0);
+		assert (ent_index_array_get_const (array)[i] == 0);
 	}
 
 	ent_index_array_free (array);
@@ -198,7 +198,7 @@ copied_array_keeps_original_data()
 	assert (errno == 0);
 	assert (copy);
 
-	assert (ent_array_get (copy) != ent_array_get (array));
+	assert (ent_array_get_const (copy) != ent_array_get_const (array));
 	assert (ent_array_len (copy) == 8);
 
 	// TODO: verify contents of memory
@@ -219,7 +219,7 @@ invalid_arguments_set_EINVAL()
 	assert (errno == EINVAL);
 
 	errno = 0;
-	assert (ent_array_get (NULL) == NULL);
+	assert (ent_array_get_const (NULL) == NULL);
 	assert (errno == EINVAL);
 
 	errno = 0;
@@ -227,7 +227,7 @@ invalid_arguments_set_EINVAL()
 	assert (errno == EINVAL);
 
 	errno = 0;
-	assert (ent_array_ref (NULL) == NULL);
+	assert (ent_array_get (NULL) == NULL);
 	assert (errno == EINVAL);
 
 	errno = 0;
@@ -269,11 +269,11 @@ truncated_array_returns_null()
 	assert (ent_array_len (array) == 0);
 
 	errno = 0;
-	assert (ent_array_get (array) == NULL);
+	assert (ent_array_get_const (array) == NULL);
 	assert (errno == 0);
 
 	errno = 0;
-	assert (ent_array_ref (array) == NULL);
+	assert (ent_array_get (array) == NULL);
 	assert (errno == 0);
 
 	ent_array_free (array);
