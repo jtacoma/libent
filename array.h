@@ -36,6 +36,10 @@ ent_array_set_len (
     struct ent_array * a,
     size_t add);
 
+int
+ent_array_shrink (
+    struct ent_array * a);
+
 #define ent_array_typed(T, N) \
 	struct ent_ ## N ## _array; \
 	static inline size_t ent_ ## N ## _array_width() \

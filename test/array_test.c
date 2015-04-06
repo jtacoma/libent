@@ -214,7 +214,7 @@ copied_array_keeps_original_data()
 }
 
 static int
-invalid_arguments_set_EINVAL()
+invalid_arguments_set_einval()
 {
 	errno = 0;
 	assert (ent_array_cpy_alloc (NULL) == NULL);
@@ -241,6 +241,10 @@ invalid_arguments_set_EINVAL()
 	assert (errno == EINVAL);
 
 	errno = 0;
+	assert (ent_array_shrink (NULL) == -1);
+	assert (errno == EINVAL);
+
+	errno = 0;
 	assert (ent_array_width (NULL) == 0);
 	assert (errno == EINVAL);
 
@@ -252,7 +256,7 @@ invalid_arguments_set_EINVAL()
 }
 
 static int
-truncated_array_returns_null()
+truncated_and_shrunk_array_returns_null()
 {
 	errno = 0;
 
@@ -277,6 +281,16 @@ truncated_array_returns_null()
 	assert (ent_array_len (array) == 0);
 
 	errno = 0;
+	assert (ent_array_get_const (array) != NULL);
+	assert (errno == 0);
+
+	errno = 0;
+	assert (ent_array_get (array) != NULL);
+	assert (errno == 0);
+
+	assert (ent_array_shrink (array) == 0);
+
+	errno = 0;
 	assert (ent_array_get_const (array) == NULL);
 	assert (errno == 0);
 
@@ -289,6 +303,40 @@ truncated_array_returns_null()
 	return 0;
 }
 
+static int
+array_can_shrink_safely()
+{
+	struct ent_array * array = ent_array_alloc (1);
+
+	if (!array)
+	{
+		return -1;
+	}
+
+	if (ent_array_set_len (array, 4) == -1)
+	{
+		ent_array_free (array);
+		return -1;
+	}
+
+	assert (ent_array_len (array) == 4);
+	assert (ent_array_set_len (array, 1) == 0);
+
+	if (ent_array_shrink (array) == -1)
+	{
+		ent_array_free (array);
+		return -1;
+	}
+
+	// If an array's lenght has not been changed since the last time it was
+	// successfully shrunk then shrinking should always succeed because
+	// nothing needs to be done.
+	assert (ent_array_shrink (array) == 0);
+
+	ent_array_free (array);
+	return 0;
+}
+
 typedef int (*test_function)();
 
 test_function functions [] =
@@ -298,8 +346,9 @@ test_function functions [] =
 	resized_array_is_set_to_zero,
 	resized_array_retains_data,
 	copied_array_keeps_original_data,
-	invalid_arguments_set_EINVAL,
-	truncated_array_returns_null,
+	invalid_arguments_set_einval,
+	truncated_and_shrunk_array_returns_null,
+	array_can_shrink_safely,
 };
 
 void
@@ -310,7 +359,7 @@ array_test()
 	for (size_t i = 0; i < functions_len; ++i)
 	{
 		size_t zero = ent_alloc_count();
-		functions[i]();
+		assert (functions[i]() == 0);
 		size_t used = ent_alloc_count() - zero;
 
 		for (size_t allow = 0; allow < used; ++allow)

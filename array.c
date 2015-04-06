@@ -120,7 +120,10 @@ ent_array_width (
 	return a->width;
 }
 
-int ent_array_set_len (struct ent_array * a, size_t len)
+int
+ent_array_set_len (
+    struct ent_array * a,
+    size_t len)
 {
 	if (!a)
 	{
@@ -153,11 +156,6 @@ int ent_array_set_len (struct ent_array * a, size_t len)
 
 		a->cap = cap;
 	}
-	else if (!len && a->start)
-	{
-		ent_alloc (&a->start, 0);
-		a->cap = 0;
-	}
 	else if (len < a->len)
 	{
 		memset (
@@ -167,6 +165,33 @@ int ent_array_set_len (struct ent_array * a, size_t len)
 	}
 
 	a->len = len;
+	return 0;
+}
+
+int
+ent_array_shrink (
+    struct ent_array * a)
+{
+	if (!a)
+	{
+		errno = EINVAL;
+		return -1;
+	}
+
+	if (a->len == a->cap)
+	{
+		return 0;
+	}
+
+	// When a->len is zero, the effect will be that the memory is freed and
+	// a->start becomes NULL.
+	if (ent_alloc (&a->start, a->len * a->width) == -1)
+	{
+		return -1;
+	}
+
+	a->cap = a->len;
+
 	return 0;
 }
 
