@@ -214,7 +214,7 @@ session_general_test()
 
 		assert (ent_session_table_len (checking, items) == 2);
 
-		double * b = ent_session_column_get (checking, items, column_b);
+		double const * b = ent_session_column_get_const (checking, items, column_b);
 		assert (b);
 		assert (b[0] == 42);
 		assert (b[1] == 43);

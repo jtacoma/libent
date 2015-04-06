@@ -150,22 +150,6 @@ ent_processor_use_column (
 	return (int) columns_len;
 }
 
-int
-ent_processor_set_function (
-    struct ent_processor * p,
-    ent_procfunc function,
-    void * arg)
-{
-	if (! (p && function))
-	{
-		return -1;
-	}
-
-	p->func = function;
-	p->func_arg = arg;
-	return 0;
-}
-
 size_t
 ent_processor_tables_len (
     struct ent_processor const * processor)

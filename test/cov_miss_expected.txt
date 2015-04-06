@@ -1,18 +1,10 @@
-processor.c:154:ent_processor_set_function (
-processor.c:159:	if (! (p && function))
-processor.c:161:		return -1;
-processor.c:164:	p->func = function;
-processor.c:165:	p->func_arg = arg;
-processor.c:166:	return 0;
-processor.c:190:		return NULL;
-processor.c:198:		return NULL;
-processor.c:212:		return (struct column_info) {0};
-processor.c:221:		return (struct column_info) {0};
+processor.c:174:		return NULL;
+processor.c:182:		return NULL;
+processor.c:196:		return (struct column_info) {0};
+processor.c:205:		return (struct column_info) {0};
 session.c:44:		return NULL;
 session.c:131:		ent_table_free (buffer);
 session.c:132:		return NULL;
 session.c:161:		return -1;
 session.c:179:		return -1;
-session.c:219:ent_session_column_get_const (
-session.c:224:	return ent_session_column_get (s, table, column);
 session.c:233:		return -1;
