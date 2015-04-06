@@ -12,7 +12,7 @@ void
 creator_free();
 
 int
-creator_bind_model (struct creator * creator, struct ent_model * model);
+creator_bind (struct creator * creator, struct ent_table * entities);
 
 int
 creator_execute (struct creator * creator, size_t appending);

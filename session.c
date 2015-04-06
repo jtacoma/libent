@@ -1,6 +1,5 @@
 #include "ent.h"
 #include "alloc.h"
-#include "model.h"
 #include "table.h"
 #include "processor.h"
 #include "array.h"
@@ -88,105 +87,48 @@ ent_session_free (
 		}
 
 		ent_deletion_array_free (s->deletions);
-
-		size_t insertions_len = ent_insertion_array_len (s->insertions);
-		struct insertion * insertions = ent_insertion_array_get (s->insertions);
-
-		for (size_t i = 0; i < insertions_len; ++i)
-		{
-			ent_table_free (insertions[i].src);
-		}
-
 		ent_insertion_array_free (s->insertions);
 		ent_alloc ((void**)&s, 0);
 	}
 }
 
-static struct ent_table *
-ent_session_table (
-    struct ent_session const * s,
-    int table_id)
-{
-	struct ent_table * table = NULL;
-
-	if (s)
-	{
-		size_t index = (size_t) table_id;
-		size_t tables_len = ent_processor_tables_len (s->processor);
-		if (index < tables_len)
-		{
-			table = ent_processor_table (
-			            s->processor,
-			            table_id);
-		}
-		else
-		{
-			index -= tables_len;
-			size_t insertions_len =
-			    ent_insertion_array_len (s->insertions);
-			if (index < insertions_len)
-			{
-				struct insertion const * insertions =
-				    ent_insertion_array_get_const (s->insertions);
-				table = insertions[index].src;
-			}
-		}
-	}
-
-	return table;
-}
-
 size_t
 ent_session_table_len (
     struct ent_session * s,
-    int table_id)
+    struct ent_table * table)
 {
 	size_t len = 0;
 
-	if (s)
+	if (s && table)
 	{
-		struct ent_table * table =
-		    ent_session_table (s, table_id);
-
-		if (table)
-		{
-			len = ent_table_len (table);
-		}
+		len = ent_table_len (table);
 	}
 
 	return len;
 }
 
-int
+struct ent_table *
 ent_session_table_insert (
     struct ent_session * s,
-    int table_id,
+    struct ent_table * table,
     size_t add)
 {
-	if (!s || !add)
+	if (! (s && table && add))
 	{
-		return -1;
-	}
-
-	struct ent_table * existing =
-	    ent_processor_table (s->processor, table_id);
-
-	if (!existing)
-	{
-		return -1;
+		return NULL;
 	}
 
 	struct ent_table * buffer = ent_table_alloc();
 
 	if (!buffer)
 	{
-		return -1;
+		return NULL;
 	}
 
 	if (ent_table_grow (buffer, add) == -1)
 	{
 		ent_table_free (buffer);
-		return -1;
+		return NULL;
 	}
 
 	size_t insertions_len = ent_insertion_array_len (s->insertions);
@@ -195,34 +137,25 @@ ent_session_table_insert (
 	            s->insertions, insertions_len + 1))
 	{
 		ent_table_free (buffer);
-		return -1;
+		return NULL;
 	}
 
 	struct insertion * insertions = ent_insertion_array_get (s->insertions);
 
-	insertions[insertions_len].dst = existing;
+	insertions[insertions_len].dst = table;
 	insertions[insertions_len].src = buffer;
 
-	size_t processor_tables_len = ent_processor_tables_len (s->processor);
-
-	return (int) (processor_tables_len + insertions_len);
+	ent_table_incref (buffer);
+	return buffer;
 }
 
 int
 ent_session_table_delete (
     struct ent_session * s,
-    int table_id,
+    struct ent_table * table,
     struct ent_rlist const * rlist)
 {
-	if (!s || !rlist)
-	{
-		return -1;
-	}
-
-	struct ent_table * table =
-	    ent_processor_table (s->processor, table_id);
-
-	if (!table)
+	if (! (s && rlist && table))
 	{
 		return -1;
 	}
@@ -256,7 +189,7 @@ ent_session_table_delete (
 void *
 ent_session_column_get (
     struct ent_session * s,
-    int table_id,
+    struct ent_table * table,
     int column_id)
 {
 	void * mem = NULL;
@@ -265,9 +198,6 @@ ent_session_column_get (
 	{
 		struct column_info const column_info =
 		    ent_processor_column (s->processor, column_id);
-
-		struct ent_table * table =
-		    ent_session_table (s, table_id);
 
 		struct ent_array * array =
 		    ent_table_column (
@@ -287,7 +217,7 @@ ent_session_column_get (
 void const *
 ent_session_column_get_const (
     struct ent_session * s,
-    int table,
+    struct ent_table * table,
     int column)
 {
 	return ent_session_column_get (s, table, column);

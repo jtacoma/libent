@@ -18,7 +18,6 @@ void true_or_exit (bool value, char const * file, int line,
 
 void alloc_test();
 void array_test();
-void model_test();
 void rlist_test();
 void session_test();
 void table_test();

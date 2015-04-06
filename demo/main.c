@@ -9,13 +9,13 @@
 
 int main()
 {
-	struct ent_model * model = ent_model_alloc();
-	assert (model);
+	struct ent_table * entities = ent_table_alloc();
+	assert (entities);
 
 	struct creator * creator = creator_alloc();
 	assert (creator);
 
-	assert (creator_bind_model (creator, model) == 0);
+	assert (creator_bind (creator, entities) == 0);
 
 	for (size_t i = 1; i <= 16; ++i)
 	{
@@ -24,7 +24,7 @@ int main()
 
 	creator_free (creator);
 
-	print (model);
+	print (entities);
 
-	ent_model_free (model);
+	ent_table_free (entities);
 }

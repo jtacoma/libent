@@ -8,7 +8,7 @@
 struct creator
 {
 	struct ent_processor * processor;
-	int entities;
+	struct ent_table * entities;
 	int mass;
 };
 
@@ -31,16 +31,10 @@ creator_free (struct creator * creator)
 	}
 }
 
-static inline int
-use_entities (struct ent_processor * processor, char const * mode)
-{
-	return ent_processor_use_table (processor, "entities", mode);
-}
-
 #define ent_typedef_column(T, N) \
 	static inline int ent_processor_use_ ## N ## _column ( \
 		struct ent_processor * processor, \
-		int table, \
+		struct ent_table * table, \
 		char const * mode) \
 	{ \
 		return ent_processor_use_column ( \
@@ -51,7 +45,7 @@ use_entities (struct ent_processor * processor, char const * mode)
 ent_typedef_column (double, mass);
 
 int
-creator_bind_model (struct creator * creator, struct ent_model * model)
+creator_bind (struct creator * creator, struct ent_table * entities)
 {
 	if (!creator)
 	{
@@ -64,30 +58,32 @@ creator_bind_model (struct creator * creator, struct ent_model * model)
 		ent_processor_free (creator->processor);
 	}
 
-	if (!model)
+	if (!entities)
 	{
 		return 0;
 	}
 
-	creator->processor = ent_processor_alloc (model);
+	creator->entities = entities;
+
+	creator->processor = ent_processor_alloc();
 
 	if (!creator->processor)
 	{
 		return -1;
 	}
 
-	creator->entities = ent_processor_use_table (
-	                        creator->processor, "entities", "w");
-
-	if (creator->entities == -1)
+	if (ent_processor_use_table (
+	            creator->processor, entities, "w")
+	        == -1)
 	{
 		ent_processor_free (creator->processor);
 		creator->processor = NULL;
 		return -1;
 	}
 
-	creator->mass = ent_processor_use_mass_column (
-	                    creator->processor, creator->entities,  "w");
+	creator->mass =
+	    ent_processor_use_mass_column (
+	        creator->processor, creator->entities,  "w");
 
 	if (creator->mass == -1)
 	{
@@ -118,10 +114,10 @@ creator_execute (struct creator * creator, size_t appending)
 
 	// Append some items to the "entities" table.  Data in all columns
 	// defaults to zero.
-	int new_entities =
+	struct ent_table * new_entities =
 	    ent_session_table_insert (session, creator->entities, appending);
 
-	if (new_entities == -1)
+	if (!new_entities)
 	{
 		ent_session_free (session);
 		return -1;

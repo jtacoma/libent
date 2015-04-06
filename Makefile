@@ -7,7 +7,10 @@ CFLAGS+=-std=c11 -Wall -Wextra -Werror -Iinclude
 all: .styled tags test bench bin/ent-demo
 
 .PHONY: test
-test: bin/ent-test
+test: test/cov_miss_actual.txt
+
+test/cov_miss_actual.txt: bin/ent-test
+	rm -f *.gcda
 	./bin/ent-test
 	gcov *.gcda > /dev/null
 	ls *.gcov \

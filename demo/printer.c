@@ -4,18 +4,11 @@
 #include <errno.h>
 #include <stdio.h>
 
-void print (struct ent_model * model)
+void print (struct ent_table * entities)
 {
-	// Allocate a new session in which we will verify that the model has
-	// been changed as described above.  The steps are very similar.
-	struct ent_processor * printer = ent_processor_alloc (model);
+	struct ent_processor * printer = ent_processor_alloc();
 	assert (printer);
 
-	int entities = ent_processor_use_table (printer, "entities", "r");
-	assert (entities >= 0);
-
-	// This time we use the "_r" variant because we're only interested in
-	// reading existing data.
 	int column_mass = ent_processor_use_column (printer, entities, "mass", sizeof (double), "r");
 	assert (column_mass >= 0);
 

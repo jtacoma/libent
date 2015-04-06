@@ -1,6 +1,5 @@
 #include "ent.h"
 #include "alloc.h"
-#include "model.h"
 #include "array.h"
 #include "table.h"
 #include "processor.h"
@@ -12,7 +11,6 @@
 
 struct ent_processor
 {
-	struct ent_model * model;
 	struct ent_array * tables; // struct ent_table **
 	struct ent_array * columns; // struct column_info *
 	ent_procfunc func;
@@ -20,19 +18,13 @@ struct ent_processor
 };
 
 struct ent_processor *
-ent_processor_alloc (
-    struct ent_model * m)
+ent_processor_alloc()
 {
-	if (!m)
-	{
-		return NULL;
-	}
-
 	struct ent_processor * p = NULL;
 
 	if (ent_alloc ((void**)&p, sizeof (*p)) == 0)
 	{
-		*p = (struct ent_processor) {.model = m};
+		*p = (struct ent_processor) {0};
 		p->tables = ent_array_alloc (sizeof (struct ent_table *));
 		p->columns = ent_array_alloc (sizeof (struct column_info));
 	}
@@ -71,15 +63,16 @@ ent_processor_free (
 int
 ent_processor_use_table (
     struct ent_processor * p,
-    char const * table_name,
+    struct ent_table * table,
     char const * mode)
 {
-	if (!p)
+	if (! (p && table && mode))
 	{
 		return -1;
 	}
 
-	(void)mode;//TODO: stop ignoring mode
+	ent_table_incref (table);
+	//TODO: stop ignoring mode
 
 	size_t tables_len = ent_array_len (p->tables);
 
@@ -95,13 +88,7 @@ ent_processor_use_table (
 		return -1;
 	}
 
-	tables[tables_len] = ent_model_get_const (p->model, table_name);
-
-	if (!tables[tables_len])
-	{
-		ent_array_set_len (p->tables, tables_len);
-		return -1;
-	}
+	tables[tables_len] = table;
 
 	return (int) tables_len;
 }
@@ -109,7 +96,7 @@ ent_processor_use_table (
 int
 ent_processor_use_column (
     struct ent_processor * p,
-    int table_id,
+    struct ent_table * table,
     char const * column_name,
     size_t width,
     char const * mode)
@@ -120,18 +107,6 @@ ent_processor_use_column (
 	}
 
 	(void)mode;//TODO: stop ignoring mode
-
-	size_t index = (size_t) table_id;
-	size_t tables_len = ent_array_len (p->tables);
-
-	if (tables_len <= index)
-	{
-		return -1;
-	}
-
-	struct ent_table ** tables = ent_array_get (p->tables);
-
-	struct ent_table * table = tables[index];
 
 	struct ent_array * array = ent_table_column (
 	                               table,

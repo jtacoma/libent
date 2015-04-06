@@ -1,42 +1,46 @@
-model.c:34:			ent_alloc ((void**)&model, 0);
-model.c:35:			return NULL;
-model.c:109:		return NULL;
-model.c:118:		ent_alloc ((void**)&newname, 0);
-model.c:119:		return NULL;
-model.c:124:		ent_alloc ((void**)&newname, 0);
-model.c:125:		ent_table_free (t);
-model.c:126:		return NULL;
+processor.c:81:		return -1;
 processor.c:88:		return -1;
-processor.c:95:		return -1;
-processor.c:150:		return -1;
-processor.c:161:		return -1;
-processor.c:169:ent_processor_set_function (
-processor.c:174:	if (! (p && function))
-processor.c:176:		return -1;
-processor.c:179:	p->func = function;
-processor.c:180:	p->func_arg = arg;
-processor.c:181:	return 0;
-processor.c:205:		return NULL;
-processor.c:227:		return (struct column_info) {0};
-processor.c:236:		return (struct column_info) {0};
-session.c:44:		return NULL;
-session.c:51:		return NULL;
-session.c:59:		ent_alloc ((void**)&s, 0);
-session.c:60:		return NULL;
-session.c:67:		ent_insertion_array_free (s->insertions);
-session.c:68:		ent_alloc ((void**)&s, 0);
-session.c:69:		return NULL;
-session.c:183:		return -1;
-session.c:188:		ent_table_free (buffer);
-session.c:189:		return -1;
-session.c:197:		ent_table_free (buffer);
-session.c:198:		return -1;
-session.c:219:		return -1;
-session.c:227:		return -1;
-session.c:245:		return -1;
-session.c:288:ent_session_column_get_const (
-session.c:293:	return ent_session_column_get (s, table, column);
-session.c:302:		return -1;
-session.c:314:			return -1;
-session.c:332:			return -1;
-session.c:353:				return -1;
+processor.c:125:		return -1;
+processor.c:136:		return -1;
+processor.c:144:ent_processor_set_function (
+processor.c:149:	if (! (p && function))
+processor.c:151:		return -1;
+processor.c:154:	p->func = function;
+processor.c:155:	p->func_arg = arg;
+processor.c:156:	return 0;
+processor.c:160:ent_processor_tables_len (
+processor.c:163:	size_t len = 0;
+processor.c:165:	if (processor)
+processor.c:167:		len = ent_array_len (processor->tables);
+processor.c:170:	return len;
+processor.c:174:ent_processor_table (
+processor.c:178:	if (!processor)
+processor.c:180:		return NULL;
+processor.c:183:	size_t index = (size_t) table_id;
+processor.c:184:	size_t tables_len = ent_array_len (processor->tables);
+processor.c:186:	if (tables_len <= index)
+processor.c:188:		return NULL;
+processor.c:191:	struct ent_table ** tables = ent_array_get (processor->tables);
+processor.c:192:	return tables[index];
+processor.c:202:		return (struct column_info) {0};
+processor.c:211:		return (struct column_info) {0};
+session.c:43:		return NULL;
+session.c:50:		return NULL;
+session.c:58:		ent_alloc ((void**)&s, 0);
+session.c:59:		return NULL;
+session.c:66:		ent_insertion_array_free (s->insertions);
+session.c:67:		ent_alloc ((void**)&s, 0);
+session.c:68:		return NULL;
+session.c:125:		return NULL;
+session.c:130:		ent_table_free (buffer);
+session.c:131:		return NULL;
+session.c:139:		ent_table_free (buffer);
+session.c:140:		return NULL;
+session.c:160:		return -1;
+session.c:178:		return -1;
+session.c:218:ent_session_column_get_const (
+session.c:223:	return ent_session_column_get (s, table, column);
+session.c:232:		return -1;
+session.c:244:			return -1;
+session.c:262:			return -1;
+session.c:283:				return -1;
