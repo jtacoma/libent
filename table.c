@@ -390,3 +390,47 @@ ent_table_pre_grow (
 
 	return 0;
 }
+
+int
+ent_table_insert (
+    struct ent_table * dst_table,
+    struct ent_table * src_table)
+{
+	size_t start = ent_table_len (dst_table);
+
+	if (ent_table_grow (dst_table, ent_table_len (src_table)) == -1)
+	{
+		return -1;
+	}
+
+	size_t columns_len = ent_table_columns_len (src_table);
+
+	for (size_t k = 0; k < columns_len; ++k)
+	{
+		size_t width;
+
+		char const * name =
+		    ent_table_column_info (src_table, k, &width);
+
+		struct ent_array * src_array =
+		    ent_table_column (src_table, name, width);
+
+		struct ent_array * dst_array =
+		    ent_table_column (dst_table, name, width);
+
+		if (dst_array == NULL)
+		{
+			return -1;
+		}
+
+		uint8_t * dst = ent_array_get (dst_array);
+
+		dst += width * start;
+
+		uint8_t const * src = ent_array_get_const (src_array);
+
+		memcpy (dst, src, width * ent_table_len (src_table));
+	}
+
+	return 0;
+}

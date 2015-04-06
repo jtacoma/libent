@@ -5,6 +5,7 @@
 #include "array.h"
 #include "rlist.h"
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
@@ -237,12 +238,7 @@ ent_session_commit (
 
 	for (size_t i = 0; i < deletions_len; ++i)
 	{
-		if (-1 == ent_table_delete (
-		            deletions[i].dst, deletions[i].rlist))
-		{
-			// atomicity violation!
-			return -1;
-		}
+		assert (ent_table_delete (deletions[i].dst, deletions[i].rlist) == 0);
 	}
 
 	size_t inserts_len = ent_insertion_array_len (s->insertions);
@@ -253,44 +249,7 @@ ent_session_commit (
 		struct ent_table * dst_table = insertions[i].dst;
 		struct ent_table * src_table = insertions[i].src;
 
-		size_t start = ent_table_len (dst_table);
-
-		if (-1 == ent_table_grow (
-		            dst_table, ent_table_len (src_table)))
-		{
-			// atomicity violation!
-			return -1;
-		}
-
-		size_t columns_len = ent_table_columns_len (src_table);
-
-		for (size_t k = 0; k < columns_len; ++k)
-		{
-			size_t width;
-
-			char const * name =
-			    ent_table_column_info (src_table, k, &width);
-
-			struct ent_array * src_array =
-			    ent_table_column (src_table, name, width);
-
-			struct ent_array * dst_array =
-			    ent_table_column (dst_table, name, width);
-
-			if (dst_array == NULL)
-			{
-				// atomicity violation!
-				return -1;
-			}
-
-			uint8_t * dst = ent_array_get (dst_array);
-
-			dst += width * start;
-
-			uint8_t const * src = ent_array_get_const (src_array);
-
-			memcpy (dst, src, width * ent_table_len (src_table));
-		}
+		assert (ent_table_insert (dst_table, src_table) == 0);
 	}
 
 	return 0;
