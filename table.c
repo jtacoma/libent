@@ -1,13 +1,14 @@
-#include "ent.h"
-#include "table.h"
-#include "rlist.h"
-#include "array.h"
-#include "alloc.h"
-
 #include <assert.h>
 #include <errno.h>
-#include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
+
+#include "ent.h"
+
+#include "alloc.h"
+#include "array.h"
+#include "rlist.h"
+#include "table.h"
 
 struct column
 {

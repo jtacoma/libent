@@ -1,14 +1,14 @@
-#include "ent.h"
-#include "alloc.h"
-#include "table.h"
-#include "processor.h"
-#include "array.h"
-#include "rlist.h"
+#include <assert.h> // atomicity or death!
+#include <stddef.h>
+#include <stdint.h>
 
-#include <assert.h>
-#include <stdlib.h>
-#include <string.h>
-#include <limits.h>
+#include "ent.h"
+
+#include "alloc.h"
+#include "array.h"
+#include "processor.h"
+#include "rlist.h"
+#include "table.h"
 
 #define inserts_zero ((INT_MAX/4) * 3)
 

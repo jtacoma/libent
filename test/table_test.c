@@ -1,10 +1,4 @@
 #include "test/ent_test.h"
-#include "table.h"
-#include "array.h"
-#include "alloc.h"
-
-#include <errno.h>
-#include <stdint.h>
 
 static void
 null_table_sets_einval()

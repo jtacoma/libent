@@ -1,8 +1,6 @@
 #ifndef LIBENT_ALLOC_H
 #define LIBENT_ALLOC_H
 
-#include <stddef.h>
-
 int ent_alloc (void ** ptr, size_t size);
 
 size_t ent_alloc_count (void);

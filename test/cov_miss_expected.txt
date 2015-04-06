@@ -1,13 +1,13 @@
-processor.c:155:ent_processor_set_function (
-processor.c:160:	if (! (p && function))
-processor.c:162:		return -1;
-processor.c:165:	p->func = function;
-processor.c:166:	p->func_arg = arg;
-processor.c:167:	return 0;
-processor.c:191:		return NULL;
-processor.c:199:		return NULL;
-processor.c:213:		return (struct column_info) {0};
-processor.c:222:		return (struct column_info) {0};
+processor.c:154:ent_processor_set_function (
+processor.c:159:	if (! (p && function))
+processor.c:161:		return -1;
+processor.c:164:	p->func = function;
+processor.c:165:	p->func_arg = arg;
+processor.c:166:	return 0;
+processor.c:190:		return NULL;
+processor.c:198:		return NULL;
+processor.c:212:		return (struct column_info) {0};
+processor.c:221:		return (struct column_info) {0};
 session.c:44:		return NULL;
 session.c:131:		ent_table_free (buffer);
 session.c:132:		return NULL;
@@ -16,9 +16,9 @@ session.c:179:		return -1;
 session.c:219:ent_session_column_get_const (
 session.c:224:	return ent_session_column_get (s, table, column);
 session.c:233:		return -1;
-table.c:353:			return -1;
-table.c:369:		errno = EINVAL;
-table.c:370:		return -1;
-table.c:375:		return 0;
-table.c:403:		return -1;
-table.c:423:			return -1;
+table.c:354:			return -1;
+table.c:370:		errno = EINVAL;
+table.c:371:		return -1;
+table.c:376:		return 0;
+table.c:404:		return -1;
+table.c:424:			return -1;

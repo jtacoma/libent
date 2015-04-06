@@ -1,5 +1,0 @@
-#ifndef ENTLIB_SESSION_H
-#define ENTLIB_SESSION_H
-
-
-#endif//ENTLIB_SESSION_H

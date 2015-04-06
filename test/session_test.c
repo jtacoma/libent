@@ -1,7 +1,4 @@
 #include "test/ent_test.h"
-#include "table.h"
-#include "alloc.h"
-#include <errno.h>
 
 static void
 session_supports_deletion()

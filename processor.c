@@ -1,14 +1,13 @@
+#include <assert.h>
+#include <stdint.h> // for "array.h"
+#include <string.h> // strlen, memcpy
+
 #include "ent.h"
+
 #include "alloc.h"
 #include "array.h"
-#include "table.h"
 #include "processor.h"
-
-#include <assert.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
-#include <limits.h>
+#include "table.h"
 
 struct ent_processor
 {

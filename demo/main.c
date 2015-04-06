@@ -1,11 +1,10 @@
+#include <assert.h>
+#include <stddef.h>
+
 #include "ent.h"
 
 #include "creator.h"
 #include "printer.h"
-
-#include <assert.h>
-#include <errno.h>
-#include <stdio.h>
 
 int main()
 {

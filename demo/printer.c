@@ -1,8 +1,7 @@
-#include "ent.h"
-
 #include <assert.h>
-#include <errno.h>
 #include <stdio.h>
+
+#include "ent.h"
 
 void print (struct ent_table * entities)
 {

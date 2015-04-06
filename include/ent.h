@@ -1,10 +1,6 @@
 #ifndef LIBENT_ENT_H
 #define LIBENT_ENT_H
 
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
-
 struct ent_rlist;
 
 struct ent_rlist *

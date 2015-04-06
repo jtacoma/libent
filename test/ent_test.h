@@ -1,9 +1,17 @@
-#include "ent.h"
-
+#include <errno.h>
 #include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "ent.h"
+
+#include "alloc.h"
+#include "array.h"
+#include "rlist.h"
+#include "table.h"
 
 struct test_context
 {

@@ -1,11 +1,9 @@
-#include "ent.h"
+#include <errno.h>
+#include <stdint.h> // for "array.h"
+#include <string.h> // memcpy, memset
+
 #include "alloc.h"
 #include "array.h"
-#include "rlist.h"
-
-#include <errno.h>
-#include <stdlib.h>
-#include <string.h>
 
 struct ent_array
 {

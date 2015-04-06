@@ -1,8 +1,6 @@
 #ifndef LIBENT_PROCESSOR_H
 #define LIBENT_PROCESSOR_H
 
-#include <stdint.h>
-
 enum mode
 {
 	MODE_CREATE = 1 << 0,

@@ -1,7 +1,4 @@
 #include "test/ent_test.h"
-#include "alloc.h"
-#include "array.h"
-#include "errno.h"
 
 ent_array_typed (size_t, index);
 

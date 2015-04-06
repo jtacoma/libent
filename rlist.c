@@ -1,11 +1,12 @@
-#include "ent.h"
-#include "alloc.h"
-#include "rlist.h"
-#include "array.h"
-
 #include <errno.h>
-#include <string.h>
-#include <stdlib.h>
+#include <stdint.h> // for "array.h"
+#include <string.h> // memcpy
+
+#include "ent.h"
+
+#include "alloc.h"
+#include "array.h"
+#include "rlist.h"
 
 ent_array_typed (struct ent_rlist_range, range);
 

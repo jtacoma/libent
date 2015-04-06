@@ -1,8 +1,4 @@
 #include "test/ent_test.h"
-#include "rlist.h"
-#include "alloc.h"
-
-#include <errno.h>
 
 static int
 new_rlist_is_empty()

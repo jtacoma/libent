@@ -1,6 +1,4 @@
 #include "test/ent_test.h"
-#include "alloc.h"
-#include <errno.h>
 
 static void
 alloc_counts_allocations()

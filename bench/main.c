@@ -1,13 +1,16 @@
-#include "ent.h"
-#include "table.h"
-#include "array.h"
-#include "bench/bench.h"
-
 #include <assert.h>
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+
+#include "ent.h"
+
+// TODO: remove dependenc on internal (hidden) types & functions
+#include "array.h"
+#include "table.h"
+
+#include "bench/bench.h"
 
 FILE * dump = NULL;
 

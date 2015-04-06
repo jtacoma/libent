@@ -1,14 +1,16 @@
-#include "alloc.h"
-
 #include <errno.h>
 #include <stdbool.h>
 #include <stdlib.h>
+
+#include "alloc.h"
 
 static size_t fail_at = 0;
 static size_t allocs = 0;
 
 int
-ent_alloc (void ** ptr, size_t size)
+ent_alloc (
+    void ** ptr,
+    size_t size)
 {
 	if (!ptr)
 	{
@@ -56,12 +58,15 @@ ent_alloc (void ** ptr, size_t size)
 	}
 }
 
-size_t ent_alloc_count()
+size_t
+ent_alloc_count()
 {
 	return allocs;
 }
 
-void ent_alloc_artificial_fail (size_t at_count)
+void
+ent_alloc_artificial_fail (
+    size_t at_count)
 {
 	fail_at = at_count;
 }
