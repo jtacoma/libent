@@ -32,6 +32,10 @@ null_table_sets_einval()
 	assert (errno == EINVAL);
 
 	errno = 0;
+	assert (ent_table_pre_grow (NULL, 1) == -1);
+	assert (errno = EINVAL);
+
+	errno = 0;
 	assert (ent_table_grow (NULL, 1) == -1);
 	assert (errno = EINVAL);
 }
@@ -49,6 +53,15 @@ new_table_is_empty()
 	assert (ent_table_columns_len (table) == 0);
 	assert (errno == 0);
 
+	ent_table_free (table);
+}
+
+static void
+adding_zero_length_is_ok()
+{
+	struct ent_table * table = ent_table_alloc();
+	assert (table);
+	assert (ent_table_grow (table, 0) == 0);
 	ent_table_free (table);
 }
 
@@ -89,6 +102,63 @@ invalid_column_id_sets_einval()
 	assert (errno == EINVAL);
 
 	ent_table_free (table);
+}
+
+static int
+insertion_handles_out_of_memory()
+{
+	struct ent_table * dst = ent_table_alloc();
+
+	if (!dst)
+	{
+		return -1;
+	}
+
+	struct ent_table * src = ent_table_alloc();
+
+	if (!src)
+	{
+		ent_table_free (dst);
+		return -1;
+	}
+
+	bool ok = false;
+
+	do
+	{
+		// The destination table needs to have at least on extant column
+		// to trigger one more line of code coverage.
+		if (!ent_table_column (dst, "some-other-column", 1))
+		{
+			return -1;
+		}
+
+		if (ent_table_grow (src, 1) == -1)
+		{
+			break;
+		}
+
+		struct ent_array * number = ent_table_column (src, "number", sizeof (int));
+
+		if (number == NULL)
+		{
+			break;
+		}
+
+		if (ent_table_insert (dst, src) == -1)
+		{
+			break;
+		}
+
+		assert (ent_table_len (dst) == 1);
+
+		ok = true;
+	}
+	while (0);
+
+	ent_table_free (src);
+	ent_table_free (dst);
+	return ok ? 0 : -1;
 }
 
 static int
@@ -328,13 +398,15 @@ void table_test()
 {
 	null_table_sets_einval();
 	new_table_is_empty();
+	adding_zero_length_is_ok();
 	column_info_can_be_retrieved();
 	invalid_column_id_sets_einval();
 
 	int (* functions[])() =
 	{
-		table_general_test,
+		insertion_handles_out_of_memory,
 		table_deletion_edge_cases,
+		table_general_test,
 	};
 
 	for (size_t f = 0; f < sizeof (functions) / sizeof (*functions); ++f)

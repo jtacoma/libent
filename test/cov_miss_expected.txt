@@ -16,9 +16,3 @@ session.c:179:		return -1;
 session.c:219:ent_session_column_get_const (
 session.c:224:	return ent_session_column_get (s, table, column);
 session.c:233:		return -1;
-table.c:354:			return -1;
-table.c:370:		errno = EINVAL;
-table.c:371:		return -1;
-table.c:376:		return 0;
-table.c:404:		return -1;
-table.c:424:			return -1;

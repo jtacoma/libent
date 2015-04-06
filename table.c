@@ -332,7 +332,7 @@ ent_table_grow (
     struct ent_table * t,
     size_t add)
 {
-	if (! (t && add > 0))
+	if (!t)
 	{
 		errno = EINVAL;
 		return -1;
@@ -349,10 +349,9 @@ ent_table_grow (
 
 	for (size_t i = 0; i < columns_len; ++i)
 	{
-		if (ent_array_set_len (columns[i].array, new_len) == -1)
-		{
-			return -1;
-		}
+		// Due to ent_table_pre_grow above already taking care of
+		// allocations, there's no reason for this to fail.
+		assert (ent_array_set_len (columns[i].array, new_len) == 0);
 	}
 
 	t->len = new_len;
@@ -365,7 +364,7 @@ ent_table_pre_grow (
     struct ent_table * t,
     size_t add)
 {
-	if (! t)
+	if (!t)
 	{
 		errno = EINVAL;
 		return -1;
