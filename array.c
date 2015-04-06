@@ -131,20 +131,39 @@ ent_array_set_len (
 		return -1;
 	}
 
-	if (len > a->cap)
+	if (ent_array_preallocate (a, len) == -1)
 	{
-		size_t cap = a->cap
-		             ? a->cap / 2 * 3 + 1
-		             : 64 / a->width;
+		return -1;
+	}
 
-		if (len > cap)
-		{
-			cap = len;
-		}
+	if (len < a->len)
+	{
+		memset (
+		    ((uint8_t*)a->start) + (a->width * len),
+		    0,
+		    a->width * (a->len - len));
+	}
 
+	a->len = len;
+	return 0;
+}
+
+int
+ent_array_preallocate (
+    struct ent_array * a,
+    size_t cap)
+{
+	if (!a)
+	{
+		errno = EINVAL;
+		return -1;
+	}
+
+	if (cap > a->cap)
+	{
 		if (ent_alloc (&a->start, a->width * cap) == -1)
 		{
-			return -1; // out of memory
+			return -1;
 		}
 
 		size_t added = cap - a->cap;
@@ -156,15 +175,7 @@ ent_array_set_len (
 
 		a->cap = cap;
 	}
-	else if (len < a->len)
-	{
-		memset (
-		    ((uint8_t*)a->start) + (a->width * len),
-		    0,
-		    a->width * (a->len - len));
-	}
 
-	a->len = len;
 	return 0;
 }
 

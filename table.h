@@ -37,4 +37,9 @@ ent_table_grow (
     struct ent_table * table,
     size_t add);
 
+int
+ent_table_pre_grow (
+    struct ent_table * table,
+    size_t add);
+
 #endif//LIBENT_TABLE_H

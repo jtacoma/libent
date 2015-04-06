@@ -337,14 +337,52 @@ ent_table_grow (
 		return -1;
 	}
 
-	t->len += add;
+	if (ent_table_pre_grow (t, add) == -1)
+	{
+		return -1;
+	}
+
+	size_t new_len = t->len + add;
+	size_t columns_len = ent_column_array_len (t->columns);
+	struct column * columns = ent_column_array_get (t->columns);
+
+	for (size_t i = 0; i < columns_len; ++i)
+	{
+		if (ent_array_set_len (columns[i].array, new_len) == -1)
+		{
+			return -1;
+		}
+	}
+
+	t->len = new_len;
+
+	return 0;
+}
+
+int
+ent_table_pre_grow (
+    struct ent_table * t,
+    size_t add)
+{
+	if (! t)
+	{
+		errno = EINVAL;
+		return -1;
+	}
+
+	if (!add)
+	{
+		return 0;
+	}
+
+	size_t new_len = t->len + add;
 
 	size_t columns_len = ent_column_array_len (t->columns);
 	struct column * columns = ent_column_array_get (t->columns);
 
 	for (size_t i = 0; i < columns_len; ++i)
 	{
-		if (ent_array_set_len (columns[i].array, t->len) == -1)
+		if (ent_array_preallocate (columns[i].array, new_len) == -1)
 		{
 			return -1;
 		}

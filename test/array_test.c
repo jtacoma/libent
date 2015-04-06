@@ -241,6 +241,10 @@ invalid_arguments_set_einval()
 	assert (errno == EINVAL);
 
 	errno = 0;
+	assert (ent_array_preallocate (NULL, 1) == -1);
+	assert (errno == EINVAL);
+
+	errno = 0;
 	assert (ent_array_shrink (NULL) == -1);
 	assert (errno == EINVAL);
 

@@ -44,3 +44,7 @@ session.c:232:		return -1;
 session.c:244:			return -1;
 session.c:262:			return -1;
 session.c:283:				return -1;
+table.c:353:			return -1;
+table.c:369:		errno = EINVAL;
+table.c:370:		return -1;
+table.c:375:		return 0;

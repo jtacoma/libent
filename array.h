@@ -34,7 +34,12 @@ ent_array_get (
 int
 ent_array_set_len (
     struct ent_array * a,
-    size_t add);
+    size_t len);
+
+int
+ent_array_preallocate (
+    struct ent_array * a,
+    size_t cap);
 
 int
 ent_array_shrink (
