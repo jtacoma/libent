@@ -20,7 +20,7 @@ test/cov_miss_actual.txt: bin/ent-test
 		| cut -d: -f1,3,4- \
 		| sed -e 's/: */:/' -e 's/\.gcov//' \
 		| grep -v 'EOF' \
-		> test/cov_miss_actual.txt
+		> $@ || touch $@
 	@diff test/cov_miss_expected.txt test/cov_miss_actual.txt \
 		| grep '^>' \
 		| sed -e 's/^..//' -e 's:$$: // <-- not executed during testing:'

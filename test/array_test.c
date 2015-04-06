@@ -264,11 +264,14 @@ invalid_arguments_set_einval()
 
 	if (!keep)
 	{
+		ent_array_free (array);
 		return -1;
 	}
 
 	if (ent_rlist_append (keep, 0, 1) == -1)
 	{
+		ent_rlist_free (keep);
+		ent_array_free (array);
 		return -1;
 	}
 

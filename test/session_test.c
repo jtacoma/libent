@@ -287,11 +287,14 @@ session_general_test()
 
 		if (!load)
 		{
+			ent_table_free (items);
 			return -1;
 		}
 
 		if (ent_processor_use_table (load, items, "w") == -1)
 		{
+			ent_processor_free (load);
+			ent_table_free (items);
 			return -1;
 		}
 
@@ -299,6 +302,8 @@ session_general_test()
 
 		if (column_b == -1)
 		{
+			ent_processor_free (load);
+			ent_table_free (items);
 			return -1;
 		}
 
@@ -306,6 +311,8 @@ session_general_test()
 
 		if (!loading)
 		{
+			ent_processor_free (load);
+			ent_table_free (items);
 			return -1;
 		}
 
@@ -313,6 +320,9 @@ session_general_test()
 
 		if (!new_items)
 		{
+			ent_session_free (loading);
+			ent_processor_free (load);
+			ent_table_free (items);
 			return -1;
 		}
 
@@ -320,6 +330,10 @@ session_general_test()
 
 		if (!b)
 		{
+			ent_table_free (new_items);
+			ent_session_free (loading);
+			ent_processor_free (load);
+			ent_table_free (items);
 			return -1;
 		}
 
@@ -331,6 +345,9 @@ session_general_test()
 		if (ent_session_commit (loading) == -1)
 		{
 			// TODO: verify that no changes were made
+			ent_session_free (loading);
+			ent_processor_free (load);
+			ent_table_free (items);
 			return -1;
 		}
 
@@ -343,12 +360,15 @@ session_general_test()
 
 		if (!check)
 		{
+			ent_table_free (items);
 			return -1;
 		}
 
 		int column_b = ent_processor_use_column (check, items, "b", 8, "w");
 		if (column_b == -1)
 		{
+			ent_processor_free (check);
+			ent_table_free (items);
 			return -1;
 		}
 
@@ -356,6 +376,8 @@ session_general_test()
 
 		if (!checking)
 		{
+			ent_processor_free (check);
+			ent_table_free (items);
 			return -1;
 		}
 
@@ -369,6 +391,8 @@ session_general_test()
 		ent_session_free (checking);
 		ent_processor_free (check);
 	}
+
+	ent_table_free (items);
 
 	return 0;
 }
