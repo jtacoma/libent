@@ -1,7 +1,3 @@
-processor.c:174:		return NULL;
-processor.c:182:		return NULL;
-processor.c:196:		return (struct column_info) {0};
-processor.c:205:		return (struct column_info) {0};
 session.c:44:		return NULL;
 session.c:131:		ent_table_free (buffer);
 session.c:132:		return NULL;

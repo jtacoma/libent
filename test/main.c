@@ -24,6 +24,8 @@ main()
 	printf ("array: passed\n");
 	table_test();
 	printf ("table: passed\n");
+	processor_test();
+	printf ("processor: passed\n");
 	session_test();
 	printf ("session: passed\n");
 }

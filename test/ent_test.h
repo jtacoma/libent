@@ -10,6 +10,7 @@
 
 #include "alloc.h"
 #include "array.h"
+#include "processor.h"
 #include "rlist.h"
 #include "table.h"
 
@@ -26,6 +27,7 @@ void true_or_exit (bool value, char const * file, int line,
 
 void alloc_test();
 void array_test();
+void processor_test();
 void rlist_test();
 void session_test();
 void table_test();
