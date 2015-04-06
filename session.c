@@ -236,13 +236,46 @@ ent_session_commit (
 	size_t deletions_len = ent_deletion_array_len (s->deletions);
 	struct deletion * deletions = ent_deletion_array_get (s->deletions);
 
+	size_t inserts_len = ent_insertion_array_len (s->insertions);
+	struct insertion const * insertions = ent_insertion_array_get_const (s->insertions);
+
+	size_t tables_len = ent_processor_tables_len (s->processor);
+
+	for (size_t table = 0; table < tables_len; ++table)
+	{
+		struct ent_table * dst = ent_processor_table (s->processor, (int)table);
+		size_t old_len = ent_table_len (dst);
+		size_t new_len = old_len;
+
+		for (size_t i = 0; i < deletions_len; ++i)
+		{
+			if (deletions[i].dst == dst)
+			{
+				new_len -= ent_rlist_len (deletions[i].rlist);
+			}
+		}
+
+		for (size_t i = 0; i < inserts_len; ++i)
+		{
+			if (insertions[i].dst == dst)
+			{
+				new_len += ent_table_len (insertions[i].src);
+			}
+		}
+
+		if (new_len > old_len)
+		{
+			if (ent_table_pre_grow (dst, new_len - old_len) == -1)
+			{
+				return -1;
+			}
+		}
+	}
+
 	for (size_t i = 0; i < deletions_len; ++i)
 	{
 		assert (ent_table_delete (deletions[i].dst, deletions[i].rlist) == 0);
 	}
-
-	size_t inserts_len = ent_insertion_array_len (s->insertions);
-	struct insertion const * insertions = ent_insertion_array_get_const (s->insertions);
 
 	for (size_t i = 0; i < inserts_len; ++i)
 	{

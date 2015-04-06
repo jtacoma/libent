@@ -4,6 +4,7 @@
 #include "table.h"
 #include "processor.h"
 
+#include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,7 +27,18 @@ ent_processor_alloc()
 	{
 		*p = (struct ent_processor) {0};
 		p->tables = ent_array_alloc (sizeof (struct ent_table *));
+		if (!p->tables)
+		{
+			ent_alloc ((void**)&p, 0);
+			return NULL;
+		}
 		p->columns = ent_array_alloc (sizeof (struct column_info));
+		if (!p->columns)
+		{
+			ent_array_free (p->tables);
+			ent_alloc ((void**)&p, 0);
+			return NULL;
+		}
 	}
 
 	return p;
@@ -83,10 +95,7 @@ ent_processor_use_table (
 
 	struct ent_table ** tables = ent_array_get (p->tables);
 
-	if (!tables)
-	{
-		return -1;
-	}
+	assert (tables);
 
 	tables[tables_len] = table;
 
@@ -131,10 +140,12 @@ ent_processor_use_column (
 
 	size_t name_len = strlen (column_name) + 1;
 	columns[columns_len].name = NULL;
+
 	if (ent_alloc ((void**)&columns[columns_len].name , name_len) == -1)
 	{
 		return -1;
 	}
+
 	memcpy (columns[columns_len].name, column_name, name_len);
 
 	return (int) columns_len;

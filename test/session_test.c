@@ -1,7 +1,10 @@
 #include "test/ent_test.h"
 #include "table.h"
+#include "alloc.h"
+#include <errno.h>
 
-void session_supports_deletion()
+static void
+session_supports_deletion()
 {
 	struct ent_table * table = ent_table_alloc();
 	assert (table);
@@ -44,70 +47,173 @@ void session_supports_deletion()
 	ent_processor_free (processor);
 }
 
-void session_test()
+static void
+invalid_argument_sets_errno()
 {
-	session_supports_deletion();
+	struct ent_table * table = ent_table_alloc();
+	assert (table);
+	struct ent_processor * processor = ent_processor_alloc();
+	assert (processor);
 
+	errno = 0;
+	assert (ent_processor_use_table (processor, NULL, "w") == -1);
+	assert (errno = EINVAL);
+
+	errno = 0;
+	assert (ent_processor_use_table (NULL, table, "w") == -1);
+	assert (errno = EINVAL);
+
+	errno = 0;
+	assert (ent_processor_use_column (processor, table, "a", 0, "r") == -1);
+	assert (errno = EINVAL);
+
+	errno = 0;
+	assert (ent_processor_use_column (processor, table, NULL, 1, "r") == -1);
+	assert (errno = EINVAL);
+
+	errno = 0;
+	assert (ent_processor_use_column (processor, NULL, "a", 1, "r") == -1);
+	assert (errno = EINVAL);
+
+	errno = 0;
+	assert (ent_processor_use_column (NULL, table, "a", 1, "r") == -1);
+	assert (errno = EINVAL);
+
+	errno = 0;
+	assert (ent_processor_use_column (processor, table, "b", 0, "w") == -1);
+	assert (errno = EINVAL);
+
+	errno = 0;
+	assert (ent_processor_use_column (processor, table, NULL, 8, "w") == -1);
+	assert (errno = EINVAL);
+
+	errno = 0;
+	assert (ent_processor_use_column (processor, NULL, "b", 8, "w") == -1);
+	assert (errno = EINVAL);
+
+	errno = 0;
+	assert (ent_processor_use_column (NULL, table, "b", 8, "w") == -1);
+	assert (errno = EINVAL);
+
+	struct ent_session * session = ent_session_alloc (processor);
+	assert (session);
+
+	errno = 0;
+	assert (ent_session_table_insert (session, table, 0) == NULL);
+	assert (errno = EINVAL);
+
+	errno = 0;
+	assert (ent_session_table_insert (session, NULL, 2) == NULL);
+	assert (errno = EINVAL);
+
+	errno = 0;
+	assert (ent_session_table_insert (NULL, table, 2) == NULL);
+	assert (errno = EINVAL);
+
+	errno = 0;
+	assert (ent_session_table_len (session, NULL) == 0);
+	assert (errno = EINVAL);
+
+	errno = 0;
+	assert (ent_session_table_len (NULL, table) == 0);
+	assert (errno = EINVAL);
+
+	errno = 0;
+	ent_session_free (NULL);
+	assert (errno = EINVAL);
+
+	errno = 0;
+	ent_processor_free (NULL);
+	assert (errno = EINVAL);
+
+	ent_session_free (session);
+	ent_processor_free (processor);
+	ent_table_free (table);
+}
+
+static int
+session_general_test()
+{
 	struct ent_table * items = ent_table_alloc();
-	assert (items);
+
+	if (!items)
+	{
+		return -1;
+	}
 
 	{
 		struct ent_processor * load = ent_processor_alloc();
-		assert (load != NULL);
 
-		assert (ent_processor_use_table (load, items, "w") == 0);
-		assert (ent_processor_use_table (load, NULL, "w") == -1);
-		assert (ent_processor_use_table (NULL, items, "w") == -1);
+		if (!load)
+		{
+			return -1;
+		}
 
-		assert (ent_processor_use_column (load, items, "a", 0, "r") == -1);
-		assert (ent_processor_use_column (load, items, NULL, 1, "r") == -1);
-		assert (ent_processor_use_column (load, NULL, "a", 1, "r") == -1);
-		assert (ent_processor_use_column (NULL, items, "a", 1, "r") == -1);
-
-		assert (ent_processor_use_column (load, items, "b", 0, "w") == -1);
-		assert (ent_processor_use_column (load, items, NULL, 8, "w") == -1);
-		assert (ent_processor_use_column (load, NULL, "b", 8, "w") == -1);
-		assert (ent_processor_use_column (NULL, items, "b", 8, "w") == -1);
+		if (ent_processor_use_table (load, items, "w") == -1)
+		{
+			return -1;
+		}
 
 		int column_b = ent_processor_use_column (load, items, "b", 8, "w");
-		assert (column_b >= 0);
+
+		if (column_b == -1)
+		{
+			return -1;
+		}
 
 		struct ent_session * loading = ent_session_alloc (load);
-		assert (loading);
-
-		assert (ent_session_table_len (loading, items) == 0);
-		assert (ent_session_table_len (loading, NULL) == 0);
-		assert (ent_session_table_len (NULL, items) == 0);
-
-		assert (ent_session_table_insert (loading, items, 0) == NULL);
-		assert (ent_session_table_insert (loading, NULL, 2) == NULL);
-		assert (ent_session_table_insert (NULL, items, 2) == NULL);
+		if (!loading)
+		{
+			return -1;
+		}
 
 		struct ent_table * new_items = ent_session_table_insert (loading, items, 2);
-		assert (new_items);
+		if (!new_items)
+		{
+			return -1;
+		}
 
 		double * b = ent_session_column_get (loading, new_items, column_b);
-		assert (b);
+		if (!b)
+		{
+			return -1;
+		}
+
 		b[0] = 42;
 		b[1] = 43;
 
 		ent_table_free (new_items);
-		assert (ent_session_commit (loading) == 0);
+
+		if (ent_session_commit (loading) == -1)
+		{
+			// TODO: verify that no changes were made
+			return -1;
+		}
+
 		ent_session_free (loading);
 		ent_processor_free (load);
-		ent_processor_free (NULL);
 	}
 
 	{
 		struct ent_processor * check = ent_processor_alloc();
-		assert (check);
-		assert (ent_processor_use_column (check, items, NULL, 8, "w") == -1);
-		assert (ent_processor_use_column (check, NULL, "b", 8, "w") == -1);
-		assert (ent_processor_use_column (NULL, items, "b", 8, "w") == -1);
+
+		if (!check)
+		{
+			return -1;
+		}
+
 		int column_b = ent_processor_use_column (check, items, "b", 8, "w");
-		assert (column_b != -1);
+		if (column_b == -1)
+		{
+			return -1;
+		}
 
 		struct ent_session * checking = ent_session_alloc (check);
+
+		if (!checking)
+		{
+			return -1;
+		}
 
 		assert (ent_session_table_len (checking, items) == 2);
 
@@ -118,5 +224,33 @@ void session_test()
 
 		ent_session_free (checking);
 		ent_processor_free (check);
+	}
+
+	return 0;
+}
+
+void session_test()
+{
+	invalid_argument_sets_errno();
+	session_supports_deletion();
+
+	int (* functions[])() =
+	{
+		session_general_test,
+	};
+
+	for (size_t f = 0; f < sizeof (functions) / sizeof (*functions); ++f)
+	{
+		size_t zero = ent_alloc_count();
+		assert (functions[f]() == 0);
+		size_t used = ent_alloc_count() - zero;
+
+		for (size_t m = 1; m <= used; ++m)
+		{
+			ent_alloc_artificial_fail (ent_alloc_count() + m);
+			errno = 0;
+			assert (functions[f]() == -1);
+			assert (errno == ENOMEM);
+		}
 	}
 }
