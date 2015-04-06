@@ -253,6 +253,30 @@ invalid_arguments_set_einval()
 	ent_array_free (NULL);
 	assert (errno == EINVAL);
 
+	struct ent_array * array = ent_array_alloc (1);
+
+	if (!array)
+	{
+		return -1;
+	}
+
+	struct ent_rlist * keep = ent_rlist_alloc();
+
+	if (!keep)
+	{
+		return -1;
+	}
+
+	if (ent_rlist_append (keep, 0, 1) == -1)
+	{
+		return -1;
+	}
+
+	assert (ent_array_select_in_place (array, keep) == -1);
+
+	ent_rlist_free (keep);
+	ent_array_free (array);
+
 	return 0;
 }
 

@@ -41,10 +41,6 @@ null_rlist_sets_einval()
 	assert (errno == EINVAL);
 
 	errno = 0;
-	ent_rlist_select (NULL, NULL, NULL, 1);
-	assert (errno == EINVAL);
-
-	errno = 0;
 	ent_rlist_free (NULL);
 	assert (errno == EINVAL);
 

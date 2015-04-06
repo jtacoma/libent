@@ -104,6 +104,25 @@ invalid_column_id_sets_einval()
 	ent_table_free (table);
 }
 
+static void
+deleting_beyond_end_of_table_set_einval()
+{
+	struct ent_table * table = ent_table_alloc();
+	assert (table);
+
+	struct ent_rlist * rlist = ent_rlist_alloc();
+	assert (rlist);
+
+	assert (ent_rlist_append (rlist, 0, 1) == 0);
+
+	errno = 0;
+	assert (ent_table_delete (table, rlist) == -1);
+	assert (errno == EINVAL);
+
+	ent_rlist_free (rlist);
+	ent_table_free (table);
+}
+
 static int
 insertion_handles_out_of_memory()
 {
@@ -203,14 +222,33 @@ deletion_handles_out_of_memory (size_t len, size_t start, size_t end)
 		return -1;
 	}
 
-	if (ent_table_delete (table, delete) == -1)
+	struct ent_rlist * keep = ent_rlist_alloc();
+
+	if (!keep)
 	{
 		ent_rlist_free (delete);
 		ent_table_free (table);
 		return -1;
 	}
 
+	if (ent_rlist_append_inverse (keep, delete, ent_table_len (table)) == -1)
+	{
+		ent_rlist_free (keep);
+		ent_rlist_free (delete);
+		ent_table_free (table);
+		return -1;
+	}
+
 	ent_rlist_free (delete);
+
+	if (ent_table_delete (table, keep) == -1)
+	{
+		ent_rlist_free (keep);
+		ent_table_free (table);
+		return -1;
+	}
+
+	ent_rlist_free (keep);
 
 	assert (ent_table_len (table) == len - (end - start));
 	numbers = ent_table_column (table, "number", sizeof (int));
@@ -401,6 +439,7 @@ void table_test()
 	adding_zero_length_is_ok();
 	column_info_can_be_retrieved();
 	invalid_column_id_sets_einval();
+	deleting_beyond_end_of_table_set_einval();
 
 	int (* functions[])() =
 	{

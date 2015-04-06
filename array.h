@@ -45,6 +45,11 @@ int
 ent_array_shrink (
     struct ent_array * a);
 
+int
+ent_array_select_in_place (
+    struct ent_array * array,
+    struct ent_rlist const * keep);
+
 #define ent_array_typed(T, N) \
 	struct ent_ ## N ## _array; \
 	static inline size_t ent_ ## N ## _array_width() \

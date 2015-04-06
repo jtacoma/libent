@@ -23,7 +23,7 @@ ent_array_typed (struct insertion, insertion);
 struct deletion
 {
 	struct ent_table * dst;
-	struct ent_rlist * rlist;
+	struct ent_rlist * keep;
 };
 
 ent_array_typed (struct deletion, deletion);
@@ -84,7 +84,7 @@ ent_session_free (
 
 		for (size_t i = 0; i < deletions_len; ++i)
 		{
-			ent_rlist_free (deletions[i].rlist);
+			ent_rlist_free (deletions[i].keep);
 		}
 
 		ent_deletion_array_free (s->deletions);
@@ -126,11 +126,8 @@ ent_session_table_insert (
 		return NULL;
 	}
 
-	if (ent_table_grow (buffer, add) == -1)
-	{
-		ent_table_free (buffer);
-		return NULL;
-	}
+	// A table with zero columns will always grow successfully.
+	assert (ent_table_grow (buffer, add) == 0);
 
 	size_t insertions_len = ent_insertion_array_len (s->insertions);
 
@@ -161,15 +158,11 @@ ent_session_table_delete (
 		return -1;
 	}
 
-	// TODO: copy rlist into rlist_cpy
-	struct ent_rlist * rlist_cpy = ent_rlist_alloc();
-	size_t ranges_len;
-	struct ent_rlist_range const * ranges =
-	    ent_rlist_ranges (rlist, &ranges_len);
+	struct ent_rlist * keep = ent_rlist_alloc();
 
-	for (size_t i = 0; i < ranges_len; ++i)
+	if (ent_rlist_append_inverse (keep, rlist, ent_table_len (table)) == -1)
 	{
-		ent_rlist_append (rlist_cpy, ranges[i].begin, ranges[i].end);
+		return -1;
 	}
 
 	size_t deletions_len = ent_deletion_array_len (s->deletions);
@@ -183,7 +176,7 @@ ent_session_table_delete (
 	    ent_deletion_array_get (s->deletions);
 
 	deletions[deletions_len].dst = table;
-	deletions[deletions_len].rlist = rlist_cpy;
+	deletions[deletions_len].keep = keep;
 	return 0;
 }
 
@@ -251,7 +244,7 @@ ent_session_commit (
 		{
 			if (deletions[i].dst == dst)
 			{
-				new_len -= ent_rlist_len (deletions[i].rlist);
+				new_len -= ent_rlist_len (deletions[i].keep);
 			}
 		}
 
@@ -274,7 +267,7 @@ ent_session_commit (
 
 	for (size_t i = 0; i < deletions_len; ++i)
 	{
-		assert (ent_table_delete (deletions[i].dst, deletions[i].rlist) == 0);
+		assert (ent_table_delete (deletions[i].dst, deletions[i].keep) == 0);
 	}
 
 	for (size_t i = 0; i < inserts_len; ++i)

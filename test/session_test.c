@@ -1,47 +1,208 @@
 #include "test/ent_test.h"
 
-static void
+static int
 session_supports_deletion()
 {
 	struct ent_table * table = ent_table_alloc();
-	assert (table);
+
+	if (!table)
+	{
+		return -1;
+	}
+
 	struct ent_processor * processor = ent_processor_alloc();
-	assert (processor);
-	assert (ent_processor_use_table (processor, table, "w") == 0);
+
+	if (!processor)
+	{
+		return -1;
+	}
+
+	if (ent_processor_use_table (processor, table, "w") == -1)
+	{
+		return -1;
+	}
 
 	int column_id =
 	    ent_processor_use_column (
 	        processor, table, "column", sizeof (int), "w");
 
+	if (column_id == -1)
+	{
+		return -1;
+	}
+
 	struct ent_session * creating = ent_session_alloc (processor);
+
+	if (!creating)
+	{
+		return -1;
+	}
+
 	struct ent_table * new_table = ent_session_table_insert (creating, table, 8);
+
+	if (!new_table)
+	{
+		return -1;
+	}
+
 	int * new_ints = ent_session_column_get (creating, new_table, column_id);
+
+	if (!new_ints)
+	{
+		return -1;
+	}
+
 	for (int i = 0; i < 8; ++i)
 	{
 		new_ints[i] = i;
 	}
-	ent_session_commit (creating);
+
+	if (ent_session_commit (creating) == -1)
+	{
+		return -1;
+	}
+
 	ent_session_free (creating);
 	ent_table_free (new_table);
 
 	struct ent_session * deleting = ent_session_alloc (processor);
+
+	if (!deleting)
+	{
+		return -1;
+	}
+
 	struct ent_rlist * rlist = ent_rlist_alloc();
-	ent_rlist_append (rlist, 2, 6);
-	ent_session_table_delete (deleting, table, rlist);
+
+	if (!rlist)
+	{
+		return -1;
+	}
+
+	if (ent_rlist_append (rlist, 2, 6) == -1)
+	{
+		return -1;
+	}
+
+	if (ent_session_table_delete (deleting, table, rlist) == -1)
+	{
+		return -1;
+	}
+
 	ent_rlist_free (rlist);
-	ent_session_commit (deleting);
+	if (ent_session_commit (deleting) == -1)
+	{
+		return -1;
+	}
 	ent_session_free (deleting);
 
 	struct ent_session * checking = ent_session_alloc (processor);
+	if (!checking)
+	{
+		return -1;
+	}
+
 	assert (ent_session_table_len (checking, table) == 4);
+
 	int * ints = ent_session_column_get (checking, table, column_id);
+	assert (ints);
 	assert (ints[0] == 0);
 	assert (ints[1] == 1);
 	assert (ints[2] == 6);
 	assert (ints[3] == 7);
-	ent_session_free (checking);
 
+	ent_session_free (checking);
 	ent_processor_free (processor);
+	return 0;
+}
+
+static int
+session_supports_insertion()
+{
+	struct ent_table * table = ent_table_alloc();
+
+	if (!table)
+	{
+		return -1;
+	}
+
+	struct ent_processor * processor = ent_processor_alloc();
+
+	if (!processor)
+	{
+		return -1;
+	}
+
+	if (ent_processor_use_table (processor, table, "w") == -1)
+	{
+		return -1;
+	}
+
+	int column_id =
+	    ent_processor_use_column (
+	        processor, table, "column", sizeof (int), "w");
+
+	if (column_id == -1)
+	{
+		return -1;
+	}
+
+	struct ent_session * creating = ent_session_alloc (processor);
+
+	if (!creating)
+	{
+		return -1;
+	}
+
+	struct ent_table * new_table = ent_session_table_insert (creating, table, 16);
+
+	if (!new_table)
+	{
+		return -1;
+	}
+
+	int * new_ints = ent_session_column_get (creating, new_table, column_id);
+
+	if (!new_ints)
+	{
+		return -1;
+	}
+
+	for (int i = 0; i < 8; ++i)
+	{
+		new_ints[i] = i;
+	}
+
+	if (ent_session_commit (creating) == -1)
+	{
+		return -1;
+	}
+
+	ent_session_free (creating);
+	ent_table_free (new_table);
+
+	struct ent_session * checking = ent_session_alloc (processor);
+	if (!checking)
+	{
+		return -1;
+	}
+
+	assert (ent_session_table_len (checking, table) == 16);
+
+	int * ints = ent_session_column_get (checking, table, column_id);
+	assert (ints);
+	assert (ints[0] == 0);
+	assert (ints[1] == 1);
+	assert (ints[2] == 2);
+	assert (ints[3] == 3);
+	assert (ints[4] == 4);
+	assert (ints[5] == 5);
+	assert (ints[6] == 6);
+	assert (ints[7] == 7);
+
+	ent_session_free (checking);
+	ent_processor_free (processor);
+	return 0;
 }
 
 static void
@@ -51,45 +212,11 @@ invalid_argument_sets_errno()
 	assert (table);
 	struct ent_processor * processor = ent_processor_alloc();
 	assert (processor);
+	struct ent_rlist * rlist = ent_rlist_alloc();
+	assert (rlist);
 
 	errno = 0;
-	assert (ent_processor_use_table (processor, NULL, "w") == -1);
-	assert (errno = EINVAL);
-
-	errno = 0;
-	assert (ent_processor_use_table (NULL, table, "w") == -1);
-	assert (errno = EINVAL);
-
-	errno = 0;
-	assert (ent_processor_use_column (processor, table, "a", 0, "r") == -1);
-	assert (errno = EINVAL);
-
-	errno = 0;
-	assert (ent_processor_use_column (processor, table, NULL, 1, "r") == -1);
-	assert (errno = EINVAL);
-
-	errno = 0;
-	assert (ent_processor_use_column (processor, NULL, "a", 1, "r") == -1);
-	assert (errno = EINVAL);
-
-	errno = 0;
-	assert (ent_processor_use_column (NULL, table, "a", 1, "r") == -1);
-	assert (errno = EINVAL);
-
-	errno = 0;
-	assert (ent_processor_use_column (processor, table, "b", 0, "w") == -1);
-	assert (errno = EINVAL);
-
-	errno = 0;
-	assert (ent_processor_use_column (processor, table, NULL, 8, "w") == -1);
-	assert (errno = EINVAL);
-
-	errno = 0;
-	assert (ent_processor_use_column (processor, NULL, "b", 8, "w") == -1);
-	assert (errno = EINVAL);
-
-	errno = 0;
-	assert (ent_processor_use_column (NULL, table, "b", 8, "w") == -1);
+	assert (ent_session_alloc (NULL) == NULL);
 	assert (errno = EINVAL);
 
 	struct ent_session * session = ent_session_alloc (processor);
@@ -108,11 +235,27 @@ invalid_argument_sets_errno()
 	assert (errno = EINVAL);
 
 	errno = 0;
+	assert (ent_session_table_delete (session, table, NULL) == -1);
+	assert (errno = EINVAL);
+
+	errno = 0;
+	assert (ent_session_table_delete (session, NULL, rlist) == -1);
+	assert (errno = EINVAL);
+
+	errno = 0;
+	assert (ent_session_table_delete (NULL, table, rlist) == -1);
+	assert (errno = EINVAL);
+
+	errno = 0;
 	assert (ent_session_table_len (session, NULL) == 0);
 	assert (errno = EINVAL);
 
 	errno = 0;
 	assert (ent_session_table_len (NULL, table) == 0);
+	assert (errno = EINVAL);
+
+	errno = 0;
+	assert (ent_session_commit (NULL) == -1);
 	assert (errno = EINVAL);
 
 	errno = 0;
@@ -124,6 +267,7 @@ invalid_argument_sets_errno()
 	assert (errno = EINVAL);
 
 	ent_session_free (session);
+	ent_rlist_free (rlist);
 	ent_processor_free (processor);
 	ent_table_free (table);
 }
@@ -159,18 +303,21 @@ session_general_test()
 		}
 
 		struct ent_session * loading = ent_session_alloc (load);
+
 		if (!loading)
 		{
 			return -1;
 		}
 
 		struct ent_table * new_items = ent_session_table_insert (loading, items, 2);
+
 		if (!new_items)
 		{
 			return -1;
 		}
 
 		double * b = ent_session_column_get (loading, new_items, column_b);
+
 		if (!b)
 		{
 			return -1;
@@ -229,10 +376,11 @@ session_general_test()
 void session_test()
 {
 	invalid_argument_sets_errno();
-	session_supports_deletion();
 
 	int (* functions[])() =
 	{
+		session_supports_insertion,
+		session_supports_deletion,
 		session_general_test,
 	};
 

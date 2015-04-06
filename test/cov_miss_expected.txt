@@ -1,6 +1,0 @@
-session.c:44:		return NULL;
-session.c:131:		ent_table_free (buffer);
-session.c:132:		return NULL;
-session.c:161:		return -1;
-session.c:179:		return -1;
-session.c:233:		return -1;

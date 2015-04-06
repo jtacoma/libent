@@ -209,121 +209,41 @@ ent_table_column (
 
 int
 ent_table_delete (
-    struct ent_table * t,
-    struct ent_rlist const * rlist)
+    struct ent_table * table,
+    struct ent_rlist const * keep)
 {
-	if (! (t && rlist))
+	if (! (table && keep))
 	{
 		errno = EINVAL;
 		return -1;
 	}
 
-	struct ent_rlist * keep = ent_rlist_alloc();
+	size_t ranges_len;
+	struct ent_rlist_range const * ranges = ent_rlist_ranges (keep, &ranges_len);
 
-	if (!keep)
+	if (ranges_len && ranges[ranges_len - 1].end > table->len)
 	{
+		errno = EINVAL;
 		return -1;
 	}
 
-	size_t del_ranges_len = 0;
-	struct ent_rlist_range const * del_ranges =
-	    ent_rlist_ranges (rlist, &del_ranges_len);
+	size_t columns_len = ent_column_array_len (table->columns);
+	struct column * columns = ent_column_array_get (table->columns);
 
-	for (size_t i = 0; i < del_ranges_len; ++i)
-	{
-		if (del_ranges[i].begin == 0)
-		{
-			continue;
-		}
-
-		size_t begin = i == 0 ? 0 : del_ranges[i - 1].end;
-		size_t end = del_ranges[i].begin;
-
-		if (ent_rlist_append (keep, begin, end) == -1)
-		{
-			ent_rlist_free (keep);
-			return -1;
-		}
-	}
-
-	if (del_ranges_len && del_ranges[del_ranges_len - 1].end < t->len)
-	{
-		size_t begin = del_ranges[del_ranges_len - 1].end;
-
-		if (ent_rlist_append (keep, begin, t->len) == -1)
-		{
-			ent_rlist_free (keep);
-			return -1;
-		}
-	}
-
-	size_t columns_len = ent_column_array_len (t->columns);
-
-	struct column * src_columns = ent_column_array_get (t->columns);
-
-	struct ent_column_array * new_columns = ent_column_array_alloc();
-
-	if (!new_columns)
-	{
-		ent_rlist_free (keep);
-		return -1;
-	}
-
-	if (ent_column_array_set_len (new_columns, columns_len) == -1)
-	{
-		ent_rlist_free (keep);
-		ent_column_array_free (new_columns);
-		return -1;
-	}
-
-	struct column * dst_columns = ent_column_array_get (new_columns);
-
-	size_t new_len = t->len - ent_rlist_len (rlist);
+	size_t new_len = ent_rlist_len (keep);
 
 	for (size_t i = 0; i < columns_len; ++i)
 	{
-		dst_columns[i].array =
-		    ent_array_alloc (ent_array_width (src_columns[i].array));
-		if (!dst_columns[i].array ||
-		        ent_array_set_len (dst_columns[i].array, new_len) == -1)
-		{
-			if (dst_columns[i].array)
-			{
-				i += 1;
-			}
-
-			for (size_t k = 0; k < i; ++k)
-			{
-				ent_array_free (dst_columns[k].array);
-			}
-
-			ent_column_array_free (new_columns);
-			ent_rlist_free (keep);
-			return -1;
-		}
+		assert (ent_array_len (columns[i].array) == table->len);
+		assert (ent_array_select_in_place (columns[i].array, keep) == 0);
 	}
-
-	for (size_t i = 0; new_len && i < columns_len; ++i)
-	{
-		void * dst = ent_array_get (dst_columns[i].array);
-		void const * src = ent_array_get_const (src_columns[i].array);
-		size_t width = ent_array_width (dst_columns[i].array);
-
-		assert (ent_rlist_select (keep, dst, src, width) == 0);
-	}
-
-	ent_rlist_free (keep);
 
 	for (size_t i = 0; i < columns_len; ++i)
 	{
-		dst_columns[i].name = src_columns[i].name;
-		src_columns[i].name = NULL;
-		ent_array_free (src_columns[i].array);
+		assert (ent_array_set_len (columns[i].array, new_len) == 0);
 	}
 
-	ent_column_array_free (t->columns);
-	t->columns = new_columns;
-	t->len = new_len;
+	table->len = new_len;
 	return 0;
 }
 

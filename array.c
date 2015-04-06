@@ -2,8 +2,11 @@
 #include <stdint.h> // for "array.h"
 #include <string.h> // memcpy, memset
 
+#include "ent.h"
+
 #include "alloc.h"
 #include "array.h"
+#include "rlist.h"
 
 struct ent_array
 {
@@ -215,4 +218,45 @@ ent_array_get (
 	}
 
 	return a->start;
+}
+
+int
+ent_array_select_in_place (
+    struct ent_array * array,
+    struct ent_rlist const * keep)
+{
+	size_t ranges_len;
+	struct ent_rlist_range const * ranges = ent_rlist_ranges (keep, &ranges_len);
+
+	if (ranges_len == 0)
+	{
+		ent_array_set_len (array, 0);
+		return 0;
+	}
+
+	if (ranges[ranges_len - 1].end > array->len)
+	{
+		errno = EINVAL;
+		return -1;
+	}
+
+	size_t next = 0;
+	uint8_t * start = array->start;
+
+	for (size_t i = 0; i < ranges_len; ++i)
+	{
+		if (ranges[i].begin == 0)
+		{
+			next = ranges[i].end;
+			continue;
+		}
+
+		memcpy (start + next * array->width,
+		        start + ranges[i].begin * array->width,
+		        (ranges[i].end - ranges[i].begin) * array->width);
+
+		next += ranges[i].end - ranges[i].begin;
+	}
+
+	return 0;
 }

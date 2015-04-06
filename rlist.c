@@ -131,31 +131,44 @@ ent_rlist_append (
 }
 
 int
-ent_rlist_select (
-    struct ent_rlist const * rlist,
-    void * dst,
-    void const * src,
-    size_t width)
+ent_rlist_append_inverse (
+    struct ent_rlist * dst,
+    struct ent_rlist const * src,
+    size_t len)
 {
-	if (! (rlist && dst && src && width))
+	if (! (dst && src))
 	{
-		errno = EINVAL;
 		return -1;
 	}
 
-	uint8_t * dst_ptr = dst;
-	uint8_t * dst_next = dst_ptr;
-	uint8_t const * src_ptr = src;
-	size_t ranges_len = 0;
-	struct ent_rlist_range const * ranges =
-	    ent_rlist_ranges (rlist, &ranges_len);
+	size_t src_ranges_len = 0;
+	struct ent_rlist_range const * src_ranges =
+	    ent_rlist_ranges (src, &src_ranges_len);
 
-	for (size_t i = 0; i < ranges_len; ++i)
+	for (size_t i = 0; i < src_ranges_len; ++i)
 	{
-		size_t n = (ranges[i].end - ranges[i].begin) * width;
-		uint8_t const * src_range = src_ptr + ranges[i].begin * width;
-		memcpy (dst_next, src_range, n);
-		dst_next += n;
+		if (src_ranges[i].begin == 0)
+		{
+			continue;
+		}
+
+		size_t begin = i == 0 ? 0 : src_ranges[i - 1].end;
+		size_t end = src_ranges[i].begin;
+
+		if (ent_rlist_append (dst, begin, end) == -1)
+		{
+			return -1;
+		}
+	}
+
+	if (src_ranges_len && src_ranges[src_ranges_len - 1].end < len)
+	{
+		size_t begin = src_ranges[src_ranges_len - 1].end;
+
+		if (ent_rlist_append (dst, begin, len) == -1)
+		{
+			return -1;
+		}
 	}
 
 	return 0;
