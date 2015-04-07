@@ -138,6 +138,7 @@ ent_rlist_append_inverse (
 {
 	if (! (dst && src))
 	{
+		errno = EINVAL;
 		return -1;
 	}
 

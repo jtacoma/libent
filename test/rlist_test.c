@@ -32,6 +32,10 @@ null_rlist_sets_einval()
 	assert (errno == EINVAL);
 
 	errno = 0;
+	ent_rlist_append_inverse (NULL, NULL, 2);
+	assert (errno == EINVAL);
+
+	errno = 0;
 	size_t len;
 	ent_rlist_ranges (NULL, &len);
 	assert (errno == EINVAL);
