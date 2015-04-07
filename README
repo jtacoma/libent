@@ -1,59 +1,154 @@
 libent
 ======
 
-Status: **Alpha**
+Thread-safe operations over tables, with columns represented as simple arrays.
 
-This is (or will be) a C implementation of, and therefore buzzword compatible
-with, the following:
+Currently under development.
 
- * the "entities and components" pattern common in modern game programming
-   engines.  Entity identifiers are indices into contiguous buffers of component
-   data.
+Motivation
+----------
 
- * an embedded in-memory columnar data store providing atomicity, consistency,
-   and isolation.  Column data is accessed directly in memory.  Transactions
-   will be implemented with per-column mutexes.
+Data-locality, thread-safety, and reflection are all built-in: intended
+applications include custom game engines and other polyglot compute-bound
+applications running on multi-core computers.
 
- * data oriented programming.  Well, actually just data locality for now, but
-   given the scope for optimization once the basic functionality is working...
-   very likely in other ways too.
+Design
+------
 
- * Vulkan-compatible.  Or, well, it probably will be...
+A basic data structue and minimal set of operations have been copied and
+adapted from relational databases to let multi-threaded applications share
+memory.  In libent, thread-safe means atomic and isolated.
 
-Etymologically, "libent" is third-person plural present active subjunctive of
-libo, to "taste", "make a libation", "spill", or "graze".  Also in Tagalog,
-"thousand".  Some day these meanings will all come together in a wonderful
-metaphor about this library.
+Column-scoped mutexes will be used for read and update operations while
+table-scoped mutexes will allow insertions and deletions.  Since mutexes will
+be acquired at the beginning of a transaction, there are only two
+software-related reasons a commit can fail:
 
-Version 1.0 Roadmap
--------------------
+ 1. The application may run out of memory.  In this case, thanks to atomicity
+    and isolation, the commit can be safely retried granted some reason to
+    believe additional memory may have become available.
 
- * Fine-grained (column-scoped) locks will let the same tables be operated on
-   by many processors simultaneously sharing both read & write access.
+ 2. The stack overflowed.  In this case, the data structures may be corrupted.
+
+Metadata available about tables and columns at runtime will make it simple to
+support integrations with scripting languages like Lua as well as with GPU
+interfaces like OpenCL.
+
+Usage
+-----
+
+First, allocate at least one `ent_table` (often only one for simple
+applications).
+
+    struct ent_table * table = ent_table_alloc ();
+    assert (table);
+
+Allocate an `ent_processor` for each algorithm.  For example, there might be
+one algorithm to load data into an intially empty table, a number of
+algorithms to process data within the tables, and a few to send the results to
+output devices.  Each `ent_processor` must be configured for the set of
+operations the associated algorithms will perform.
+
+    struct ent_processor * loader = ent_processor_alloc ();
+    assert (loader);
+
+    // Specify mode "a" for "append".
+    assert (ent_processor_use_table (loader, table, "a") == 0);
+
+    // Specify mode "" for no permissions because we already have "append" on
+    // the table.
+    int number_column =
+        ent_processor_use_column (loader, table, "number", sizeof(int), "");
+
+To execute an algorithm, allocate an `ent_session`.  This will acquire locks
+as necessary, so that table and column data can be accessed and modified
+through the basic set of operations.
+
+    struct ent_session * loading = ent_session_alloc (loader);
+    assert (loading);
+
+    // Tell libent how many rows will be inserted through this buffer.
+    struct ent_table * buffer = ent_session_table_insert (loading, table, 13);
+    assert (buffer);
+
+    int * numbers = ent_session_table_get (loading, buffer, number_column);
+    assert (numbers);
+
+    // Write data to the insertion buffer.
+    numbers[7] = 42;
+    numbers[12] = 84;
+
+When an algorithm has completed its task, the `ent_session` must be committed.
+
+    assert (ent_session_commit (loading) == 0);
+    ent_session_free (loading);
+
+Of course each `ent_processor` and `ent_table` must ultimately be freed
+eventually too.
+
+    ent_processor_free (loader);
+    ent_table_free (table);
+
+Error Handling and Memory Management
+------------------------------------
+
+All functions that mutate data or allocate memory must return a pointer
+(`NULL` in case of error) or an int (`-1` in case of error).  Any function
+that returns an error value must also guarantee that `errno` is set
+appropriately.
+
+For simple query functions that return information, a default (zero) value
+should be returned in case of error and `errno` may be set.
+
+Memory ownership is never passed through function parameters; only through
+pointers returned from allocation functions, identified by the "alloc" suffix.
+For each allocation function there is a correponding "free" function.
+
+Out-of-memory conditions are handled in such a way that data structures are
+left in a coherent state, an error value is returned, and `errno` is set to
+`ENOMEM`.
+
+In any case, errno is always set to ENOMEM in case of out-of-memory conditions
+and to EINVAL for invalid arguments.
+
+TODO: Implementation
+--------------------
+
+ * Isolated updates.  This means creating new update buffer tables in
+   `ent_session_column_get()`.
+
+ * Either implement data type identification for columns (strings, the basic
+   numberic types, and vectors/matrics of numeric types), or document a clear
+   rational for not doing so.  Such a rationale might be that data locality is
+   best optimized when custom struct types are allowed.
+
+ * Thread-safety, along with techniques to test, verify, and/or prove that the
+   operations are in fact thread-safe.
+
+ * Reference counting for `ent_processor`.
+
+TODO: Proofs of Concept
+-----------------------
+
+Prove that this project is not too wasteful or misdirected by maintaining
+real, executable, sample applications.  These may be developed in separate
+repositories but should ultimately be easy to find for anyone who's found
+libent.
 
  * Integration with OpenGL 2.0 (and/or later) shaders.
 
- * Binding to at least one scripting language (Lua, Python, and SQL are
-   candidates).
+ * Binding to at least one scripting language.
 
-Version 0.1 POC Roadmap
------------------------
-
- * Support strings and floating point numbers.  It's ok to support only one
-   precision for floating-point numbers.  It's also ok to assume all strings are
-   UTF-8.
-
- * Support simple insert, select, update, and delete operations.
-
- * Proof-of-concept integration with OpenGL 2.0 (and/or later) vertex shaders.
+ * An entire useful application with no C code, using a combination of
+   scripting and shaders.
 
 Release Check-list
 ------------------
 
- [ ] Can run "make" without problmes.
+ [ ] Can run "make" without problems.
  [ ] Can run ./bin/ent-demo without errors.
  [ ] Code coverage is at 100%.
- [ ] Valgrind shows no possible memory leaks.
+ [ ] Valgrind shows no possible memory leaks from ./bin/ent-test.
 
 Coding Style
 ------------
@@ -68,23 +163,9 @@ Artistic Style (astyle) is used with the following options:
     --unpad-paren
     --pad-first-paren-out
 
-Memory ownership is never passed through function parameters; only through
-pointers returned from allocation functions, identified by the "alloc" suffix.
-For each allocation function there is a correponding "free" function.
-
-Out-of-memory conditions are handled in such a way that data structures are left
-in a coherent state and an error value is returned.  For functions returning
-pointers, a return value of NULL indicates an error.  For functions returning
-int, a return value of -1 indicates an error.  For simple query functions that
-return data, a default (zero) value is returned.
-
-In any case, errno is always set to ENOMEM in case of out-of-memory conditions
-and to EINVAL for invalid arguments.
-
 Never (ever) cast away const.
 
 License
 -------
 
-To be decided.  Initially this library will only be used, embedded, inside my
-own hobby projects.
+Not yet decided.
