@@ -82,7 +82,6 @@ ent_processor_use_table (
 		return -1;
 	}
 
-	ent_table_incref (table);
 	//TODO: stop ignoring mode
 
 	size_t tables_len = ent_array_len (p->tables);
@@ -97,6 +96,7 @@ ent_processor_use_table (
 	assert (tables);
 
 	tables[tables_len] = table;
+	ent_table_incref (table);
 
 	return (int) tables_len;
 }

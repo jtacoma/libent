@@ -1,4 +1,5 @@
 #include <assert.h> // atomicity or death!
+#include <errno.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -87,6 +88,15 @@ ent_session_free (
 			ent_rlist_free (deletions[i].keep);
 		}
 
+		size_t insertions_len = ent_insertion_array_len (s->insertions);
+		struct insertion * insertions =
+		    ent_insertion_array_get (s->insertions);
+
+		for (size_t i = 0; i < insertions_len; ++i)
+		{
+			ent_table_free (insertions[i].src);
+		}
+
 		ent_deletion_array_free (s->deletions);
 		ent_insertion_array_free (s->insertions);
 		ent_alloc ((void**)&s, 0);
@@ -155,13 +165,20 @@ ent_session_table_delete (
 {
 	if (! (s && rlist && table))
 	{
+		errno = EINVAL;
 		return -1;
 	}
 
 	struct ent_rlist * keep = ent_rlist_alloc();
 
+	if (!keep)
+	{
+		return -1;
+	}
+
 	if (ent_rlist_append_inverse (keep, rlist, ent_table_len (table)) == -1)
 	{
+		ent_rlist_free (keep);
 		return -1;
 	}
 
@@ -169,6 +186,7 @@ ent_session_table_delete (
 
 	if (ent_deletion_array_set_len (s->deletions, deletions_len + 1) == -1)
 	{
+		ent_rlist_free (keep);
 		return -1;
 	}
 

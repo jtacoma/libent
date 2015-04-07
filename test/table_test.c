@@ -149,6 +149,8 @@ insertion_handles_out_of_memory()
 		// to trigger one more line of code coverage.
 		if (!ent_table_column (dst, "some-other-column", 1))
 		{
+			ent_table_free (src);
+			ent_table_free (dst);
 			return -1;
 		}
 

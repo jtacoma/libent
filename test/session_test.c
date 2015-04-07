@@ -3,13 +3,6 @@
 static int
 session_supports_deletion()
 {
-	struct ent_table * table = ent_table_alloc();
-
-	if (!table)
-	{
-		return -1;
-	}
-
 	struct ent_processor * processor = ent_processor_alloc();
 
 	if (!processor)
@@ -17,8 +10,18 @@ session_supports_deletion()
 		return -1;
 	}
 
+	struct ent_table * table = ent_table_alloc();
+
+	if (!table)
+	{
+		ent_processor_free (processor);
+		return -1;
+	}
+
 	if (ent_processor_use_table (processor, table, "w") == -1)
 	{
+		ent_table_free (table);
+		ent_processor_free (processor);
 		return -1;
 	}
 
@@ -28,6 +31,8 @@ session_supports_deletion()
 
 	if (column_id == -1)
 	{
+		ent_table_free (table);
+		ent_processor_free (processor);
 		return -1;
 	}
 
@@ -35,6 +40,8 @@ session_supports_deletion()
 
 	if (!creating)
 	{
+		ent_table_free (table);
+		ent_processor_free (processor);
 		return -1;
 	}
 
@@ -42,6 +49,9 @@ session_supports_deletion()
 
 	if (!new_table)
 	{
+		ent_session_free (creating);
+		ent_table_free (table);
+		ent_processor_free (processor);
 		return -1;
 	}
 
@@ -49,6 +59,10 @@ session_supports_deletion()
 
 	if (!new_ints)
 	{
+		ent_table_free (new_table);
+		ent_session_free (creating);
+		ent_table_free (table);
+		ent_processor_free (processor);
 		return -1;
 	}
 
@@ -59,6 +73,10 @@ session_supports_deletion()
 
 	if (ent_session_commit (creating) == -1)
 	{
+		ent_table_free (new_table);
+		ent_session_free (creating);
+		ent_table_free (table);
+		ent_processor_free (processor);
 		return -1;
 	}
 
@@ -69,6 +87,8 @@ session_supports_deletion()
 
 	if (!deleting)
 	{
+		ent_table_free (table);
+		ent_processor_free (processor);
 		return -1;
 	}
 
@@ -76,22 +96,36 @@ session_supports_deletion()
 
 	if (!rlist)
 	{
+		ent_session_free (deleting);
+		ent_table_free (table);
+		ent_processor_free (processor);
 		return -1;
 	}
 
 	if (ent_rlist_append (rlist, 2, 6) == -1)
 	{
+		ent_rlist_free (rlist);
+		ent_session_free (deleting);
+		ent_table_free (table);
+		ent_processor_free (processor);
 		return -1;
 	}
 
 	if (ent_session_table_delete (deleting, table, rlist) == -1)
 	{
+		ent_rlist_free (rlist);
+		ent_session_free (deleting);
+		ent_table_free (table);
+		ent_processor_free (processor);
 		return -1;
 	}
 
 	ent_rlist_free (rlist);
 	if (ent_session_commit (deleting) == -1)
 	{
+		ent_session_free (deleting);
+		ent_table_free (table);
+		ent_processor_free (processor);
 		return -1;
 	}
 	ent_session_free (deleting);
@@ -99,6 +133,8 @@ session_supports_deletion()
 	struct ent_session * checking = ent_session_alloc (processor);
 	if (!checking)
 	{
+		ent_table_free (table);
+		ent_processor_free (processor);
 		return -1;
 	}
 
@@ -112,6 +148,7 @@ session_supports_deletion()
 	assert (ints[3] == 7);
 
 	ent_session_free (checking);
+	ent_table_free (table);
 	ent_processor_free (processor);
 	return 0;
 }
@@ -130,11 +167,14 @@ session_supports_insertion()
 
 	if (!processor)
 	{
+		ent_table_free (table);
 		return -1;
 	}
 
 	if (ent_processor_use_table (processor, table, "w") == -1)
 	{
+		ent_table_free (table);
+		ent_processor_free (processor);
 		return -1;
 	}
 
@@ -144,6 +184,8 @@ session_supports_insertion()
 
 	if (column_id == -1)
 	{
+		ent_table_free (table);
+		ent_processor_free (processor);
 		return -1;
 	}
 
@@ -151,6 +193,8 @@ session_supports_insertion()
 
 	if (!creating)
 	{
+		ent_table_free (table);
+		ent_processor_free (processor);
 		return -1;
 	}
 
@@ -158,6 +202,9 @@ session_supports_insertion()
 
 	if (!new_table)
 	{
+		ent_session_free (creating);
+		ent_table_free (table);
+		ent_processor_free (processor);
 		return -1;
 	}
 
@@ -165,6 +212,10 @@ session_supports_insertion()
 
 	if (!new_ints)
 	{
+		ent_table_free (new_table);
+		ent_session_free (creating);
+		ent_table_free (table);
+		ent_processor_free (processor);
 		return -1;
 	}
 
@@ -175,6 +226,10 @@ session_supports_insertion()
 
 	if (ent_session_commit (creating) == -1)
 	{
+		ent_table_free (new_table);
+		ent_session_free (creating);
+		ent_table_free (table);
+		ent_processor_free (processor);
 		return -1;
 	}
 
@@ -184,6 +239,8 @@ session_supports_insertion()
 	struct ent_session * checking = ent_session_alloc (processor);
 	if (!checking)
 	{
+		ent_table_free (table);
+		ent_processor_free (processor);
 		return -1;
 	}
 
@@ -201,6 +258,7 @@ session_supports_insertion()
 	assert (ints[7] == 7);
 
 	ent_session_free (checking);
+	ent_table_free (table);
 	ent_processor_free (processor);
 	return 0;
 }

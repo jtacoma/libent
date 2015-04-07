@@ -251,9 +251,9 @@ ent_array_select_in_place (
 			continue;
 		}
 
-		memcpy (start + next * array->width,
-		        start + ranges[i].begin * array->width,
-		        (ranges[i].end - ranges[i].begin) * array->width);
+		memmove (start + next * array->width,
+		         start + ranges[i].begin * array->width,
+		         (ranges[i].end - ranges[i].begin) * array->width);
 
 		next += ranges[i].end - ranges[i].begin;
 	}
