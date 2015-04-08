@@ -5,11 +5,9 @@ ent_array_typed (size_t, index);
 static int
 new_array_has_specified_width()
 {
-	errno = 0;
-
 	struct ent_array * array = ent_array_alloc (32);
 
-	if (!array && errno == ENOMEM)
+	if (!array)
 	{
 		return -1;
 	}
@@ -17,59 +15,41 @@ new_array_has_specified_width()
 	assert (ent_array_width (array) == 32);
 
 	ent_array_free (array);
-
 	return 0;
 }
 
 static int
 new_array_is_empty()
 {
-	errno = 0;
-
 	struct ent_array * array = ent_array_alloc (1);
 
-	if (!array && errno == ENOMEM)
+	if (!array)
 	{
 		return -1;
 	}
 
-	assert (errno == 0);
-	assert (array);
-
 	assert (ent_array_len (array) == 0);
 	assert (ent_array_get_const (array) == NULL);
 	assert (ent_array_get (array) == NULL);
-	ent_array_free (array);
 
+	ent_array_free (array);
 	return 0;
 }
 
 static int
 resized_array_is_set_to_zero()
 {
-	errno = 0;
-
 	struct ent_index_array * array = ent_index_array_alloc();
 
-	if (!array && errno == ENOMEM)
+	if (!array)
 	{
 		return -1;
 	}
 
-	assert (errno == 0);
-	assert (array);
-
-	errno = 0;
-
 	if (ent_index_array_set_len (array, 4) == -1)
 	{
-		if (errno == ENOMEM)
-		{
-			ent_index_array_free (array);
-			return -1;
-		}
-
-		assert (errno == 0);
+		ent_index_array_free (array);
+		return -1;
 	}
 
 	assert (ent_index_array_len (array) == 4);
@@ -79,17 +59,10 @@ resized_array_is_set_to_zero()
 		assert (ent_index_array_get_const (array)[i] == 0);
 	}
 
-	errno = 0;
-
 	if (ent_index_array_set_len (array, 16) == -1)
 	{
-		if (errno == ENOMEM)
-		{
-			ent_index_array_free (array);
-			return -1;
-		}
-
-		assert (errno == 0);
+		ent_index_array_free (array);
+		return -1;
 	}
 
 	assert (ent_index_array_len (array) == 16);
@@ -100,34 +73,23 @@ resized_array_is_set_to_zero()
 	}
 
 	ent_index_array_free (array);
-
 	return 0;
 }
 
 static int
 resized_array_retains_data()
 {
-	errno = 0;
-
 	struct ent_index_array * array = ent_index_array_alloc();
 
-	if (!array && errno == ENOMEM)
+	if (!array)
 	{
 		return -1;
 	}
 
-	assert (errno == 0);
-	assert (array);
-
 	if (ent_index_array_set_len (array, 8) == -1)
 	{
-		if (errno == ENOMEM)
-		{
-			ent_index_array_free (array);
-			return -1;
-		}
-
-		assert (errno == 0);
+		ent_index_array_free (array);
+		return -1;
 	}
 
 	for (size_t i = 0; i < 8; ++i)
@@ -138,13 +100,8 @@ resized_array_retains_data()
 
 	if (ent_index_array_set_len (array, 16) == -1)
 	{
-		if (errno == ENOMEM)
-		{
-			ent_index_array_free (array);
-			return -1;
-		}
-
-		assert (errno == 0);
+		ent_index_array_free (array);
+		return -1;
 	}
 
 	for (size_t i = 0; i < 8; ++i)
@@ -158,46 +115,32 @@ resized_array_retains_data()
 	}
 
 	ent_index_array_free (array);
-
 	return 0;
 }
 
 static int
 copied_array_keeps_original_data()
 {
-	errno = 0;
-
 	struct ent_array * array = ent_array_alloc (sizeof (int));
 
-	if (!array && errno == ENOMEM)
+	if (!array)
 	{
 		return -1;
 	}
 
-	assert (errno == 0);
-	assert (array);
-
 	if (ent_array_set_len (array, 8) == -1)
-	{
-		if (errno == ENOMEM)
-		{
-			ent_array_free (array);
-			return -1;
-		}
-
-		assert (errno == 0);
-	}
-
-	struct ent_array * copy = ent_array_cpy_alloc (array);
-
-	if (!copy && errno == ENOMEM)
 	{
 		ent_array_free (array);
 		return -1;
 	}
 
-	assert (errno == 0);
-	assert (copy);
+	struct ent_array * copy = ent_array_cpy_alloc (array);
+
+	if (!copy)
+	{
+		ent_array_free (array);
+		return -1;
+	}
 
 	assert (ent_array_get_const (copy) != ent_array_get_const (array));
 	assert (ent_array_len (copy) == 8);
@@ -206,7 +149,6 @@ copied_array_keeps_original_data()
 
 	ent_array_free (copy);
 	ent_array_free (array);
-
 	return 0;
 }
 
@@ -275,30 +217,26 @@ invalid_arguments_set_einval()
 		return -1;
 	}
 
+	errno = 0;
 	assert (ent_array_select_in_place (array, keep) == -1);
+	assert (errno == EINVAL);
 
 	ent_rlist_free (keep);
 	ent_array_free (array);
-
 	return 0;
 }
 
 static int
 truncated_and_shrunk_array_returns_null()
 {
-	errno = 0;
-
 	struct ent_array * array = ent_array_alloc (1);
 
-	if (!array && errno == ENOMEM)
+	if (!array)
 	{
 		return -1;
 	}
 
-	assert (errno == 0);
-	assert (array);
-
-	if (ent_array_set_len (array, 4) == -1 && errno == ENOMEM)
+	if (ent_array_set_len (array, 4) == -1)
 	{
 		ent_array_free (array);
 		return -1;
@@ -316,6 +254,7 @@ truncated_and_shrunk_array_returns_null()
 	assert (ent_array_get (array) != NULL);
 	assert (errno == 0);
 
+	// Shrinking an empty array is a no-op.
 	assert (ent_array_shrink (array) == 0);
 
 	errno = 0;
@@ -327,7 +266,6 @@ truncated_and_shrunk_array_returns_null()
 	assert (errno == 0);
 
 	ent_array_free (array);
-
 	return 0;
 }
 
@@ -356,9 +294,9 @@ array_can_shrink_safely()
 		return -1;
 	}
 
-	// If an array's lenght has not been changed since the last time it was
-	// successfully shrunk then shrinking should always succeed because
-	// nothing needs to be done.
+	// If an array's length has not been changed since the last time it
+	// was successfully shrunk then shrinking should always succeed
+	// because nothing needs to be done.
 	assert (ent_array_shrink (array) == 0);
 
 	ent_array_free (array);
