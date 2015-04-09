@@ -15,6 +15,9 @@ run-benchmarks: bin/ent-bench
 tags: *.c test/*.c bench/*.c demo/*.c
 	ctags $^
 
+test/ent_all_tests.h: test/*_test.c test/gen
+	./test/gen test/*_test.c > $@
+
 bin/ent-testcov: *.[ch] include/*.h test/*.[ch]
 	@mkdir -p bin
 	$(CC) -fprofile-arcs -ftest-coverage -o $@ *.c test/*.c $(CFLAGS) -O0

@@ -2,8 +2,8 @@
 
 ent_array_typed (size_t, index);
 
-static int
-new_array_has_specified_width()
+int
+new_array_has_specified_width (void)
 {
 	struct ent_array * array = ent_array_alloc (32);
 
@@ -18,8 +18,8 @@ new_array_has_specified_width()
 	return 0;
 }
 
-static int
-new_array_is_empty()
+int
+new_array_is_empty (void)
 {
 	struct ent_array * array = ent_array_alloc (1);
 
@@ -36,8 +36,8 @@ new_array_is_empty()
 	return 0;
 }
 
-static int
-resized_array_is_set_to_zero()
+int
+resized_array_is_set_to_zero (void)
 {
 	struct ent_index_array * array = ent_index_array_alloc();
 
@@ -76,8 +76,8 @@ resized_array_is_set_to_zero()
 	return 0;
 }
 
-static int
-resized_array_retains_data()
+int
+resized_array_retains_data (void)
 {
 	struct ent_index_array * array = ent_index_array_alloc();
 
@@ -118,8 +118,8 @@ resized_array_retains_data()
 	return 0;
 }
 
-static int
-copied_array_keeps_original_data()
+int
+copied_array_keeps_original_data (void)
 {
 	struct ent_array * array = ent_array_alloc (sizeof (int));
 
@@ -152,8 +152,8 @@ copied_array_keeps_original_data()
 	return 0;
 }
 
-static int
-invalid_arguments_set_einval()
+int
+invalid_arguments_set_einval (void)
 {
 	errno = 0;
 	assert (ent_array_cpy_alloc (NULL) == NULL);
@@ -226,8 +226,8 @@ invalid_arguments_set_einval()
 	return 0;
 }
 
-static int
-truncated_and_shrunk_array_returns_null()
+int
+truncated_and_shrunk_array_returns_null (void)
 {
 	struct ent_array * array = ent_array_alloc (1);
 
@@ -269,8 +269,8 @@ truncated_and_shrunk_array_returns_null()
 	return 0;
 }
 
-static int
-array_can_shrink_safely()
+int
+array_can_shrink_safely (void)
 {
 	struct ent_array * array = ent_array_alloc (1);
 
@@ -301,42 +301,4 @@ array_can_shrink_safely()
 
 	ent_array_free (array);
 	return 0;
-}
-
-typedef int (*test_function)();
-
-test_function functions [] =
-{
-	new_array_has_specified_width,
-	new_array_is_empty,
-	resized_array_is_set_to_zero,
-	resized_array_retains_data,
-	copied_array_keeps_original_data,
-	invalid_arguments_set_einval,
-	truncated_and_shrunk_array_returns_null,
-	array_can_shrink_safely,
-};
-
-void
-array_test()
-{
-	size_t functions_len = sizeof (functions) / sizeof (*functions);
-
-	for (size_t i = 0; i < functions_len; ++i)
-	{
-		size_t zero = ent_alloc_count();
-		assert (functions[i]() == 0);
-		size_t used = ent_alloc_count() - zero;
-
-		for (size_t allow = 0; allow < used; ++allow)
-		{
-			size_t zero = ent_alloc_count();
-			ent_alloc_artificial_fail (zero + 1 + allow);
-			errno = 0;
-			assert (functions[i]() == -1);
-			assert (errno == ENOMEM);
-		}
-
-		ent_alloc_artificial_fail (0);
-	}
 }

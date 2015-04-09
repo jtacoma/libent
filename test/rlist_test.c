@@ -1,11 +1,14 @@
 #include "test/ent_test.h"
 
-static int
-new_rlist_is_empty()
+int
+new_rlist_is_empty (void)
 {
 	struct ent_rlist * rlist = ent_rlist_alloc();
 
-	assert (rlist != NULL);
+	if (rlist == NULL)
+	{
+		return -1;
+	}
 	assert (ent_rlist_len (rlist) == 0);
 
 	size_t ranges_len;
@@ -20,8 +23,8 @@ new_rlist_is_empty()
 	return 0;
 }
 
-static int
-null_rlist_sets_einval()
+int
+null_rlist_sets_einval (void)
 {
 	errno = 0;
 	assert (ent_rlist_len (NULL) == 0);
@@ -51,10 +54,15 @@ null_rlist_sets_einval()
 	return 0;
 }
 
-static int
-inverted_range_is_invalid()
+int
+inverted_range_is_invalid (void)
 {
 	struct ent_rlist * rlist = ent_rlist_alloc();
+
+	if (!rlist)
+	{
+		return -1;
+	}
 
 	assert (ent_rlist_append (rlist, 2, 1) == -1);
 	assert (errno == EINVAL);
@@ -63,8 +71,8 @@ inverted_range_is_invalid()
 	return 0;
 }
 
-static int
-rlist_general_tests()
+int
+rlist_general_tests (void)
 {
 	struct ent_rlist * rlist = ent_rlist_alloc();
 
@@ -134,24 +142,4 @@ rlist_general_tests()
 	ent_rlist_free (rlist);
 
 	return 0;
-}
-
-void
-rlist_test()
-{
-	assert (new_rlist_is_empty() == 0);
-	assert (null_rlist_sets_einval() == 0);
-	assert (inverted_range_is_invalid() == 0);
-
-	size_t zero = ent_alloc_count();
-	assert (rlist_general_tests() == 0);
-	size_t used = ent_alloc_count() - zero;
-
-	for (size_t i = 1; i <= used; ++i)
-	{
-		zero = ent_alloc_count();
-		ent_alloc_artificial_fail (zero + i);
-		assert (rlist_general_tests() == -1);
-		assert (errno == ENOMEM);
-	}
 }

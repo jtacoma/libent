@@ -1,7 +1,7 @@
 #include "test/ent_test.h"
 
-static int
-session_supports_deletion()
+int
+session_supports_deletion (void)
 {
 	struct ent_processor * processor = ent_processor_alloc();
 
@@ -153,8 +153,8 @@ session_supports_deletion()
 	return 0;
 }
 
-static int
-session_supports_insertion()
+int
+session_supports_insertion (void)
 {
 	struct ent_table * table = ent_table_alloc();
 
@@ -263,8 +263,8 @@ session_supports_insertion()
 	return 0;
 }
 
-static void
-invalid_argument_sets_errno()
+void
+invalid_session_argument_sets_errno (void)
 {
 	struct ent_table * table = ent_table_alloc();
 	assert (table);
@@ -330,8 +330,8 @@ invalid_argument_sets_errno()
 	ent_table_free (table);
 }
 
-static int
-session_general_test()
+int
+session_general_test (void)
 {
 	struct ent_table * items = ent_table_alloc();
 
@@ -453,31 +453,4 @@ session_general_test()
 	ent_table_free (items);
 
 	return 0;
-}
-
-void session_test()
-{
-	invalid_argument_sets_errno();
-
-	int (* functions[])() =
-	{
-		session_supports_insertion,
-		session_supports_deletion,
-		session_general_test,
-	};
-
-	for (size_t f = 0; f < sizeof (functions) / sizeof (*functions); ++f)
-	{
-		size_t zero = ent_alloc_count();
-		assert (functions[f]() == 0);
-		size_t used = ent_alloc_count() - zero;
-
-		for (size_t m = 1; m <= used; ++m)
-		{
-			ent_alloc_artificial_fail (ent_alloc_count() + m);
-			errno = 0;
-			assert (functions[f]() == -1);
-			assert (errno == ENOMEM);
-		}
-	}
 }

@@ -1,0 +1,44 @@
+#!/bin/sh
+
+MEM_TESTS=$( cat "$@" \
+	| grep '^int' -A1 \
+	| grep '(void)' \
+	| sed -e 's/int //' -e 's/ \?(.*//' )
+
+VOID_TESTS=$( cat "$@" \
+	| grep '^void' -A1 \
+	| grep '(void)' \
+	| sed -e 's/void //' -e 's/ \?(.*//' )
+
+echo "/* This file was automatically generated;"
+echo " * changes made here will be lost."
+echo " */"
+echo "#ifndef ALL_TESTS_H"
+echo "#define ALL_TESTS_H"
+echo
+for test in $VOID_TESTS ; do
+	echo "void $test (void);"
+done
+for test in $MEM_TESTS ; do
+	echo "int $test (void);"
+done
+echo
+echo "static struct {"
+echo "    char const * name;"
+echo "    void (* function) (void);"
+echo "} all_void_tests[] = {"
+for test in $VOID_TESTS ; do
+	echo "    { .name=\"$test\", .function=$test },"
+done
+echo "};"
+echo
+echo "static struct {"
+echo "    char const * name;"
+echo "    int (* function) (void);"
+echo "} all_mem_tests[] = {"
+for test in $MEM_TESTS ; do
+	echo "    { .name=\"$test\", .function=$test },"
+done
+echo "};"
+echo
+echo "#endif"

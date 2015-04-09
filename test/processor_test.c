@@ -1,7 +1,7 @@
 #include "test/ent_test.h"
 
-static void
-invalid_argument_sets_errno()
+void
+invalid_argument_sets_errno (void)
 {
 	// Create a table to use a place holder when we want to verify EINVAL
 	// for a different parameter.
@@ -75,9 +75,4 @@ invalid_argument_sets_errno()
 
 	ent_processor_free (processor);
 	ent_table_free (table);
-}
-
-void processor_test()
-{
-	invalid_argument_sets_errno();
 }

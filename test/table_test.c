@@ -1,7 +1,7 @@
 #include "test/ent_test.h"
 
-static void
-null_table_sets_einval()
+void
+null_table_sets_einval (void)
 {
 	errno = 0;
 	assert (ent_table_len (NULL) == 0);
@@ -40,8 +40,8 @@ null_table_sets_einval()
 	assert (errno = EINVAL);
 }
 
-static void
-new_table_is_empty()
+void
+new_table_is_empty (void)
 {
 	struct ent_table * table = ent_table_alloc();
 
@@ -56,8 +56,8 @@ new_table_is_empty()
 	ent_table_free (table);
 }
 
-static void
-adding_zero_length_is_ok()
+void
+adding_zero_length_is_ok (void)
 {
 	struct ent_table * table = ent_table_alloc();
 	assert (table);
@@ -65,8 +65,8 @@ adding_zero_length_is_ok()
 	ent_table_free (table);
 }
 
-static void
-column_info_can_be_retrieved()
+void
+column_info_can_be_retrieved (void)
 {
 	struct ent_table * table = ent_table_alloc();
 
@@ -90,8 +90,8 @@ column_info_can_be_retrieved()
 	ent_table_free (table);
 }
 
-static void
-invalid_column_id_sets_einval()
+void
+invalid_column_id_sets_einval (void)
 {
 	struct ent_table * table = ent_table_alloc();
 	size_t width = 1;
@@ -104,8 +104,8 @@ invalid_column_id_sets_einval()
 	ent_table_free (table);
 }
 
-static void
-deleting_beyond_end_of_table_set_einval()
+void
+deleting_beyond_end_of_table_set_einval (void)
 {
 	struct ent_table * table = ent_table_alloc();
 	assert (table);
@@ -123,8 +123,8 @@ deleting_beyond_end_of_table_set_einval()
 	ent_table_free (table);
 }
 
-static int
-insertion_handles_out_of_memory()
+int
+insertion_handles_out_of_memory (void)
 {
 	struct ent_table * dst = ent_table_alloc();
 
@@ -182,7 +182,7 @@ insertion_handles_out_of_memory()
 	return ok ? 0 : -1;
 }
 
-static int
+int
 deletion_handles_out_of_memory (size_t len, size_t start, size_t end)
 {
 	struct ent_table * table = ent_table_alloc();
@@ -261,8 +261,8 @@ deletion_handles_out_of_memory (size_t len, size_t start, size_t end)
 	return 0;
 }
 
-static int
-table_deletion_edge_cases()
+int
+table_deletion_edge_cases (void)
 {
 	struct
 	{
@@ -304,8 +304,8 @@ table_deletion_edge_cases()
 	return 0;
 }
 
-static int
-table_general_test()
+int
+table_general_test (void)
 {
 	// Create a table
 	struct ent_table * table = ent_table_alloc();
@@ -432,36 +432,4 @@ table_general_test()
 	ent_table_free (table);
 	ent_table_free (NULL);
 	return 0;
-}
-
-void table_test()
-{
-	null_table_sets_einval();
-	new_table_is_empty();
-	adding_zero_length_is_ok();
-	column_info_can_be_retrieved();
-	invalid_column_id_sets_einval();
-	deleting_beyond_end_of_table_set_einval();
-
-	int (* functions[])() =
-	{
-		insertion_handles_out_of_memory,
-		table_deletion_edge_cases,
-		table_general_test,
-	};
-
-	for (size_t f = 0; f < sizeof (functions) / sizeof (*functions); ++f)
-	{
-		size_t zero = ent_alloc_count();
-		assert (functions[f]() == 0);
-		size_t used = ent_alloc_count() - zero;
-
-		for (size_t m = 1; m <= used; ++m)
-		{
-			ent_alloc_artificial_fail (ent_alloc_count() + m);
-			errno = 0;
-			assert (functions[f]() == -1);
-			assert (errno == ENOMEM);
-		}
-	}
 }
