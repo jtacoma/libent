@@ -53,7 +53,7 @@ ent_session_alloc (
 	}
 
 	*s = (struct ent_session) {.processor = p};
-	s->insertions = ent_insertion_array_alloc (sizeof (struct insertion));
+	s->insertions = ent_insertion_array_alloc();
 
 	if (!s->insertions)
 	{
@@ -248,7 +248,7 @@ ent_session_commit (
 	struct deletion * deletions = ent_deletion_array_get (s->deletions);
 
 	size_t inserts_len = ent_insertion_array_len (s->insertions);
-	struct insertion const * insertions = ent_insertion_array_get_const (s->insertions);
+	struct insertion const * insertions = ent_insertion_array_get (s->insertions);
 
 	size_t tables_len = ent_processor_tables_len (s->processor);
 

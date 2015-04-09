@@ -32,7 +32,7 @@ ent_table_alloc (void)
 
 	if (ent_alloc ((void**)&t, sizeof (*t)) == 0)
 	{
-		*t = (struct ent_table) {0};
+		*t = (struct ent_table) {};
 		t->refcount = 1;
 		t->columns =  ent_column_array_alloc();
 

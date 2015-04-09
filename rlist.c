@@ -23,7 +23,7 @@ ent_rlist_alloc()
 
 	if (ent_alloc ((void**)&rlist, sizeof (*rlist)) == 0)
 	{
-		*rlist = (struct ent_rlist) {0};
+		*rlist = (struct ent_rlist) {};
 		rlist->ranges = ent_range_array_alloc();
 
 		if (rlist->ranges == NULL)
@@ -80,7 +80,7 @@ ent_rlist_ranges (
 	}
 
 	*len = ent_range_array_len (rlist->ranges);
-	return ent_range_array_get_const (rlist->ranges);
+	return ent_range_array_get (rlist->ranges);
 }
 
 int

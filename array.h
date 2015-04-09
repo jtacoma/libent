@@ -52,10 +52,6 @@ ent_array_select_in_place (
 
 #define ent_array_typed(T, N) \
 	struct ent_ ## N ## _array; \
-	static inline size_t ent_ ## N ## _array_width() \
-	{ \
-		return sizeof(T); \
-	} \
 	static inline struct ent_ ## N ## _array * ent_ ## N ## _array_alloc() \
 	{ \
 		return (struct ent_ ## N ## _array *) ent_array_alloc (sizeof (T)); \
@@ -63,10 +59,6 @@ ent_array_select_in_place (
 	static inline void ent_ ## N ## _array_free (struct ent_ ## N ## _array * array) \
 	{ \
 		ent_array_free ((struct ent_array *) array); \
-	} \
-	static inline T const * ent_ ## N ## _array_get_const (struct ent_ ## N ## _array const * array) \
-	{ \
-		return ent_array_get_const ((struct ent_array const *) array); \
 	} \
 	static inline size_t ent_ ## N ## _array_len (struct ent_ ## N ## _array const * array) \
 	{ \

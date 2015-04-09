@@ -1,5 +1,3 @@
 #!/bin/sh
 
-valgrind -v --leak-check=full ./bin/ent-test \
-	| sed -e 'g/^--/s/:/;/g'
-
+valgrind -v --leak-check=full ./bin/ent-testcov

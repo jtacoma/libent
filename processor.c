@@ -24,7 +24,7 @@ ent_processor_alloc()
 
 	if (ent_alloc ((void**)&p, sizeof (*p)) == 0)
 	{
-		*p = (struct ent_processor) {0};
+		*p = (struct ent_processor) {};
 		p->tables = ent_array_alloc (sizeof (struct ent_table *));
 		if (!p->tables)
 		{
@@ -193,7 +193,7 @@ ent_processor_column (
 {
 	if (!processor)
 	{
-		return (struct column_info) {0};
+		return (struct column_info) {};
 	}
 
 	size_t index = (size_t) column_id;
@@ -202,7 +202,7 @@ ent_processor_column (
 
 	if (columns_len <= index)
 	{
-		return (struct column_info) {0};
+		return (struct column_info) {};
 	}
 
 	return columns[index];

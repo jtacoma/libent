@@ -56,7 +56,7 @@ resized_array_is_set_to_zero()
 
 	for (size_t i = 0; i < 4; ++i)
 	{
-		assert (ent_index_array_get_const (array)[i] == 0);
+		assert (ent_index_array_get (array)[i] == 0);
 	}
 
 	if (ent_index_array_set_len (array, 16) == -1)
@@ -69,7 +69,7 @@ resized_array_is_set_to_zero()
 
 	for (size_t i = 0; i < 16; ++i)
 	{
-		assert (ent_index_array_get_const (array)[i] == 0);
+		assert (ent_index_array_get (array)[i] == 0);
 	}
 
 	ent_index_array_free (array);
@@ -95,7 +95,7 @@ resized_array_retains_data()
 	for (size_t i = 0; i < 8; ++i)
 	{
 		ent_index_array_get (array)[i] = i + 1;
-		assert (ent_index_array_get_const (array)[i] == i + 1);
+		assert (ent_index_array_get (array)[i] == i + 1);
 	}
 
 	if (ent_index_array_set_len (array, 16) == -1)
@@ -106,12 +106,12 @@ resized_array_retains_data()
 
 	for (size_t i = 0; i < 8; ++i)
 	{
-		assert (ent_index_array_get_const (array)[i] == i + 1);
+		assert (ent_index_array_get (array)[i] == i + 1);
 	}
 
 	for (size_t i = 8; i < 16; ++i)
 	{
-		assert (ent_index_array_get_const (array)[i] == 0);
+		assert (ent_index_array_get (array)[i] == 0);
 	}
 
 	ent_index_array_free (array);
