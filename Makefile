@@ -30,6 +30,7 @@ test/uncovered.txt: bin/ent-testcov
 		| grep -v '_test\|main' \
 		| xargs grep '#####' \
 		| grep -v 'out of memory (for real)' \
+		| grep -v ':	*}$$' \
 		| cut -d: -f1,3,4- \
 		| sed -e 's/: */:/' -e 's/\.gcov//' \
 		| grep -v 'EOF' \
