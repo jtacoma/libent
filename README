@@ -111,21 +111,33 @@ left in a coherent state, an error value is returned, and `errno` is set to
 In any case, errno is always set to ENOMEM in case of out-of-memory conditions
 and to EINVAL for invalid arguments.
 
-TODO: Implementation
---------------------
+TODO: Correctness
+-----------------
+
+ * Sessions should not allow modification of tables/columns not registered
+   through a processor.
 
  * Isolated updates.  This means creating new update buffer tables in
    `ent_session_column_get()`.
+
+ * Thread-safety, along with techniques to test, verify, and/or prove that the
+   operations are in fact thread-safe.
+
+TODO: Features & Refactoring
+----------------------------
+
+ * Processor may be renamed to Locker with methods "locker_lock_table" etc.
+
+ * Session may be renamed to Transaction.
 
  * Either implement data type identification for columns (strings, the basic
    numberic types, and vectors/matrics of numeric types), or document a clear
    rational for not doing so.  Such a rationale might be that data locality is
    best optimized when custom struct types are allowed.
 
- * Thread-safety, along with techniques to test, verify, and/or prove that the
-   operations are in fact thread-safe.
-
  * Reference counting for `ent_processor`.
+
+ * Code generator for processors & sessions based on C functions.
 
 TODO: Proofs of Concept
 -----------------------
