@@ -1,7 +1,7 @@
 #include "test/ent_test.h"
 
-void
-null_table_sets_einval (void)
+int
+table_null_sets_einval (void)
 {
 	errno = 0;
 	assert (ent_table_len (NULL) == 0);
@@ -38,12 +38,18 @@ null_table_sets_einval (void)
 	errno = 0;
 	assert (ent_table_grow (NULL, 1) == -1);
 	assert (errno = EINVAL);
+
+	return 0;
 }
 
-void
+int
 new_table_is_empty (void)
 {
 	struct ent_table * table = ent_table_alloc();
+	if (!table)
+	{
+		return -1;
+	}
 
 	errno = 0;
 	assert (ent_table_len (table) == 0);
@@ -54,26 +60,50 @@ new_table_is_empty (void)
 	assert (errno == 0);
 
 	ent_table_free (table);
+
+	return 0;
 }
 
-void
-adding_zero_length_is_ok (void)
+int
+table_can_grow_by_zero (void)
 {
 	struct ent_table * table = ent_table_alloc();
-	assert (table);
+	if (!table)
+	{
+		return -1;
+	}
+
 	assert (ent_table_grow (table, 0) == 0);
 	ent_table_free (table);
+
+	return 0;
 }
 
-void
-column_info_can_be_retrieved (void)
+int
+table_retrieves_column_info (void)
 {
 	struct ent_table * table = ent_table_alloc();
+	if (!table)
+	{
+		return -1;
+	}
 
-	assert (ent_table_column (table, "int8", sizeof (int8_t)) != NULL);
-	assert (ent_table_column (table, "int16", sizeof (int16_t)) != NULL);
-	assert (ent_table_column (table, "int32", sizeof (int32_t)) != NULL);
-	assert (ent_table_column (table, "int64", sizeof (int64_t)) != NULL);
+	if (ent_table_column (table, "int8", sizeof (int8_t)) == NULL)
+	{
+		return -1;
+	}
+	if (ent_table_column (table, "int16", sizeof (int16_t)) == NULL)
+	{
+		return -1;
+	}
+	if (ent_table_column (table, "int32", sizeof (int32_t)) == NULL)
+	{
+		return -1;
+	}
+	if (ent_table_column (table, "int64", sizeof (int64_t)) == NULL)
+	{
+		return -1;
+	}
 
 	assert (ent_table_columns_len (table) == 4);
 
@@ -88,12 +118,19 @@ column_info_can_be_retrieved (void)
 	assert (width == 8);
 
 	ent_table_free (table);
+
+	return 0;
 }
 
-void
-invalid_column_id_sets_einval (void)
+int
+table_sets_einval_for_invalid_column_id (void)
 {
 	struct ent_table * table = ent_table_alloc();
+	if (!table)
+	{
+		return -1;
+	}
+
 	size_t width = 1;
 
 	errno = 0;
@@ -102,18 +139,29 @@ invalid_column_id_sets_einval (void)
 	assert (errno == EINVAL);
 
 	ent_table_free (table);
+
+	return 0;
 }
 
-void
-deleting_beyond_end_of_table_set_einval (void)
+int
+table_sets_einval_when_deleting_beyond_end (void)
 {
 	struct ent_table * table = ent_table_alloc();
-	assert (table);
+	if (!table)
+	{
+		return -1;
+	}
 
 	struct ent_rlist * rlist = ent_rlist_alloc();
-	assert (rlist);
+	if (!rlist)
+	{
+		return -1;
+	}
 
-	assert (ent_rlist_append (rlist, 0, 1) == 0);
+	if (ent_rlist_append (rlist, 0, 1) == -1)
+	{
+		return -1;
+	}
 
 	errno = 0;
 	assert (ent_table_delete (table, rlist) == -1);
@@ -121,10 +169,12 @@ deleting_beyond_end_of_table_set_einval (void)
 
 	ent_rlist_free (rlist);
 	ent_table_free (table);
+
+	return 0;
 }
 
 int
-insertion_handles_out_of_memory (void)
+table_insertion_handles_out_of_memory (void)
 {
 	struct ent_table * dst = ent_table_alloc();
 
@@ -179,10 +229,11 @@ insertion_handles_out_of_memory (void)
 
 	ent_table_free (src);
 	ent_table_free (dst);
+
 	return ok ? 0 : -1;
 }
 
-int
+static int
 deletion_handles_out_of_memory (size_t len, size_t start, size_t end)
 {
 	struct ent_table * table = ent_table_alloc();
@@ -431,5 +482,6 @@ table_general_test (void)
 
 	ent_table_free (table);
 	ent_table_free (NULL);
+
 	return 0;
 }

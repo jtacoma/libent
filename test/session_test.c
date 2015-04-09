@@ -263,22 +263,42 @@ session_supports_insertion (void)
 	return 0;
 }
 
-void
-invalid_session_argument_sets_errno (void)
+int
+session_invalid_argument_sets_einval (void)
 {
 	struct ent_table * table = ent_table_alloc();
-	assert (table);
+	if (!table)
+	{
+		return -1;
+	}
+
 	struct ent_processor * processor = ent_processor_alloc();
-	assert (processor);
+	if (!processor)
+	{
+		ent_table_free (table);
+		return -1;
+	}
+
 	struct ent_rlist * rlist = ent_rlist_alloc();
-	assert (rlist);
+	if (!rlist)
+	{
+		ent_processor_free (processor);
+		ent_table_free (table);
+		return -1;
+	}
 
 	errno = 0;
 	assert (ent_session_alloc (NULL) == NULL);
 	assert (errno = EINVAL);
 
 	struct ent_session * session = ent_session_alloc (processor);
-	assert (session);
+	if (!session)
+	{
+		ent_rlist_free (rlist);
+		ent_processor_free (processor);
+		ent_table_free (table);
+		return -1;
+	}
 
 	errno = 0;
 	assert (ent_session_table_insert (session, table, 0) == NULL);
@@ -328,6 +348,8 @@ invalid_session_argument_sets_errno (void)
 	ent_rlist_free (rlist);
 	ent_processor_free (processor);
 	ent_table_free (table);
+
+	return 0;
 }
 
 int

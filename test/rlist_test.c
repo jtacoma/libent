@@ -55,7 +55,7 @@ null_rlist_sets_einval (void)
 }
 
 int
-inverted_range_is_invalid (void)
+rlist_cannot_hold_inverted_ranges (void)
 {
 	struct ent_rlist * rlist = ent_rlist_alloc();
 

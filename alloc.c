@@ -64,8 +64,13 @@ ent_alloc_count()
 	return allocs;
 }
 
+size_t ent_alloc_fail_at (void)
+{
+	return fail_at;
+}
+
 void
-ent_alloc_artificial_fail (
+ent_alloc_set_fail_at (
     size_t at_count)
 {
 	fail_at = at_count;

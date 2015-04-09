@@ -18,7 +18,7 @@ tags: *.c test/*.c bench/*.c demo/*.c
 test/ent_all_tests.h: test/*_test.c test/gen
 	./test/gen test/*_test.c > $@
 
-bin/ent-testcov: *.[ch] include/*.h test/*.[ch]
+bin/ent-testcov: *.[ch] include/*.h test/*.[ch] test/ent_all_tests.h
 	@mkdir -p bin
 	$(CC) -fprofile-arcs -ftest-coverage -o $@ *.c test/*.c $(CFLAGS) -O0
 

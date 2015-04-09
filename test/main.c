@@ -15,32 +15,32 @@ void true_or_exit (bool value, char const * file, int line,
 int
 main()
 {
-	size_t test_count = sizeof (all_void_tests) / sizeof (*all_void_tests)
-	                    + sizeof (all_mem_tests) / sizeof (*all_mem_tests);
+	size_t test_count = sizeof (all_mem_tests) / sizeof (*all_mem_tests);
 
 	printf ("running %lu tests...\n", test_count);
 
-	for (size_t i = 0; i < sizeof (all_void_tests) / sizeof (*all_void_tests); ++i)
-	{
-		printf ("  %s: ", all_void_tests[i].name);
-		all_void_tests[i].function();
-		printf ("verified.\n");
-	}
-
-	for (size_t i = 0; i < sizeof (all_mem_tests) / sizeof (*all_mem_tests); ++i)
+	for (size_t i = 0;
+	        i < sizeof (all_mem_tests) / sizeof (*all_mem_tests);
+	        ++i)
 	{
 		printf ("  %s: ", all_mem_tests[i].name);
+		size_t prev_fail_at = ent_alloc_fail_at();
 		size_t zero = ent_alloc_count();
 		assert (all_mem_tests[i].function() == 0);
 		size_t used = ent_alloc_count() - zero;
-		printf ("%lu allocations, ", used);
 
-		for (size_t m = 1; m <= used; ++m)
+		// Only apply memory allocation stress if this test does not
+		// stress memory allocation on its own.
+		if (ent_alloc_fail_at() == prev_fail_at)
 		{
-			ent_alloc_artificial_fail (ent_alloc_count() + m);
-			errno = 0;
-			assert (all_mem_tests[i].function() == -1);
-			assert (errno == ENOMEM);
+			printf ("(%lu allocations) ", used);
+			for (size_t m = 1; m <= used; ++m)
+			{
+				ent_alloc_set_fail_at (ent_alloc_count() + m);
+				errno = 0;
+				assert (all_mem_tests[i].function() == -1);
+				assert (errno == ENOMEM);
+			}
 		}
 
 		printf ("verified.\n");

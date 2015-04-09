@@ -1,12 +1,15 @@
 #include "test/ent_test.h"
 
-void
-invalid_argument_sets_errno (void)
+int
+processor_invalid_argument_sets_einval (void)
 {
 	// Create a table to use a place holder when we want to verify EINVAL
 	// for a different parameter.
 	struct ent_table * table = ent_table_alloc();
-	assert (table);
+	if (!table)
+	{
+		return -1;
+	}
 
 	errno = 0;
 	assert (ent_processor_table (NULL, 0) == NULL);
@@ -18,7 +21,10 @@ invalid_argument_sets_errno (void)
 	assert (errno = EINVAL);
 
 	struct ent_processor * processor = ent_processor_alloc();
-	assert (processor);
+	if (!processor)
+	{
+		return -1;
+	}
 
 	errno = 0;
 	assert (ent_processor_table (processor, 0) == NULL);
@@ -75,4 +81,6 @@ invalid_argument_sets_errno (void)
 
 	ent_processor_free (processor);
 	ent_table_free (table);
+
+	return 0;
 }

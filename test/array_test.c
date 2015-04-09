@@ -153,7 +153,7 @@ copied_array_keeps_original_data (void)
 }
 
 int
-invalid_arguments_set_einval (void)
+null_array_sets_einval (void)
 {
 	errno = 0;
 	assert (ent_array_cpy_alloc (NULL) == NULL);
