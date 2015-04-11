@@ -157,10 +157,10 @@ libent.
 Release Check-list
 ------------------
 
- [ ] Can run "make" without problems.
- [ ] Can run ./bin/ent-demo without errors.
- [ ] Code coverage is at 100%.
- [ ] Valgrind shows no possible memory leaks from ./bin/ent-test.
+ - [ ] Can run "make" without problems.
+ - [ ] Can run ./bin/ent-demo without errors.
+ - [ ] Code coverage is at 100%.
+ - [ ] Valgrind shows no possible memory leaks from ./bin/ent-test.
 
 Coding Style
 ------------
