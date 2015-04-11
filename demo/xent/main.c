@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -24,6 +25,8 @@ struct xent_context
 	int opcode;
 	length_xy pixel;
 	XWindowAttributes xwindow_attributes;
+	Atom deleteWindow;
+	bool stopping;
 };
 
 struct xent_context *
@@ -76,7 +79,6 @@ xent_context_setup (
 
 	int major = 2, minor = 2;
 	XIQueryVersion (c->xdisplay, &major, &minor);
-
 	if (major * 1000 + minor < 2002)
 	{
 		XCloseDisplay (c->xdisplay);
@@ -91,7 +93,6 @@ xent_context_setup (
 
 	Window xroot = DefaultRootWindow (c->xdisplay);
 	XVisualInfo * vi = glXChooseVisual (c->xdisplay, 0, att);
-
 	if (vi == NULL)
 	{
 		XCloseDisplay (c->xdisplay);
@@ -105,15 +106,27 @@ xent_context_setup (
 	}
 
 	Colormap cmap = XCreateColormap (c->xdisplay, xroot, vi->visual, AllocNone);
-	XSetWindowAttributes swa;
-	swa.colormap = cmap;
-	swa.event_mask = ExposureMask | KeyPressMask;
+	XSetWindowAttributes swa =
+	{
+		.colormap = cmap,
+		.event_mask = ExposureMask | KeyPressMask,
+	};
 	c->xwindow =
 	    XCreateWindow (
 	        c->xdisplay, xroot,
 	        0, 0, 600, 600,
 	        0, vi->depth, InputOutput, vi->visual,
 	        CWColormap | CWEventMask, &swa);
+	if (!c->xwindow)
+	{
+		XCloseDisplay (c->xdisplay);
+		c->xdisplay = NULL;
+		printf ("failed to find XInput extension\n");
+		return -1;
+	}
+
+	c->deleteWindow = XInternAtom (c->xdisplay, "WM_DELETE_WINDOW", False);
+	XSetWMProtocols (c->xdisplay, c->xwindow, &c->deleteWindow, 1);
 	XIDeviceInfo * info;
 	int ndevices;
 	info = XIQueryDevice (c->xdisplay, XIAllDevices, &ndevices);
@@ -150,8 +163,10 @@ xent_context_setup (
 	XISetMask (mask, XI_TouchUpdate);
 	XISetMask (mask, XI_TouchEnd);
 	XISelectEvents (c->xdisplay, c->xwindow, &eventmask, 1);
+
 	XMapWindow (c->xdisplay, c->xwindow);
 	XStoreName (c->xdisplay, c->xwindow, "Simple App");
+
 	c->glx = glXCreateContext (c->xdisplay, vi, NULL, GL_TRUE);
 	glXMakeCurrent (c->xdisplay, c->xwindow, c->glx);
 
@@ -179,6 +194,7 @@ xent_context_teardown (struct xent_context * c)
 		XCloseDisplay (c->xdisplay);
 		c->xdisplay = NULL;
 	}
+
 	return 0;
 }
 
@@ -195,7 +211,8 @@ int xent_context_paint (struct xent_context * c)
 	XGetWindowAttributes (c->xdisplay, c->xwindow, &c->xwindow_attributes);
 
 	glViewport (
-	    0, 0, c->xwindow_attributes.width, c->xwindow_attributes.height);
+	    0, 0,
+	    c->xwindow_attributes.width, c->xwindow_attributes.height);
 
 	length_xy screen_size =
 	{
@@ -206,14 +223,16 @@ int xent_context_paint (struct xent_context * c)
 	c->pixel[0] = screen_size[0] / WidthOfScreen (c->xwindow_attributes.screen);
 	c->pixel[1] = screen_size[1] / HeightOfScreen (c->xwindow_attributes.screen);
 
-	length_xy visual_size =
-	{
-		0.5 * c->pixel[0] * c->xwindow_attributes.width,
-		0.5 * c->pixel[1] * c->xwindow_attributes.height
-	};
+	//length_xy visual_size =
+	//{
+	//0.5 * c->pixel[0] * c->xwindow_attributes.width,
+	//0.5 * c->pixel[1] * c->xwindow_attributes.height
+	//};
+	//printf ("%0.3f x %0.3f\n", visual_size[0], visual_size[1]);
 
-	printf ("%0.3f x %0.3f\n", visual_size[0], visual_size[1]);
 	// TODO: paint(visual_size);
+	glClearColor (1.0, 1.0, 1.0, 1.0);
+	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glXSwapBuffers (c->xdisplay, c->xwindow);
 
@@ -230,13 +249,11 @@ struct ticker
 struct ticker * ticker_alloc()
 {
 	struct ticker * t = calloc (1, sizeof (struct ticker));
-
 	if (t)
 	{
 		gettimeofday (&t->time_started, NULL);
 		t->tick_offset = t->time_started.tv_usec * 60 / 1000000;
 	}
-
 	return t;
 }
 
@@ -249,9 +266,12 @@ int
 ticker_sleep (struct ticker * t)
 {
 	t->frame += 1;
-	struct timeval tick;
-	tick.tv_sec = t->time_started.tv_sec + (t->tick_offset + t->frame) / 60;
-	tick.tv_usec = ((t->tick_offset + t->frame) % 60) * 1000000 / 60;
+
+	struct timeval tick =
+	{
+		.tv_sec = t->time_started.tv_sec + (t->tick_offset + t->frame) / 60,
+		.tv_usec = ((t->tick_offset + t->frame) % 60) * 1000000 / 60,
+	};
 
 	int go_to_sleep = 1;
 
@@ -260,7 +280,6 @@ ticker_sleep (struct ticker * t)
 		struct timeval now;
 
 		int error = gettimeofday (&now, NULL);
-
 		if (error)
 		{
 			printf ("cannot get time of day: %x\n", errno);
@@ -271,7 +290,6 @@ ticker_sleep (struct ticker * t)
 
 		long interval = (tick.tv_usec - now.tv_usec)
 		                + 1000000 * (tick.tv_sec - now.tv_sec);
-
 		if (interval < 0)
 		{
 			printf ("interval too small..?\n");
@@ -337,13 +355,20 @@ int xent_context_input (struct xent_context * c)
 		length_xy input_pos = {0, 0};
 		enum input_action input_action = 0;
 
-		if (xevent.xcookie.type == GenericEvent &&
-		        xevent.xcookie.extension == c->opcode &&
-		        XGetEventData (c->xdisplay, &xevent.xcookie))
+		if (xevent.type == ClientMessage)
+		{
+			if ((Atom)xevent.xclient.data.l[0] == c->deleteWindow)
+			{
+				printf ("window closed\n");
+				c->stopping = true;
+			}
+		}
+		else if (xevent.xcookie.type == GenericEvent &&
+		         xevent.xcookie.extension == c->opcode &&
+		         XGetEventData (c->xdisplay, &xevent.xcookie))
 		{
 			XIDeviceEvent const * device_event =
-			    (XIDeviceEvent const *)xevent.xcookie.
-			    data;
+			    (XIDeviceEvent const *)xevent.xcookie.data;
 
 			switch (xevent.xcookie.evtype)
 			{
@@ -424,7 +449,7 @@ int xent_context_input (struct xent_context * c)
 		//error = input_system_event (input_system, &input);
 	}
 
-	return 0;
+	return error;
 }
 
 int
@@ -449,10 +474,9 @@ main()
 
 	unsigned long frame = 0;
 	int error = 0;
-
 	int status = 0;
 
-	do
+	while (!c->stopping)
 	{
 		error = xent_context_paint (c);
 		if (error)
@@ -461,9 +485,12 @@ main()
 		}
 
 		frame += 1;
-		printf ("frame %ld\n", frame);
+		if (! (frame % 60))
+		{
+			printf ("frame %ld\n", frame);
+		}
 
-		xent_context_input (c);
+		error = xent_context_input (c);
 		if (error)
 		{
 			break;
@@ -471,7 +498,6 @@ main()
 
 		// TODO: iterate state based on input etc.
 	}
-	while (!error && status == 0);
 
 	assert (xent_context_teardown (c) != -1);
 	xent_context_free (c);
