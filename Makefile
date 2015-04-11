@@ -2,7 +2,7 @@ CC=clang
 CFLAGS+=-std=c11 -g -Wall -Wextra -Werror -I. -Iinclude
 
 .PHONY: all
-all: .styled tags test/uncovered.txt run-benchmarks bin/ent-example-hello
+all: .styled tags test/uncovered.txt run-benchmarks bin/ent-demo-hello bin/ent-demo-xent
 
 .PHONY: run-benchmarks
 run-benchmarks: bin/ent-bench
@@ -48,9 +48,13 @@ bin/ent-bench: bench/*.c lib/libent.so
 	@mkdir -p bin
 	$(CC) -o $@ bench/*.c -I. -L./lib -lent -lrt $(CFLAGS) -O2 -std=gnu11
 
-bin/ent-example-hello: lib/libent.so demo/hello/*.c
+bin/ent-demo-hello: lib/libent.so demo/hello/*.c
 	@mkdir -p bin
 	$(CC) -o $@ demo/hello/*.c -I. -L./lib -lent $(CFLAGS)
+
+bin/ent-demo-xent: lib/libent.so demo/xent/*.c
+	@mkdir -p bin
+	$(CC) -o $@ demo/xent/*.c -I. -L./lib -lent $(CFLAGS) $(shell pkg-config --cflags --libs gl glu x11 xi)
 
 clean:
 	rm -f .styled tags *.gcno *.gcda *.gcov
