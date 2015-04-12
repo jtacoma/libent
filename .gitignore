@@ -1,4 +1,5 @@
-/.styled
-/lib
-/bin
+/*/*.o
+/.*
 /gmon.out
+/ent-*
+/*.so

@@ -447,6 +447,10 @@ int xent_context_input (struct xent_context * c)
 
 		// TODO: input_pos, input_action, input_type, input_id
 		//error = input_system_event (input_system, &input);
+		(void)input_pos;
+		(void)input_action;
+		(void)input_type;
+		(void)input_id;
 	}
 
 	return error;

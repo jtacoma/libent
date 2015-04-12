@@ -1,61 +1,27 @@
-CC=clang
-CFLAGS+=-std=c11 -g -Wall -Wextra -Werror -I. -Iinclude
+include common.mk
+
+ALL_TARGETS = .styled
+CLEAN_TARGETS =
+STATIC_SOURCES =
+
+all: real-all
+
+include libent/libent.mk
+include test/test.mk
+include bench/bench.mk
+include hello/hello.mk
+include xent/xent.mk
+
+real-all: $(ALL_TARGETS)
+
+clean: $(CLEAN_TARGETS)
 
 .PHONY: all
-all: .styled tags test/uncovered.txt run-benchmarks bin/ent-demo-hello bin/ent-demo-xent
+all: test/uncovered.txt run-benchmarks ent-hello ent-xent
 
-.PHONY: run-benchmarks
-run-benchmarks: bin/ent-bench
-	./bin/ent-bench
-
-.styled: *.[ch] include/*.h test/*.[ch] bench/*.[ch] demo/*/*.[ch]
+.styled: */*.[ch]
 	astyle $?
 	touch $@
 
-tags: *.c test/*.c bench/*.c demo/*/*.c
+tags: $(STATIC_SOURCES)
 	ctags $^
-
-test/ent_all_tests.h: test/*_test.c test/gen
-	./test/gen test/*_test.c > $@
-
-bin/ent-testcov: *.[ch] include/*.h test/*.[ch] test/ent_all_tests.h
-	@mkdir -p bin
-	$(CC) -fprofile-arcs -ftest-coverage -o $@ *.c test/*.c $(CFLAGS) -O0
-
-test/uncovered.txt: bin/ent-testcov
-	rm -f *.gcda
-	./bin/ent-testcov
-	llvm-cov gcov *.gcda > /dev/null
-	ls *.gcov \
-		| grep -v '_test\|main' \
-		| xargs grep '#####' \
-		| grep -v 'out of memory (for real)' \
-		| grep -v ':	*}$$' \
-		| cut -d: -f1,3,4- \
-		| sed -e 's/: */:/' -e 's/\.gcov//' \
-		| grep -v 'EOF' \
-		| tee $@ || true
-
-lib/libent.so: *.[ch] include/*.h
-	@mkdir -p lib
-	$(CC) -o $@ *.c $(CFLAGS) -O2 -shared -fPIC
-
-bin/ent-test: lib/libent.so test/*.[ch]
-	@mkdir -p bin
-	$(CC) *.c test/*.c -o $@ -L./lib -lent $(CFLAGS)
-
-bin/ent-bench: bench/*.c lib/libent.so
-	@mkdir -p bin
-	$(CC) -o $@ bench/*.c -I. -L./lib -lent -lrt $(CFLAGS) -O2 -std=gnu11
-
-bin/ent-demo-hello: lib/libent.so demo/hello/*.c
-	@mkdir -p bin
-	$(CC) -o $@ demo/hello/*.c -I. -L./lib -lent $(CFLAGS)
-
-bin/ent-demo-xent: lib/libent.so demo/xent/*.c
-	@mkdir -p bin
-	$(CC) -o $@ demo/xent/*.c -I. -L./lib -lent $(CFLAGS) $(shell pkg-config --cflags --libs gl glu x11 xi)
-
-clean:
-	rm -f .styled tags *.gcno *.gcda *.gcov
-	rm -rf lib bin

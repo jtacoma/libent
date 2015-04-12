@@ -16,11 +16,11 @@ for test in $MEM_TESTS ; do
 done
 echo
 echo "static struct {"
-echo "    char const * name;"
-echo "    int (* function) (void);"
+echo "	char const * name;"
+echo "	int (* function) (void);"
 echo "} all_mem_tests[] = {"
 for test in $MEM_TESTS ; do
-	echo "    { .name=\"$test\", .function=$test },"
+	echo "	{ .name=\"$test\", .function=$test },"
 done
 echo "};"
 echo

@@ -1,5 +1,5 @@
-#include "test/ent_test.h"
-#include "test/ent_all_tests.h"
+#include "ent_test.h"
+#include "ent_all_tests.h"
 
 void true_or_exit (bool value, char const * file, int line,
                    char const * literal)

@@ -1,4 +1,4 @@
-#include "test/ent_test.h"
+#include "ent_test.h"
 
 int
 table_null_sets_einval (void)

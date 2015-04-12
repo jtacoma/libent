@@ -1,4 +1,4 @@
-#include "test/ent_test.h"
+#include "ent_test.h"
 
 ent_array_typed (size_t, index);
 

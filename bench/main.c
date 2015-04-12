@@ -10,7 +10,7 @@
 #include "array.h"
 #include "table.h"
 
-#include "bench/bench.h"
+#include "bench.h"
 
 FILE * dump = NULL;
 
