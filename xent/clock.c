@@ -43,6 +43,8 @@ clock_sleep (struct clock * t)
 		.tv_usec = ((t->tick_offset + t->frame) % 60) * 1000000 / 60,
 	};
 
+	printf ("expected time: %ld.%06lds\n", tick.tv_sec, tick.tv_usec);
+
 	int go_to_sleep = 1;
 
 	while (go_to_sleep)
@@ -56,7 +58,7 @@ clock_sleep (struct clock * t)
 			return -1;
 		}
 
-		printf ("time %ld.%06ld\n", now.tv_sec, now.tv_usec);
+		printf ("actual time: %ld.%06lds\n", now.tv_sec, now.tv_usec);
 
 		long interval = (tick.tv_usec - now.tv_usec)
 		                + 1000000 * (tick.tv_sec - now.tv_sec);

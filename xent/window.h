@@ -11,6 +11,15 @@ void
 window_free (
     struct window * w);
 
+bool
+window_stopping (
+    struct window const * w);
+
+void
+window_visual_size (
+    struct window const * w,
+    length_xy size);
+
 int
 window_setup (
     struct window * w);
@@ -20,15 +29,15 @@ window_teardown (
     struct window * w);
 
 int
-window_paint (
+window_paint_begin (
+    struct window * w);
+
+int
+window_paint_end (
     struct window * w);
 
 int
 window_input (
     struct window * w);
-
-bool
-window_stopping (
-    struct window const * w);
 
 #endif//WINDOW_H

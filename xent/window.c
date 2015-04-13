@@ -1,8 +1,10 @@
 #define _XOPEN_SOURCE 500
 
+#include <errno.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <GL/glx.h>
 #include <X11/extensions/XInput2.h>
@@ -10,6 +12,7 @@
 #include <ent.h>
 
 #include "xent.h"
+#include "input.h"
 #include "window.h"
 
 typedef float length_xy[2]; // always in meters
@@ -22,21 +25,38 @@ struct window
 	GLXContext glx;
 	int opcode;
 	length_xy pixel;
+	length_xy size;
 	XWindowAttributes xwindow_attributes;
 	Atom deleteWindow;
 	bool stopping;
+	struct input * input;
 };
 
 struct window *
 window_alloc (
     struct ent_table * entities)
 {
+	if (!entities)
+	{
+		errno = EINVAL;
+		return NULL;
+	}
+
 	struct window * w = calloc (1, sizeof (struct window));
 
-	if (w)
+	if (!w)
 	{
-		w->entities = entities;
+		return NULL;
 	}
+
+	w->input = input_alloc (entities);
+	if (!w->input)
+	{
+		free (w);
+		return NULL;
+	}
+
+	w->entities = entities;
 
 	return w;
 }
@@ -48,8 +68,34 @@ window_free (
 	if (w)
 	{
 		window_teardown (w);
+		input_free (w->input);
 		free (w);
 	}
+}
+
+bool
+window_stopping (
+    struct window const * w)
+{
+	return w && w->stopping;
+}
+
+void
+window_visual_size (
+    struct window const * w,
+    length_xy size)
+{
+	if (!size)
+	{
+		return;
+	}
+
+	if (!w)
+	{
+		size = (length_xy) {0};
+	}
+
+	memcpy (size, w->size, sizeof (length_xy));
 }
 
 int
@@ -189,17 +235,21 @@ window_teardown (struct window * w)
 	{
 		if (w->glx)
 		{
+			fprintf (stderr, "detaching GLX context\n");
 			glXMakeCurrent (w->xdisplay, None, NULL);
+			fprintf (stderr, "destroying GLX context\n");
 			glXDestroyContext (w->xdisplay, w->glx);
 			w->glx = NULL;
 		}
 
 		if (w->xwindow)
 		{
+			fprintf (stderr, "destroying window\n");
 			XDestroyWindow (w->xdisplay, w->xwindow);
 			w->xwindow = 0;
 		}
 
+		fprintf (stderr, "closing display\n");
 		XCloseDisplay (w->xdisplay);
 		w->xdisplay = NULL;
 	}
@@ -207,7 +257,9 @@ window_teardown (struct window * w)
 	return 0;
 }
 
-int window_paint (struct window * w)
+int
+window_paint_begin (
+    struct window * w)
 {
 	XGetWindowAttributes (w->xdisplay, w->xwindow, &w->xwindow_attributes);
 
@@ -224,23 +276,24 @@ int window_paint (struct window * w)
 	w->pixel[0] = screen_size[0] / WidthOfScreen (w->xwindow_attributes.screen);
 	w->pixel[1] = screen_size[1] / HeightOfScreen (w->xwindow_attributes.screen);
 
-	length_xy visual_size =
-	{
-		0.5 * w->pixel[0] * w->xwindow_attributes.width,
-		0.5 * w->pixel[1] * w->xwindow_attributes.height
-	};
-	printf ("%0.3f x %0.3f\n", visual_size[0], visual_size[1]);
+	w->size[0] = 0.5 * w->pixel[0] * w->xwindow_attributes.width;
+	w->size[1] = 0.5 * w->pixel[1] * w->xwindow_attributes.height;
 
-	// TODO: paint(visual_size);
-	glClearColor (1.0, 1.0, 1.0, 1.0);
-	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	return 0;
+}
 
+int
+window_paint_end (
+    struct window * w)
+{
 	glXSwapBuffers (w->xdisplay, w->xwindow);
 
 	return 0;
 }
 
-int window_input (struct window * w)
+int
+window_input (
+    struct window * w)
 {
 	int error = 0;
 
@@ -345,20 +398,13 @@ int window_input (struct window * w)
 
 		XFreeEventData (w->xdisplay, &xevent.xcookie);
 
-		// TODO: input_pos, input_action, input_type, input_id
-		//error = input_system_event (input_system, &input);
-		(void)input_pos;
-		(void)input_action;
-		(void)input_type;
-		(void)input_id;
+		error = input_append (w->input, input_type, input_id, input_action, input_pos);
+		if (error)
+		{
+			perror ("input_append");
+			break;
+		}
 	}
 
 	return error;
-}
-
-bool
-window_stopping (
-    struct window const * w)
-{
-	return w && w->stopping;
 }

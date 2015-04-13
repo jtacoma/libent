@@ -42,6 +42,7 @@ ent_session_alloc (
 {
 	if (!p)
 	{
+		errno = EINVAL;
 		return NULL;
 	}
 
