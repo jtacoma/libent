@@ -12,11 +12,24 @@ input_free (
     struct input * input);
 
 int
-input_append (
+input_begin (
     struct input * input,
     enum input_type type,
     input_id id,
-    enum input_action action,
+    length_xy pos);
+
+int
+input_update (
+    struct input * input,
+    enum input_type type,
+    input_id id,
+    length_xy pos);
+
+int
+input_end (
+    struct input * input,
+    enum input_type type,
+    input_id id,
     length_xy pos);
 
 #endif//INPUT_H

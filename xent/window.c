@@ -306,7 +306,6 @@ window_input (
 		enum input_type input_type = 0;
 		input_id input_id = 0;
 		length_xy input_pos = {0, 0};
-		enum input_action input_action = 0;
 
 		if (xevent.type == ClientMessage)
 		{
@@ -370,17 +369,29 @@ window_input (
 			case XI_ButtonPress:
 			case XI_KeyPress:
 			case XI_TouchBegin:
-				input_action = input_action_begin;
+				error = input_begin (w->input, input_type, input_id, input_pos);
+				if (error)
+				{
+					perror ("input_begin");
+				}
 				break;
 
 			case XI_Motion:
 			case XI_TouchUpdate:
-				input_action = input_action_update;
+				error = input_update (w->input, input_type, input_id, input_pos);
+				if (error)
+				{
+					perror ("input_update");
+				}
 				break;
 
 			case XI_ButtonRelease:
 			case XI_TouchEnd:
-				input_action = input_action_end;
+				error = input_end (w->input, input_type, input_id, input_pos);
+				if (error)
+				{
+					perror ("input_end");
+				}
 				break;
 
 			default:
@@ -398,12 +409,6 @@ window_input (
 
 		XFreeEventData (w->xdisplay, &xevent.xcookie);
 
-		error = input_append (w->input, input_type, input_id, input_action, input_pos);
-		if (error)
-		{
-			perror ("input_append");
-			break;
-		}
 	}
 
 	return error;

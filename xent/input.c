@@ -14,8 +14,8 @@ struct input
 	struct ent_processor * processor;
 	int type;
 	int id;
-	int action;
 	int pos;
+	int dead;
 };
 
 struct input *
@@ -61,20 +61,20 @@ input_alloc (
 		return NULL;
 	}
 
-	input->action =
+	input->pos =
 	    ent_processor_use_column (
-	        input->processor, entities, "input_action", sizeof (enum input_action), "");
-	if (input->action == -1)
+	        input->processor, entities, "pos", sizeof (length_xy), "");
+	if (input->pos == -1)
 	{
 		ent_processor_free (input->processor);
 		free (input);
 		return NULL;
 	}
 
-	input->pos =
+	input->dead =
 	    ent_processor_use_column (
-	        input->processor, entities, "pos", sizeof (length_xy), "");
-	if (input->pos == -1)
+	        input->processor, entities, "dead", sizeof (char), "");
+	if (input->dead == -1)
 	{
 		ent_processor_free (input->processor);
 		free (input);
@@ -94,11 +94,10 @@ input_free (
 }
 
 int
-input_append (
+input_begin (
     struct input * input,
     enum input_type type,
     input_id id,
-    enum input_action action,
     length_xy pos)
 {
 	int rc = -1;
@@ -137,14 +136,6 @@ input_append (
 		}
 		ids[0] = id;
 
-		enum input_action * actions =
-		    ent_session_column_get (session, one, input->action);
-		if (!actions)
-		{
-			break;
-		}
-		actions[0] = action;
-
 		length_xy * poss =
 		    ent_session_column_get (session, one, input->pos);
 		if (!poss)
@@ -156,6 +147,147 @@ input_append (
 		    poss[0],
 		    pos,
 		    sizeof (length_xy));
+
+		rc = ent_session_commit (session);
+	}
+	while (0);
+
+	ent_session_free (session);
+	return rc;
+}
+
+int
+input_update (
+    struct input * input,
+    enum input_type type,
+    input_id id,
+    length_xy pos)
+{
+	int rc = -1;
+
+	struct ent_session * session =
+	    ent_session_alloc (input->processor);
+	if (!session)
+	{
+		return rc;
+	}
+
+	struct ent_table * entities = input->entities;
+
+	do
+	{
+		printf ("input!\n");
+
+		enum input_type const * types =
+		    ent_session_column_get (session, entities, input->type);
+		if (!types)
+		{
+			break;
+		}
+
+		input_id const * ids =
+		    ent_session_column_get (session, entities, input->id);
+		if (!ids)
+		{
+			break;
+		}
+
+		length_xy * poss =
+		    ent_session_column_get (session, entities, input->pos);
+		if (!poss)
+		{
+			break;
+		}
+
+		size_t len = ent_session_table_len (session, entities);
+		for (size_t i = 0; i < len; ++i)
+		{
+			if (types[i] == type && ids[i] == id)
+			{
+				memcpy (
+				    poss[i],
+				    pos,
+				    sizeof (length_xy));
+			}
+		}
+
+		rc = ent_session_commit (session);
+	}
+	while (0);
+
+	ent_session_free (session);
+
+	if (rc == -1)
+	{
+		rc = input_begin (input, type, id, pos);
+	}
+
+	return rc;
+}
+
+int
+input_end (
+    struct input * input,
+    enum input_type type,
+    input_id id,
+    length_xy pos)
+{
+	int rc = -1;
+
+	struct ent_session * session =
+	    ent_session_alloc (input->processor);
+	if (!session)
+	{
+		return rc;
+	}
+
+	struct ent_table * entities = input->entities;
+
+	do
+	{
+		printf ("input!\n");
+
+		enum input_type const * types =
+		    ent_session_column_get (session, entities, input->type);
+		if (!types)
+		{
+			break;
+		}
+
+		input_id const * ids =
+		    ent_session_column_get (session, entities, input->id);
+		if (!ids)
+		{
+			break;
+		}
+
+		length_xy * poss =
+		    ent_session_column_get (session, entities, input->pos);
+		if (!poss)
+		{
+			break;
+		}
+
+		char * deads =
+		    ent_session_column_get (session, entities, input->dead);
+		if (!deads)
+		{
+			break;
+		}
+
+		size_t len = ent_session_table_len (session, entities);
+		for (size_t i = 0; i < len; ++i)
+		{
+			if (types[i] == type && ids[i] == id)
+			{
+				memcpy (
+				    poss[i],
+				    pos,
+				    sizeof (length_xy));
+
+				deads[i] = 1;
+			}
+		}
 
 		rc = ent_session_commit (session);
 	}
