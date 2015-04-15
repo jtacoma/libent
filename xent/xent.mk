@@ -3,8 +3,8 @@ CLEAN_TARGETS += clean-xent
 
 xent_SOURCES := $(wildcard xent/*.c)
 xent_HEADERS := $(wildcard xent/*.h)
-xent_CFLAGS   = -Ixent $(shell pkg-config --cflags gl glu x11 xi)
-xent_LIBS     = $(shell pkg-config --libs gl glu x11 xi)
+xent_CFLAGS   = -Ixent $(shell pkg-config --cflags gl glu x11 xi glew)
+xent_LIBS     = $(shell pkg-config --libs gl glu x11 xi glew)
 
 xent_OBJECTS := $(xent_SOURCES:.c=.o)
 

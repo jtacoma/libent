@@ -4,12 +4,13 @@
 #include <stdlib.h>
 
 #include <ent.h>
-#include <GL/gl.h>
+#include <GL/glew.h>
 
 #include "xent.h"
 
 struct painter
 {
+	GLuint program;
 	struct ent_table * entities;
 	struct ent_processor * processor;
 	int pos; // length_xy
@@ -79,6 +80,114 @@ painter_free (
 	}
 }
 
+static GLuint
+load_shader (
+    GLchar const src[],
+    GLenum type)
+{
+	GLuint shader = glCreateShader (type);
+	if (shader == 0)
+	{
+		return 0;
+	}
+
+	glShaderSource (shader, 1, &src, NULL);
+
+	glCompileShader (shader);
+
+	GLint compiled = 0;
+	glGetShaderiv (shader, GL_COMPILE_STATUS, &compiled);
+	if (!compiled)
+	{
+		GLint infoLen = 0;
+		glGetShaderiv (shader, GL_INFO_LOG_LENGTH, &infoLen);
+		if (infoLen > 1)
+		{
+			char * infoLog = malloc (infoLen);
+			glGetShaderInfoLog (shader, infoLen, NULL, infoLog);
+			printf ("%s:%d: (painter_init) %s", __FILE__, __LINE__, infoLog);
+			free (infoLog);
+		}
+		glDeleteShader (shader);
+		return 0;
+	}
+
+	return shader;
+}
+
+static int
+painter_init (
+    struct painter * painter)
+{
+	GLenum err = glewInit();
+	if (err != GLEW_OK)
+	{
+		printf ("%s:%d: (%s) %s\n", __FILE__, __LINE__, ENT_VERSION, glewGetErrorString (err));
+		return -1;
+	}
+	printf ("GLEW %s\n", glewGetString (GLEW_VERSION));
+
+	GLchar vertexSrc[] =
+	    "//...\n"
+	    "syntax error.\n"
+	    ;
+	GLuint vertexShader = load_shader (vertexSrc, GL_VERTEX_SHADER);
+	if (!vertexShader)
+	{
+		errno = ENOEXEC;
+		return -1;
+	}
+
+	GLchar fragmentSrc[] =
+	    "//...\n"
+	    "//...\n"
+	    ;
+	GLuint fragmentShader = load_shader (fragmentSrc, GL_FRAGMENT_SHADER);
+	if (!fragmentShader)
+	{
+		errno = ENOEXEC;
+		return -1;
+	}
+
+	GLuint program = glCreateProgram();
+	if (!program)
+	{
+		errno = ENOEXEC;
+		return -1;
+	}
+
+	glAttachShader (program, vertexShader);
+	glAttachShader (program, fragmentShader);
+	glBindAttribLocation (program, 0, "pos");
+	glLinkProgram (program);
+	GLint linked = 0;
+	glGetProgramiv (program, GL_LINK_STATUS, &linked);
+	if (!linked)
+	{
+		GLint infoLen = 0;
+		glGetProgramiv (program, GL_INFO_LOG_LENGTH, &infoLen);
+
+		if (infoLen > 1)
+		{
+			char * log = malloc (infoLen);
+			if (!log)
+			{
+				return -1;
+			}
+
+			glGetProgramInfoLog (program, infoLen, NULL, log);
+			printf ("%s:%d: (painter_init) %s", __FILE__, __LINE__, log);
+			free (log);
+		}
+
+		glDeleteProgram (program);
+		return -1;
+	}
+
+	painter->program = program;
+	return 0;
+}
+
 int
 painter_paint (
     struct painter * painter,
@@ -87,6 +196,11 @@ painter_paint (
 	if (!painter)
 	{
 		errno = EINVAL;
+		return -1;
+	}
+
+	if (!painter->program && painter_init (painter) == -1)
+	{
 		return -1;
 	}
 
