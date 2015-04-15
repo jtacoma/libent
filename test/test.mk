@@ -1,4 +1,5 @@
-ALL_TARGETS   += test/uncovered.txt ent-test
+ALL_TARGETS   += bin/ent-test
+TEST_TARGETS  += test/uncovered.txt
 CLEAN_TARGETS += clean-test
 
 test_SOURCES := $(wildcard test/*.c)
@@ -16,16 +17,18 @@ test/ent_all_tests.h: test/*_test.c test/gen
 
 test/main.o: test/ent_all_tests.h
 
-ent-testcov: libent.so $(test_OBJECTS)
-	$(CC) -fprofile-arcs -ftest-coverage -o $@ $(test_OBJECTS) $(ENT_LIBS) $(test_LIBS) -O0
+bin/ent-testcov: lib/libent.so $(test_OBJECTS)
+	@[ -d bin ] || mkdir bin
+	$(CC) -o $@ $(test_OBJECTS) $(ENT_LIBS) $(test_LIBS) -O0
 
-ent-test: libent.so $(test_OBJECTS)
+bin/ent-test: lib/libent.so $(test_OBJECTS)
+	@[ -d bin ] || mkdir bin
 	$(CC) -o $@ $(test_OBJECTS) $(ENT_LIBS) $(test_LIBS)
 
-test/uncovered.txt: ent-testcov
+test/uncovered.txt: bin/ent-testcov
 	rm -f *.gcda
-	export LD_LIBRARY_PATH=. ; ./ent-testcov
-	llvm-cov gcov *.gcda > /dev/null
+	export LD_LIBRARY_PATH=lib ; ./bin/ent-testcov
+	llvm-cov gcov libent/*.gcda > /dev/null
 	ls *.gcov \
 		| grep -v '_test\|main' \
 		| xargs grep '#####' \
@@ -36,6 +39,6 @@ test/uncovered.txt: ent-testcov
 		| grep -v 'EOF' \
 		| tee $@ || true
 
+.PHONY: clean-test
 clean-test:
-	rm -f $(test_OBJECTS) ent-testcov ent-test *.gcno
-
+	rm -f $(test_OBJECTS) bin/ent-testcov bin/ent-test test/*.gcda test/*.gcno *.gcov

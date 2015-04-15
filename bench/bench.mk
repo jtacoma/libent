@@ -1,4 +1,5 @@
-ALL_TARGETS   += ent-bench
+ALL_TARGETS   += bin/ent-bench
+TEST_TARGETS  += run-benchmarks
 CLEAN_TARGETS += clean-bench
 
 bench_SOURCES := $(wildcard bench/*.c)
@@ -14,12 +15,14 @@ bench_OBJECTS := $(bench_SOURCES:.c=.o)
 bench/%.o: bench/%.c $(bench_HEADERS)
 	$(CC) $(ENT_CPPFLAGS) $(ENT_CFLAGS) $(bench_CFLAGS) -c -o $@ $<
 
-ent-bench: $(bench_OBJECTS) libent.so
+bin/ent-bench: $(bench_OBJECTS) lib/libent.so
+	@[ -d bin ] || mkdir bin
 	$(CC) -o $@ $(bench_OBJECTS) $(ENT_LIBS) $(bench_LIBS)
 
-run-benchmarks: ent-bench libent.so
-	export LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:. ; ./ent-bench
+.PHONY: run-benchmarks
+run-benchmarks: bin/ent-bench
+	export LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:lib ; ./bin/ent-bench
 
+.PHONY: clean-bench
 clean-bench:
-	rm -f $(bench_OBJECTS) ent-bench
-
+	rm -f $(bench_OBJECTS) bin/ent-bench

@@ -1,4 +1,8 @@
-DEBUG=1
+# Configuration
+
+DEBUG = 1
+COVERAGE = 1
+CC = clang
 
 # Version
 
@@ -14,7 +18,7 @@ endif
 
 # Generic Flags
 
-ifeq ($(DEBUG),1)
+ifdef DEBUG
 CFLAGS ?= -g
 else
 CFLAGS ?= -O3
@@ -31,4 +35,13 @@ ENT_CPPFLAGS += -DMAJOR_VERSION=${MAJOR_VERSION}
 ENT_CPPFLAGS += -DMINOR_VERSION=${MINOR_VERSION}
 ENT_CPPFLAGS += -DPATCH_VERSION=${PATCH_VERSION}
 
-ENT_LIBS = -L. -lent
+ENT_LIBS = -Llib -lent
+
+# Code Coverage
+
+ifdef COVERAGE
+COVERAGE_CFLAGS += -fprofile-arcs -ftest-coverage
+ifeq ($(CC),clang)
+ENT_LIBS += --coverage
+endif
+endif
