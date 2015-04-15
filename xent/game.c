@@ -100,8 +100,12 @@ game_logic (
 
 	do
 	{
-		if (ent_session_table_len (session, entities) < 100)
+		size_t len = ent_session_table_len (session, entities);
+		float * ages = ent_session_column_get (session, entities, game->age);
+
+		for (size_t i = 0; i < len; ++i)
 		{
+			ages[i] += 1;
 		}
 
 		break;
