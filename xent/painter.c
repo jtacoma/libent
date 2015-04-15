@@ -13,6 +13,7 @@ struct painter
 	struct ent_table * entities;
 	struct ent_processor * processor;
 	int pos; // length_xy
+	int dead; // uint8_t
 };
 
 struct painter *
@@ -42,6 +43,16 @@ painter_alloc (
 	    ent_processor_use_column (
 	        painter->processor, entities, "pos", sizeof (length_xy), "");
 	if (painter->pos == -1)
+	{
+		ent_processor_free (painter->processor);
+		free (painter);
+		return NULL;
+	}
+
+	painter->dead =
+	    ent_processor_use_column (
+	        painter->processor, entities, "dead", sizeof (uint8_t), "");
+	if (painter->dead == -1)
 	{
 		ent_processor_free (painter->processor);
 		free (painter);
@@ -91,12 +102,17 @@ painter_paint (
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	struct ent_table * entities = painter->entities;
-	length_xy const * poss = (length_xy const *)ent_session_column_get_const (session, entities, painter->pos);
+	length_xy const * poss =
+	    (length_xy const *)ent_session_column_get_const (
+	        session, entities, painter->pos);
+	uint8_t const * deads =
+	    (uint8_t const *)ent_session_column_get_const (
+	        session, entities, painter->dead);
 	size_t len = ent_session_table_len (session, entities);
 
 	for (size_t i = 0; i < len; ++i)
 	{
-		printf ("entity at %.3fm, %.3fm\n", poss[i][0], poss[i][1]);
+		printf ("entity at %.3fm, %.3fm (%d)\n", poss[i][0], poss[i][1], (int)deads[i]);
 	}
 
 	ent_session_free (session);

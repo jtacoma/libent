@@ -1,6 +1,7 @@
 #include <errno.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -73,7 +74,7 @@ input_alloc (
 
 	input->dead =
 	    ent_processor_use_column (
-	        input->processor, entities, "dead", sizeof (char), "");
+	        input->processor, entities, "dead", sizeof (uint8_t), "");
 	if (input->dead == -1)
 	{
 		ent_processor_free (input->processor);
@@ -268,7 +269,7 @@ input_end (
 			break;
 		}
 
-		char * deads =
+		uint8_t * deads =
 		    ent_session_column_get (session, entities, input->dead);
 		if (!deads)
 		{

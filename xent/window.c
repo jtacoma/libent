@@ -335,7 +335,6 @@ window_input (
 			case XI_ButtonRelease:
 			case XI_Motion:
 				input_type = input_type_mouse;
-				input_id = *device_event->buttons.mask;
 				break;
 
 			case XI_KeyPress:
@@ -366,8 +365,6 @@ window_input (
 
 			switch (xevent.xcookie.evtype)
 			{
-			case XI_ButtonPress:
-			case XI_KeyPress:
 			case XI_TouchBegin:
 				error = input_begin (w->input, input_type, input_id, input_pos);
 				if (error)
@@ -385,7 +382,6 @@ window_input (
 				}
 				break;
 
-			case XI_ButtonRelease:
 			case XI_TouchEnd:
 				error = input_end (w->input, input_type, input_id, input_pos);
 				if (error)
@@ -394,6 +390,9 @@ window_input (
 				}
 				break;
 
+			case XI_ButtonPress:
+			case XI_ButtonRelease:
+			case XI_KeyPress:
 			default:
 				printf ("ignoring XI event %x\n",
 				        xevent.xcookie.evtype);
