@@ -17,7 +17,7 @@ real-all: .styled tags $(ALL_TARGETS) $(TEST_TARGETS)
 clean: $(CLEAN_TARGETS)
 	rm -f .styled tags
 
-.styled: */*.[ch]
+.styled: */*.[ch] */*/*.vert */*/*.frag
 	astyle $?
 	touch $@
 

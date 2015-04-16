@@ -1,0 +1,37 @@
+#!/bin/sh
+set -e
+
+escape() {
+	sed -e 's:\\:\\\\:' -e 's:":\":'
+}
+
+echo "/* This file was automatically generated;"
+echo " * changes made here will be lost."
+echo " */"
+echo
+echo "static char const * shaders_names [] ="
+echo "{"
+for filename in "$@" ; do
+	name=$( echo $filename | cut -d'/' -f2- | sed -e 's:[/\.]:_:g' )
+	echo "\t\"$( echo $name | escape )\","
+done
+echo "};"
+echo
+echo "static char const * shaders_sources [] ="
+echo "{"
+for filename in "$@" ; do
+	while read code ; do
+		escaped=$( echo $code | sed -e 's:\\:\\\\:' -e 's:":\":' )
+		echo "\t\"$( echo $code | escape )\\\\n\""
+	done < $filename
+	echo "\t,"
+done
+echo "};"
+echo
+echo "// Identifiers for hard-coded access to the shaders above"
+i=0
+for filename in "$@" ; do
+	name=$( echo $filename | cut -d'/' -f2- | sed -e 's:[/\.]:_:g' )
+	echo "static int ${name}_id = $i;"
+	i=$((i+1))
+done
