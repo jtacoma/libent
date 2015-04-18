@@ -42,8 +42,6 @@ ent_table_free (
     struct ent_table * table);
 
 struct ent_lock;
-struct ent_session;
-typedef int (* ent_procfunc) (struct ent_session *, void *);
 
 struct ent_lock *
 ent_lock_alloc (void);
@@ -75,6 +73,8 @@ ent_lock_for_select (
     struct ent_table * table,
     char const * column_name,
     size_t width);
+
+struct ent_session;
 
 struct ent_session *
 ent_session_alloc (
