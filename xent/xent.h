@@ -19,4 +19,12 @@ enum input_action
 	input_action_end,
 };
 
+extern struct ent_column * input_type_column;
+extern struct ent_column * input_id_column;
+extern struct ent_column * pos_column;
+extern struct ent_column * age_column;
+extern struct ent_column * dead_column;
+
+void xent_init_columns();
+
 #endif//XENT_H

@@ -93,6 +93,8 @@ main_loop (
 int
 main()
 {
+	xent_init_columns();
+
 	struct ent_table * entities = ent_table_alloc();
 	if (!entities)
 	{

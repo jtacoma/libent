@@ -1,9 +1,12 @@
 #include <assert.h>
 #include <errno.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "ent.h"
+#include <ent.h>
+
+#include "columns.h"
 
 typedef double mass;
 
@@ -72,7 +75,7 @@ creator_bind (struct creator * creator, struct ent_table * entities)
 
 	creator->mass =
 	    ent_lock_for_update (
-	        creator->lock, creator->entities, "mass", sizeof (mass));
+	        creator->lock, creator->entities, mass_column);
 
 	if (creator->mass == -1)
 	{
@@ -114,7 +117,7 @@ creator_execute (struct creator * creator, size_t appending)
 
 	// Get a non-const pointer to the appended "mass" data.
 	mass * mass =
-	    ent_session_update (session, new_entities, creator->mass);
+	    ent_session_update (session, new_entities, mass_column);
 
 	if (!mass)
 	{

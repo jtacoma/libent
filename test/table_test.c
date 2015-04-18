@@ -8,7 +8,7 @@ table_null_sets_einval (void)
 	assert (errno == EINVAL);
 
 	errno = 0;
-	assert (ent_table_column (NULL, "test", 1) == NULL);
+	assert (ent_table_column (NULL, test_int8column) == NULL);
 	assert (errno == EINVAL);
 
 	errno = 0;
@@ -17,10 +17,6 @@ table_null_sets_einval (void)
 
 	errno = 0;
 	ent_table_delete (NULL, NULL);
-	assert (errno == EINVAL);
-
-	errno = 0;
-	assert (ent_table_column_info (NULL, 0, NULL) == NULL);
 	assert (errno == EINVAL);
 
 	errno = 0;
@@ -80,70 +76,6 @@ table_can_grow_by_zero (void)
 }
 
 int
-table_retrieves_column_info (void)
-{
-	struct ent_table * table = ent_table_alloc();
-	if (!table)
-	{
-		return -1;
-	}
-
-	if (ent_table_column (table, "int8", sizeof (int8_t)) == NULL)
-	{
-		return -1;
-	}
-	if (ent_table_column (table, "int16", sizeof (int16_t)) == NULL)
-	{
-		return -1;
-	}
-	if (ent_table_column (table, "int32", sizeof (int32_t)) == NULL)
-	{
-		return -1;
-	}
-	if (ent_table_column (table, "int64", sizeof (int64_t)) == NULL)
-	{
-		return -1;
-	}
-
-	assert (ent_table_columns_len (table) == 4);
-
-	size_t width;
-	assert (strcmp ("int8", ent_table_column_info (table, 0, &width)) == 0);
-	assert (width == 1);
-	assert (strcmp ("int16", ent_table_column_info (table, 1, &width)) == 0);
-	assert (width == 2);
-	assert (strcmp ("int32", ent_table_column_info (table, 2, &width)) == 0);
-	assert (width == 4);
-	assert (strcmp ("int64", ent_table_column_info (table, 3, &width)) == 0);
-	assert (width == 8);
-
-	ent_table_free (table);
-
-	return 0;
-}
-
-int
-table_sets_einval_for_invalid_column_id (void)
-{
-	struct ent_table * table = ent_table_alloc();
-	if (!table)
-	{
-		return -1;
-	}
-
-	size_t width = 1;
-
-	errno = 0;
-	assert (ent_table_column_info (table, 1, &width) == NULL);
-	assert (width == 0);
-	assert (errno == EINVAL);
-
-	ent_table_free (table);
-
-	return 0;
-}
-
-int
 table_sets_einval_when_deleting_beyond_end (void)
 {
 	struct ent_table * table = ent_table_alloc();
@@ -197,7 +129,7 @@ table_insertion_handles_out_of_memory (void)
 	{
 		// The destination table needs to have at least on extant column
 		// to trigger one more line of code coverage.
-		if (!ent_table_column (dst, "some-other-column", 1))
+		if (!ent_table_column (dst, test_int8column))
 		{
 			ent_table_free (src);
 			ent_table_free (dst);
@@ -209,7 +141,7 @@ table_insertion_handles_out_of_memory (void)
 			break;
 		}
 
-		struct ent_array * number = ent_table_column (src, "number", sizeof (int));
+		struct ent_array * number = ent_table_column (src, test_int16column);
 
 		if (number == NULL)
 		{
@@ -243,7 +175,7 @@ deletion_handles_out_of_memory (size_t len, size_t start, size_t end)
 		return -1;
 	}
 
-	struct ent_array * numbers = ent_table_column (table, "number",  sizeof (int));
+	struct ent_array * numbers = ent_table_column (table, test_int8column);
 
 	if (numbers == NULL)
 	{
@@ -304,7 +236,7 @@ deletion_handles_out_of_memory (size_t len, size_t start, size_t end)
 	ent_rlist_free (keep);
 
 	assert (ent_table_len (table) == len - (end - start));
-	numbers = ent_table_column (table, "number", sizeof (int));
+	numbers = ent_table_column (table, test_int8column);
 	assert (numbers != NULL);
 	assert (ent_array_len (numbers) == len - (end - start));
 
@@ -370,7 +302,8 @@ table_general_test (void)
 	assert (ent_table_len (table) == 0);
 
 	// Add two columns
-	struct ent_array * names = ent_table_column (table, "name",  sizeof (char*));
+	struct ent_column const * name_column = test_ptrcolumn;
+	struct ent_array * names = ent_table_column (table, name_column);
 
 	if (names == NULL)
 	{
@@ -389,7 +322,8 @@ table_general_test (void)
 	assert (ent_table_len (table) == 4);
 	assert (ent_array_len (names) == 4);
 
-	struct ent_array * score = ent_table_column (table, "hits", sizeof (uint8_t));
+	struct ent_column const * score_column = test_int8column;
+	struct ent_array * score = ent_table_column (table, score_column);
 
 	if (score == NULL)
 	{
@@ -401,15 +335,8 @@ table_general_test (void)
 	assert (ent_array_len (score) == 4);
 
 	// NULL/zero arguments will not work
-	assert (ent_table_column (table, "name", 0) == NULL);
-	assert (ent_table_column (table, NULL, sizeof (char*)) == NULL);
-	assert (ent_table_column (NULL, "name", sizeof (char*)) == NULL);
-
-	// A duplicate column of different size
-	assert (ent_table_column (table, "name", sizeof (char*) * 2) == NULL);
-
-	// A duplicate column of same size
-	assert (ent_table_column (table, "name", sizeof (char*)) != NULL);
+	assert (ent_table_column (table, NULL) == NULL);
+	assert (errno == EINVAL);
 
 	// Get pointers to the initially zero-filled column data
 	void const ** names_dst = ent_array_get (names);
@@ -466,17 +393,17 @@ table_general_test (void)
 
 	// Verify that the entities have been deleted
 	assert (ent_table_len (table) == 2);
-	names = ent_table_column (table, "name", sizeof (char*));
+	names = ent_table_column (table, name_column);
 	assert (names != NULL);
 	assert (ent_array_len (names) == 2);
-	score = ent_table_column (table, "hits", sizeof (uint8_t));
+	score = ent_table_column (table, score_column);
 	assert (table != NULL);
 	assert (ent_array_len (score) == 2);
 
-	names = ent_table_column (table, "name", sizeof (char*));
+	names = ent_table_column (table, name_column);
 	names_dst = ent_array_get (names);
 	assert (names_dst != NULL);
-	score = ent_table_column (table, "hits", sizeof (uint8_t));
+	score = ent_table_column (table, score_column);
 	scores_dst = ent_array_get (score);
 	assert (scores_dst != NULL);
 

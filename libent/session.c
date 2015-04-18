@@ -203,20 +203,13 @@ void *
 ent_session_update (
     struct ent_session * s,
     struct ent_table * table,
-    int column_id)
+    struct ent_column const * column)
 {
 	void * mem = NULL;
 
 	if (s)
 	{
-		struct column_info const column_info =
-		    ent_lock_column (s->lock, column_id);
-
-		struct ent_array * array =
-		    ent_table_column (
-		        table,
-		        column_info.name,
-		        column_info.width);
+		struct ent_array * array = ent_table_column (table, column);
 
 		if (array)
 		{
@@ -231,7 +224,7 @@ void const *
 ent_session_select (
     struct ent_session * s,
     struct ent_table * table,
-    int column)
+    struct ent_column const * column)
 {
 	return ent_session_update (s, table, column);
 }

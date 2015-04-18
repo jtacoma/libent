@@ -37,7 +37,12 @@ interfaces like OpenCL.
 Usage
 -----
 
-First, allocate at least one `ent_table` (often only one for simple
+Allocate an `ent_column` for each of the columns, or components, you wish to
+operate over.
+
+    struct ent_column * number_column = ent_column_alloc(sizeof(int));
+
+Then allocate at least one `ent_table` (often only one for simple
 applications).
 
     struct ent_table * table = ent_table_alloc ();
@@ -51,11 +56,8 @@ associated algorithms will perform.
 
     struct ent_lock * loader = ent_lock_alloc ();
     assert (loader);
-
     assert (ent_lock_for_insert (loader, table) == 0);
-
-    int number_column =
-        ent_lock_for_update (loader, table, "number", sizeof(int));
+    assert (ent_lock_for_update (loader, table, number_column) == 0);
 
 To execute an algorithm, allocate an `ent_session`.  This will acquire locks
 as necessary, so that table and column data can be accessed and modified
@@ -80,11 +82,12 @@ When an algorithm has completed its task, the `ent_session` must be committed.
     assert (ent_session_commit (loading) == 0);
     ent_session_free (loading);
 
-Of course each `ent_lock` and `ent_table` must ultimately be freed
-eventually too.
+Of course each `ent_lock`, `ent_table`, and `ent_column` must ultimately be
+freed.
 
     ent_lock_free (loader);
     ent_table_free (table);
+    ent_column_free (number_column);
 
 Error Handling and Memory Management
 ------------------------------------
@@ -105,8 +108,8 @@ Out-of-memory conditions are handled in such a way that data structures are
 left in a coherent state, an error value is returned, and `errno` is set to
 `ENOMEM`.
 
-In any case, errno is always set to ENOMEM in case of out-of-memory conditions
-and to EINVAL for invalid arguments.
+In any case, errno is always set to `ENOMEM` in case of out-of-memory
+conditions and to `EINVAL` for invalid arguments.
 
 TODO: Correctness
 -----------------

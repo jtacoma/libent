@@ -42,7 +42,7 @@ game_alloc (
 
 	game->pos =
 	    ent_lock_for_update (
-	        game->lock, entities, "pos", sizeof (length_xy));
+	        game->lock, entities, pos_column);
 	if (game->pos == -1)
 	{
 		ent_lock_free (game->lock);
@@ -52,7 +52,7 @@ game_alloc (
 
 	game->age =
 	    ent_lock_for_update (
-	        game->lock, entities, "age", sizeof (float));
+	        game->lock, entities, age_column);
 	if (game->age == -1)
 	{
 		ent_lock_free (game->lock);
@@ -101,7 +101,7 @@ game_logic (
 	do
 	{
 		size_t len = ent_session_table_len (session, entities);
-		float * ages = ent_session_update (session, entities, game->age);
+		float * ages = ent_session_update (session, entities, age_column);
 
 		for (size_t i = 0; i < len; ++i)
 		{

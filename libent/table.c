@@ -8,11 +8,12 @@
 #include "alloc.h"
 #include "array.h"
 #include "rlist.h"
+#include "column.h"
 #include "table.h"
 
 struct column
 {
-	char * name;
+	struct ent_column info;
 	struct ent_array * array;
 };
 
@@ -80,7 +81,6 @@ ent_table_free (
 
 			for (size_t i = 0; i < columns_len; ++i)
 			{
-				ent_alloc ((void**)&columns[i].name, 0);
 				ent_array_free (columns[i].array);
 			}
 
@@ -104,30 +104,6 @@ ent_table_columns_len (
 	return ent_column_array_len (t->columns);
 }
 
-char const *
-ent_table_column_info (
-    struct ent_table const * t,
-    size_t column_index,
-    size_t * width)
-{
-	if (! (t && width))
-	{
-		errno = EINVAL;
-		return NULL;
-	}
-
-	if (column_index >= ent_column_array_len (t->columns))
-	{
-		errno = EINVAL;
-		*width = 0;
-		return NULL;
-	}
-
-	struct column * columns = ent_column_array_get (t->columns);
-	*width = ent_array_width (columns[column_index].array);
-	return columns[column_index].name;
-}
-
 size_t
 ent_table_len (
     struct ent_table const * table)
@@ -144,30 +120,24 @@ ent_table_len (
 struct ent_array *
 ent_table_column (
     struct ent_table * t,
-    char const * name,
-    size_t width)
+    struct ent_column const * column)
 {
-	if (! (t && name && width))
+	if (! (t && column))
 	{
 		errno = EINVAL;
 		return NULL;
 	}
+
+	int column_id = ent_column_id (column);
 
 	size_t columns_len = ent_column_array_len (t->columns);
 	struct column * columns = ent_column_array_get (t->columns);
 
 	for (size_t i = 0; i < columns_len; ++i)
 	{
-		if (strcmp (columns[i].name, name) == 0)
+		if (columns[i].info.id == column_id)
 		{
-			if (ent_array_width (columns[i].array) == width)
-			{
-				return columns[i].array;
-			}
-			else
-			{
-				return NULL;
-			}
+			return columns[i].array;
 		}
 	}
 
@@ -178,27 +148,17 @@ ent_table_column (
 
 	columns = ent_column_array_get (t->columns);
 
-	size_t name_size = strlen (name) + 1;
-	if (ent_alloc ((void**)& columns[columns_len].name, name_size) == -1)
-	{
-		ent_column_array_set_len (t->columns, columns_len);
-		return NULL;
-	}
-
-	memcpy (columns[columns_len].name, name, name_size);
-
-	columns[columns_len].array = ent_array_alloc (width);
+	columns[columns_len].info = *column;
+	columns[columns_len].array = ent_array_alloc (ent_column_width (column));
 
 	if (!columns[columns_len].array)
 	{
-		ent_alloc ((void**)&columns[columns_len].name, 0);
 		ent_column_array_set_len (t->columns, columns_len);
 		return NULL;
 	}
 
 	if (t->len && ent_array_set_len (columns[columns_len].array, t->len) == -1)
 	{
-		ent_alloc ((void**)&columns[columns_len].name, 0);
 		ent_array_free (columns[columns_len].array);
 		ent_column_array_set_len (t->columns, columns_len);
 		return NULL;
@@ -324,19 +284,16 @@ ent_table_insert (
 	}
 
 	size_t columns_len = ent_table_columns_len (src_table);
+	struct column * src_columns = ent_column_array_get (src_table->columns);
 
 	for (size_t k = 0; k < columns_len; ++k)
 	{
-		size_t width;
+		size_t width = ent_column_width (&src_columns[k].info);
 
-		char const * name =
-		    ent_table_column_info (src_table, k, &width);
-
-		struct ent_array * src_array =
-		    ent_table_column (src_table, name, width);
+		struct ent_array * src_array = src_columns[k].array;
 
 		struct ent_array * dst_array =
-		    ent_table_column (dst_table, name, width);
+		    ent_table_column (dst_table, &src_columns[k].info);
 
 		if (dst_array == NULL)
 		{

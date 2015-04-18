@@ -25,11 +25,8 @@ session_supports_deletion (void)
 		return -1;
 	}
 
-	int column_id =
-	    ent_lock_for_update (
-	        lock, table, "column", sizeof (int));
-
-	if (column_id == -1)
+	if (ent_lock_for_update (
+	            lock, table, test_int32column) == -1)
 	{
 		ent_table_free (table);
 		ent_lock_free (lock);
@@ -55,7 +52,7 @@ session_supports_deletion (void)
 		return -1;
 	}
 
-	int * new_ints = ent_session_update (creating, new_table, column_id);
+	int32_t * new_ints = ent_session_update (creating, new_table, test_int32column);
 
 	if (!new_ints)
 	{
@@ -66,7 +63,7 @@ session_supports_deletion (void)
 		return -1;
 	}
 
-	for (int i = 0; i < 8; ++i)
+	for (int32_t i = 0; i < 8; ++i)
 	{
 		new_ints[i] = i;
 	}
@@ -140,7 +137,7 @@ session_supports_deletion (void)
 
 	assert (ent_session_table_len (checking, table) == 4);
 
-	int * ints = ent_session_update (checking, table, column_id);
+	int32_t * ints = ent_session_update (checking, table, test_int32column);
 	assert (ints);
 	assert (ints[0] == 0);
 	assert (ints[1] == 1);
@@ -178,11 +175,7 @@ session_supports_insertion (void)
 		return -1;
 	}
 
-	int column_id =
-	    ent_lock_for_update (
-	        lock, table, "column", sizeof (int));
-
-	if (column_id == -1)
+	if (ent_lock_for_update (lock, table, test_int32column) == -1)
 	{
 		ent_table_free (table);
 		ent_lock_free (lock);
@@ -208,7 +201,7 @@ session_supports_insertion (void)
 		return -1;
 	}
 
-	int * new_ints = ent_session_update (creating, new_table, column_id);
+	int32_t * new_ints = ent_session_update (creating, new_table, test_int32column);
 
 	if (!new_ints)
 	{
@@ -219,7 +212,7 @@ session_supports_insertion (void)
 		return -1;
 	}
 
-	for (int i = 0; i < 8; ++i)
+	for (int32_t i = 0; i < 8; ++i)
 	{
 		new_ints[i] = i;
 	}
@@ -246,7 +239,7 @@ session_supports_insertion (void)
 
 	assert (ent_session_table_len (checking, table) == 16);
 
-	int * ints = ent_session_update (checking, table, column_id);
+	int32_t * ints = ent_session_update (checking, table, test_int32column);
 	assert (ints);
 	assert (ints[0] == 0);
 	assert (ints[1] == 1);
@@ -378,9 +371,7 @@ session_general_test (void)
 			return -1;
 		}
 
-		int column_b = ent_lock_for_update (load, items, "b", 8);
-
-		if (column_b == -1)
+		if (ent_lock_for_update (load, items, test_float32column) == -1)
 		{
 			ent_lock_free (load);
 			ent_table_free (items);
@@ -406,7 +397,7 @@ session_general_test (void)
 			return -1;
 		}
 
-		double * b = ent_session_update (loading, new_items, column_b);
+		float * b = ent_session_update (loading, new_items, test_float32column);
 
 		if (!b)
 		{
@@ -444,8 +435,7 @@ session_general_test (void)
 			return -1;
 		}
 
-		int column_b = ent_lock_for_update (check, items, "b", 8);
-		if (column_b == -1)
+		if (ent_lock_for_update (check, items, test_float32column) == -1)
 		{
 			ent_lock_free (check);
 			ent_table_free (items);
@@ -463,7 +453,7 @@ session_general_test (void)
 
 		assert (ent_session_table_len (checking, items) == 2);
 
-		double const * b = ent_session_select (checking, items, column_b);
+		float const * b = ent_session_select (checking, items, test_float32column);
 		assert (b);
 		assert (b[0] == 42);
 		assert (b[1] == 43);

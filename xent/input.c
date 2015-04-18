@@ -44,7 +44,7 @@ input_alloc (
 
 	input->type =
 	    ent_lock_for_update (
-	        input->lock, entities, "input_type", sizeof (enum input_type));
+	        input->lock, entities, input_type_column);
 	if (input->type == -1)
 	{
 		ent_lock_free (input->lock);
@@ -54,7 +54,7 @@ input_alloc (
 
 	input->id =
 	    ent_lock_for_update (
-	        input->lock, entities, "input_id", sizeof (input_id));
+	        input->lock, entities, input_id_column);
 	if (input->id == -1)
 	{
 		ent_lock_free (input->lock);
@@ -64,7 +64,7 @@ input_alloc (
 
 	input->pos =
 	    ent_lock_for_update (
-	        input->lock, entities, "pos", sizeof (length_xy));
+	        input->lock, entities, pos_column);
 	if (input->pos == -1)
 	{
 		ent_lock_free (input->lock);
@@ -74,7 +74,7 @@ input_alloc (
 
 	input->dead =
 	    ent_lock_for_update (
-	        input->lock, entities, "dead", sizeof (uint8_t));
+	        input->lock, entities, dead_column);
 	if (input->dead == -1)
 	{
 		ent_lock_free (input->lock);
@@ -122,7 +122,7 @@ input_begin (
 		}
 
 		enum input_type * types =
-		    ent_session_update (session, one, input->type);
+		    ent_session_update (session, one, input_type_column);
 		if (!types)
 		{
 			break;
@@ -130,7 +130,7 @@ input_begin (
 		types[0] = type;
 
 		input_id * ids =
-		    ent_session_update (session, one, input->id);
+		    ent_session_update (session, one, input_id_column);
 		if (!ids)
 		{
 			break;
@@ -138,7 +138,7 @@ input_begin (
 		ids[0] = id;
 
 		length_xy * poss =
-		    ent_session_update (session, one, input->pos);
+		    ent_session_update (session, one, pos_column);
 		if (!poss)
 		{
 			break;
@@ -180,21 +180,21 @@ input_update (
 		printf ("input!\n");
 
 		enum input_type const * types =
-		    ent_session_update (session, entities, input->type);
+		    ent_session_update (session, entities, input_type_column);
 		if (!types)
 		{
 			break;
 		}
 
 		input_id const * ids =
-		    ent_session_update (session, entities, input->id);
+		    ent_session_update (session, entities, input_id_column);
 		if (!ids)
 		{
 			break;
 		}
 
 		length_xy * poss =
-		    ent_session_update (session, entities, input->pos);
+		    ent_session_update (session, entities, pos_column);
 		if (!poss)
 		{
 			break;
@@ -249,28 +249,28 @@ input_end (
 		printf ("input!\n");
 
 		enum input_type const * types =
-		    ent_session_update (session, entities, input->type);
+		    ent_session_update (session, entities, input_type_column);
 		if (!types)
 		{
 			break;
 		}
 
 		input_id const * ids =
-		    ent_session_update (session, entities, input->id);
+		    ent_session_update (session, entities, input_id_column);
 		if (!ids)
 		{
 			break;
 		}
 
 		length_xy * poss =
-		    ent_session_update (session, entities, input->pos);
+		    ent_session_update (session, entities, pos_column);
 		if (!poss)
 		{
 			break;
 		}
 
 		uint8_t * deads =
-		    ent_session_update (session, entities, input->dead);
+		    ent_session_update (session, entities, dead_column);
 		if (!deads)
 		{
 			break;

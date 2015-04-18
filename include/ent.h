@@ -32,6 +32,20 @@ ent_rlist_select (
     void const * src,
     size_t width);
 
+struct ent_column;
+
+struct ent_column *
+ent_column_alloc (
+    size_t width);
+
+void
+ent_column_free (
+    struct ent_column * column);
+
+size_t
+ent_column_width (
+    struct ent_column const * column);
+
 struct ent_table;
 
 struct ent_table *
@@ -64,15 +78,13 @@ int
 ent_lock_for_update (
     struct ent_lock * p,
     struct ent_table * table,
-    char const * column_name,
-    size_t width);
+    struct ent_column const * column);
 
 int
 ent_lock_for_select (
     struct ent_lock * p,
     struct ent_table * table,
-    char const * column_name,
-    size_t width);
+    struct ent_column const * column);
 
 struct ent_session;
 
@@ -105,18 +117,13 @@ void const *
 ent_session_select (
     struct ent_session * s,
     struct ent_table * table,
-    int column);
-
-size_t
-ent_session_column_width (
-    struct ent_session * s,
-    int column);
+    struct ent_column const * column);
 
 void *
 ent_session_update (
     struct ent_session * s,
     struct ent_table * table,
-    int column);
+    struct ent_column const * column);
 
 int
 ent_session_commit (

@@ -44,7 +44,7 @@ painter_alloc (
 
 	painter->pos =
 	    ent_lock_for_update (
-	        painter->lock, entities, "pos", sizeof (length_xy));
+	        painter->lock, entities, pos_column);
 	if (painter->pos == -1)
 	{
 		ent_lock_free (painter->lock);
@@ -54,7 +54,7 @@ painter_alloc (
 
 	painter->dead =
 	    ent_lock_for_update (
-	        painter->lock, entities, "dead", sizeof (uint8_t));
+	        painter->lock, entities, dead_column);
 	if (painter->dead == -1)
 	{
 		ent_lock_free (painter->lock);
@@ -222,10 +222,10 @@ painter_paint (
 		struct ent_table * entities = painter->entities;
 		length_xy const * poss =
 		    (length_xy const *)ent_session_select (
-		        session, entities, painter->pos);
+		        session, entities, pos_column);
 		uint8_t const * deads =
 		    (uint8_t const *)ent_session_select (
-		        session, entities, painter->dead);
+		        session, entities, dead_column);
 		size_t len = ent_session_table_len (session, entities);
 
 		GLuint pos_buffer;

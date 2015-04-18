@@ -12,9 +12,25 @@ void true_or_exit (bool value, char const * file, int line,
 	}
 }
 
+struct ent_column * test_int8column;
+struct ent_column * test_int16column;
+struct ent_column * test_int32column;
+struct ent_column * test_int64column;
+struct ent_column * test_float32column;
+struct ent_column * test_float64column;
+struct ent_column * test_ptrcolumn;
+
 int
 main()
 {
+	test_int8column = ent_column_alloc (sizeof (int8_t));
+	test_int16column = ent_column_alloc (sizeof (int16_t));
+	test_int32column = ent_column_alloc (sizeof (int32_t));
+	test_int64column = ent_column_alloc (sizeof (int64_t));
+	test_float32column = ent_column_alloc (sizeof (float));
+	test_float64column = ent_column_alloc (sizeof (double));
+	test_ptrcolumn = ent_column_alloc (sizeof (void*));
+
 	size_t test_count = sizeof (all_mem_tests) / sizeof (*all_mem_tests);
 
 	printf ("running %lu tests...\n", test_count);
@@ -47,4 +63,12 @@ main()
 	}
 
 	printf ("all %lu tests passed.\n", test_count);
+
+	ent_column_free (test_ptrcolumn);
+	ent_column_free (test_float64column);
+	ent_column_free (test_float32column);
+	ent_column_free (test_int64column);
+	ent_column_free (test_int32column);
+	ent_column_free (test_int16column);
+	ent_column_free (test_int8column);
 }

@@ -6,13 +6,14 @@
 
 #include "alloc.h"
 #include "array.h"
-#include "lock.h"
+#include "column.h"
 #include "table.h"
+#include "lock.h"
 
 struct ent_lock
 {
 	struct ent_array * tables; // struct ent_table **
-	struct ent_array * columns; // struct column_info *
+	struct ent_array * columns; // struct ent_column *
 	ent_procfunc func;
 	void * func_arg;
 };
@@ -31,7 +32,7 @@ ent_lock_alloc()
 			ent_alloc ((void**)&p, 0);
 			return NULL;
 		}
-		p->columns = ent_array_alloc (sizeof (struct column_info));
+		p->columns = ent_array_alloc (sizeof (struct ent_column));
 		if (!p->columns)
 		{
 			ent_array_free (p->tables);
@@ -55,14 +56,6 @@ ent_lock_free (
 		for (size_t i = 0; i < tables_len; ++i)
 		{
 			ent_table_free (tables[i]);
-		}
-
-		size_t columns_len = ent_array_len (p->columns);
-		struct column_info * columns = ent_array_get (p->columns);
-
-		for (size_t i = 0; i < columns_len; ++i)
-		{
-			ent_alloc ((void**)&columns[i].name, 0);
 		}
 
 		ent_array_free (p->tables);
@@ -129,8 +122,7 @@ int
 ent_lock_for_update (
     struct ent_lock * p,
     struct ent_table * table,
-    char const * column_name,
-    size_t width)
+    struct ent_column const * column)
 {
 	if (!p)
 	{
@@ -139,8 +131,7 @@ ent_lock_for_update (
 
 	struct ent_array * array = ent_table_column (
 	                               table,
-	                               column_name,
-	                               width);
+	                               column);
 
 	if (!array)
 	{
@@ -154,19 +145,9 @@ ent_lock_for_update (
 		return -1;
 	}
 
-	struct column_info * columns = ent_array_get (p->columns);
+	struct ent_column * columns = ent_array_get (p->columns);
 
-	columns[columns_len] = (struct column_info) { .width = width };
-
-	size_t name_len = strlen (column_name) + 1;
-	columns[columns_len].name = NULL;
-
-	if (ent_alloc ((void**)&columns[columns_len].name , name_len) == -1)
-	{
-		return -1;
-	}
-
-	memcpy (columns[columns_len].name, column_name, name_len);
+	columns[columns_len] = *column;
 
 	return (int) columns_len;
 }
@@ -175,8 +156,7 @@ int
 ent_lock_for_select (
     struct ent_lock * p,
     struct ent_table * table,
-    char const * column_name,
-    size_t width)
+    struct ent_column const * column)
 {
 	if (!p)
 	{
@@ -185,8 +165,7 @@ ent_lock_for_select (
 
 	struct ent_array * array = ent_table_column (
 	                               table,
-	                               column_name,
-	                               width);
+	                               column);
 
 	if (!array)
 	{
@@ -200,19 +179,9 @@ ent_lock_for_select (
 		return -1;
 	}
 
-	struct column_info * columns = ent_array_get (p->columns);
+	struct ent_column * columns = ent_array_get (p->columns);
 
-	columns[columns_len] = (struct column_info) { .width = width };
-
-	size_t name_len = strlen (column_name) + 1;
-	columns[columns_len].name = NULL;
-
-	if (ent_alloc ((void**)&columns[columns_len].name , name_len) == -1)
-	{
-		return -1;
-	}
-
-	memcpy (columns[columns_len].name, column_name, name_len);
+	columns[columns_len] = *column;
 
 	return (int) columns_len;
 }
@@ -251,26 +220,4 @@ ent_lock_table (
 
 	struct ent_table ** tables = ent_array_get (lock->tables);
 	return tables[index];
-}
-
-struct column_info
-ent_lock_column (
-    struct ent_lock const * lock,
-    int column_id)
-{
-	if (!lock)
-	{
-		return (struct column_info) {0};
-	}
-
-	size_t index = (size_t) column_id;
-	size_t columns_len = ent_array_len (lock->columns);
-	struct column_info * columns = ent_array_get (lock->columns);
-
-	if (columns_len <= index)
-	{
-		return (struct column_info) {0};
-	}
-
-	return columns[index];
 }

@@ -27,8 +27,6 @@ int session_general_test (void);
 int table_null_sets_einval (void);
 int new_table_is_empty (void);
 int table_can_grow_by_zero (void);
-int table_retrieves_column_info (void);
-int table_sets_einval_for_invalid_column_id (void);
 int table_sets_einval_when_deleting_beyond_end (void);
 int table_insertion_handles_out_of_memory (void);
 int table_deletion_edge_cases (void);
@@ -63,8 +61,6 @@ static struct
 	{ .name = "table_null_sets_einval", .function = table_null_sets_einval },
 	{ .name = "new_table_is_empty", .function = new_table_is_empty },
 	{ .name = "table_can_grow_by_zero", .function = table_can_grow_by_zero },
-	{ .name = "table_retrieves_column_info", .function = table_retrieves_column_info },
-	{ .name = "table_sets_einval_for_invalid_column_id", .function = table_sets_einval_for_invalid_column_id },
 	{ .name = "table_sets_einval_when_deleting_beyond_end", .function = table_sets_einval_when_deleting_beyond_end },
 	{ .name = "table_insertion_handles_out_of_memory", .function = table_insertion_handles_out_of_memory },
 	{ .name = "table_deletion_edge_cases", .function = table_deletion_edge_cases },

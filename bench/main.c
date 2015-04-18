@@ -105,15 +105,19 @@ void update_arrays_bench (bench_count n)
 	free (a);
 }
 
+static struct ent_column * a;
+static struct ent_column * b;
+static struct ent_column * c;
+
 void update_table_bench (bench_count n)
 {
 	struct ent_table * table = ent_table_alloc();
 	ent_table_grow (table, (size_t)n);
-	double * a = ent_array_get (ent_table_column (table, "a", 8));
-	double * b = ent_array_get (ent_table_column (table, "b", 8));
-	double * c = ent_array_get (ent_table_column (table, "c", 8));
+	double * as = ent_array_get (ent_table_column (table, a));
+	double * bs = ent_array_get (ent_table_column (table, b));
+	double * cs = ent_array_get (ent_table_column (table, c));
 
-	update (a, b, c, n);
+	update (as, bs, cs, n);
 
 	ent_table_free (table);
 }
@@ -153,6 +157,10 @@ int main()
 	dump = fopen ("/dev/null", "w");
 	long max_ns = 1e9 / 60;
 	//max_ns = 1e9;
+
+	a = ent_column_alloc (sizeof (double));
+	b = ent_column_alloc (sizeof (double));
+	c = ent_column_alloc (sizeof (double));
 
 	struct bench_info benches[] =
 	{
