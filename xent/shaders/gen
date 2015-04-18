@@ -1,31 +1,53 @@
 #!/bin/sh
 set -e
 
+prefix=shaders
+
 escape() {
 	sed -e 's:\\:\\\\:' -e 's:":\":'
 }
+
+PREFIX=$( echo $prefix | tr a-z A-Z )
 
 echo "/* This file was automatically generated;"
 echo " * changes made here will be lost."
 echo " */"
 echo
-echo "static char const * shaders_names [] ="
+echo "static char const * ${prefix}_names [] ="
 echo "{"
 for filename in "$@" ; do
-	name=$( echo $filename | cut -d'/' -f2- | sed -e 's:[/\.]:_:g' )
-	echo "\t\"$( echo $name | escape )\","
+	name=$( echo "$filename" | cut -d'/' -f2- | sed -e 's:[/\.]:_:g' )
+	echo "\t\"$( echo "$name" | escape )\","
 done
 echo "};"
 echo
-echo "static char const * shaders_sources [] ="
+echo "static char const * ${prefix}_sources [] ="
 echo "{"
 for filename in "$@" ; do
 	while read code ; do
-		escaped=$( echo $code | sed -e 's:\\:\\\\:' -e 's:":\":' )
-		echo "\t\"$( echo $code | escape )\\\\n\""
+		escaped=$( echo "$code" | sed -e 's:\\:\\\\:' -e 's:":\":' )
+		echo "\t\"$( echo "$code" | escape )\\\\n\""
 	done < $filename
 	echo "\t,"
 done
+echo "};"
+echo
+echo "enum ${prefix}_type"
+echo "{"
+for filename in "$@" ; do
+	extension="${filename##*.}"
+	typename=$( echo $extension | tr "a-z" "A-Z" )
+	echo "\t${PREFIX}_TYPE_$typename,"
+done | sort -u
+echo "};"
+echo
+echo "enum ${prefix}_type ${prefix}_types [] ="
+echo "{"
+for filename in "$@" ; do
+	extension="${filename##*.}"
+	typename=$( echo $extension | tr "a-z" "A-Z" )
+	echo "\t${PREFIX}_TYPE_$typename,"
+done | sort -u
 echo "};"
 echo
 echo "// Identifiers for hard-coded access to the shaders above"

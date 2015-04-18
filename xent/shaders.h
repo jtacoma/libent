@@ -30,6 +30,18 @@ static char const * shaders_sources [] =
 	,
 };
 
+enum shaders_type
+{
+	SHADERS_TYPE_FRAG,
+	SHADERS_TYPE_VERT,
+};
+
+enum shaders_type shaders_types [] =
+{
+	SHADERS_TYPE_FRAG,
+	SHADERS_TYPE_VERT,
+};
+
 // Identifiers for hard-coded access to the shaders above
 static int shaders_default_vert_id = 0;
 static int shaders_default_frag_id = 1;
