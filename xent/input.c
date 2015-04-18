@@ -12,7 +12,7 @@
 struct input
 {
 	struct ent_table * entities;
-	struct ent_processor * processor;
+	struct ent_lock * lock;
 	int type;
 	int id;
 	int pos;
@@ -35,49 +35,49 @@ input_alloc (
 		return NULL;
 	}
 
-	input->processor = ent_processor_alloc();
-	if (!input->processor)
+	input->lock = ent_lock_alloc();
+	if (!input->lock)
 	{
 		free (input);
 		return NULL;
 	}
 
 	input->type =
-	    ent_processor_use_column (
-	        input->processor, entities, "input_type", sizeof (enum input_type), "");
+	    ent_lock_for_update (
+	        input->lock, entities, "input_type", sizeof (enum input_type));
 	if (input->type == -1)
 	{
-		ent_processor_free (input->processor);
+		ent_lock_free (input->lock);
 		free (input);
 		return NULL;
 	}
 
 	input->id =
-	    ent_processor_use_column (
-	        input->processor, entities, "input_id", sizeof (input_id), "");
+	    ent_lock_for_update (
+	        input->lock, entities, "input_id", sizeof (input_id));
 	if (input->id == -1)
 	{
-		ent_processor_free (input->processor);
+		ent_lock_free (input->lock);
 		free (input);
 		return NULL;
 	}
 
 	input->pos =
-	    ent_processor_use_column (
-	        input->processor, entities, "pos", sizeof (length_xy), "");
+	    ent_lock_for_update (
+	        input->lock, entities, "pos", sizeof (length_xy));
 	if (input->pos == -1)
 	{
-		ent_processor_free (input->processor);
+		ent_lock_free (input->lock);
 		free (input);
 		return NULL;
 	}
 
 	input->dead =
-	    ent_processor_use_column (
-	        input->processor, entities, "dead", sizeof (uint8_t), "");
+	    ent_lock_for_update (
+	        input->lock, entities, "dead", sizeof (uint8_t));
 	if (input->dead == -1)
 	{
-		ent_processor_free (input->processor);
+		ent_lock_free (input->lock);
 		free (input);
 		return NULL;
 	}
@@ -104,7 +104,7 @@ input_begin (
 	int rc = -1;
 
 	struct ent_session * session =
-	    ent_session_alloc (input->processor);
+	    ent_session_alloc (input->lock);
 	if (!session)
 	{
 		return rc;
@@ -115,14 +115,14 @@ input_begin (
 		printf ("input!\n");
 
 		struct ent_table * one =
-		    ent_session_table_insert (session, input->entities, 1);
+		    ent_session_insert (session, input->entities, 1);
 		if (!one)
 		{
 			break;
 		}
 
 		enum input_type * types =
-		    ent_session_column_get (session, one, input->type);
+		    ent_session_update (session, one, input->type);
 		if (!types)
 		{
 			break;
@@ -130,7 +130,7 @@ input_begin (
 		types[0] = type;
 
 		input_id * ids =
-		    ent_session_column_get (session, one, input->id);
+		    ent_session_update (session, one, input->id);
 		if (!ids)
 		{
 			break;
@@ -138,7 +138,7 @@ input_begin (
 		ids[0] = id;
 
 		length_xy * poss =
-		    ent_session_column_get (session, one, input->pos);
+		    ent_session_update (session, one, input->pos);
 		if (!poss)
 		{
 			break;
@@ -167,7 +167,7 @@ input_update (
 	int rc = -1;
 
 	struct ent_session * session =
-	    ent_session_alloc (input->processor);
+	    ent_session_alloc (input->lock);
 	if (!session)
 	{
 		return rc;
@@ -180,21 +180,21 @@ input_update (
 		printf ("input!\n");
 
 		enum input_type const * types =
-		    ent_session_column_get (session, entities, input->type);
+		    ent_session_update (session, entities, input->type);
 		if (!types)
 		{
 			break;
 		}
 
 		input_id const * ids =
-		    ent_session_column_get (session, entities, input->id);
+		    ent_session_update (session, entities, input->id);
 		if (!ids)
 		{
 			break;
 		}
 
 		length_xy * poss =
-		    ent_session_column_get (session, entities, input->pos);
+		    ent_session_update (session, entities, input->pos);
 		if (!poss)
 		{
 			break;
@@ -236,7 +236,7 @@ input_end (
 	int rc = -1;
 
 	struct ent_session * session =
-	    ent_session_alloc (input->processor);
+	    ent_session_alloc (input->lock);
 	if (!session)
 	{
 		return rc;
@@ -249,28 +249,28 @@ input_end (
 		printf ("input!\n");
 
 		enum input_type const * types =
-		    ent_session_column_get (session, entities, input->type);
+		    ent_session_update (session, entities, input->type);
 		if (!types)
 		{
 			break;
 		}
 
 		input_id const * ids =
-		    ent_session_column_get (session, entities, input->id);
+		    ent_session_update (session, entities, input->id);
 		if (!ids)
 		{
 			break;
 		}
 
 		length_xy * poss =
-		    ent_session_column_get (session, entities, input->pos);
+		    ent_session_update (session, entities, input->pos);
 		if (!poss)
 		{
 			break;
 		}
 
 		uint8_t * deads =
-		    ent_session_column_get (session, entities, input->dead);
+		    ent_session_update (session, entities, input->dead);
 		if (!deads)
 		{
 			break;

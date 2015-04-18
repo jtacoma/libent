@@ -15,7 +15,7 @@ int copied_array_keeps_original_data (void);
 int null_array_sets_einval (void);
 int truncated_and_shrunk_array_returns_null (void);
 int array_can_shrink_safely (void);
-int processor_invalid_argument_sets_einval (void);
+int lock_invalid_argument_sets_einval (void);
 int new_rlist_is_empty (void);
 int null_rlist_sets_einval (void);
 int rlist_cannot_hold_inverted_ranges (void);
@@ -51,7 +51,7 @@ static struct
 	{ .name = "null_array_sets_einval", .function = null_array_sets_einval },
 	{ .name = "truncated_and_shrunk_array_returns_null", .function = truncated_and_shrunk_array_returns_null },
 	{ .name = "array_can_shrink_safely", .function = array_can_shrink_safely },
-	{ .name = "processor_invalid_argument_sets_einval", .function = processor_invalid_argument_sets_einval },
+	{ .name = "lock_invalid_argument_sets_einval", .function = lock_invalid_argument_sets_einval },
 	{ .name = "new_rlist_is_empty", .function = new_rlist_is_empty },
 	{ .name = "null_rlist_sets_einval", .function = null_rlist_sets_einval },
 	{ .name = "rlist_cannot_hold_inverted_ranges", .function = rlist_cannot_hold_inverted_ranges },

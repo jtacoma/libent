@@ -14,7 +14,7 @@ struct painter
 {
 	GLuint program;
 	struct ent_table * entities;
-	struct ent_processor * processor;
+	struct ent_lock * lock;
 	int pos; // length_xy
 	int dead; // uint8_t
 };
@@ -35,29 +35,29 @@ painter_alloc (
 		return NULL;
 	}
 
-	painter->processor = ent_processor_alloc();
-	if (!painter->processor)
+	painter->lock = ent_lock_alloc();
+	if (!painter->lock)
 	{
 		free (painter);
 		return NULL;
 	}
 
 	painter->pos =
-	    ent_processor_use_column (
-	        painter->processor, entities, "pos", sizeof (length_xy), "");
+	    ent_lock_for_update (
+	        painter->lock, entities, "pos", sizeof (length_xy));
 	if (painter->pos == -1)
 	{
-		ent_processor_free (painter->processor);
+		ent_lock_free (painter->lock);
 		free (painter);
 		return NULL;
 	}
 
 	painter->dead =
-	    ent_processor_use_column (
-	        painter->processor, entities, "dead", sizeof (uint8_t), "");
+	    ent_lock_for_update (
+	        painter->lock, entities, "dead", sizeof (uint8_t));
 	if (painter->dead == -1)
 	{
-		ent_processor_free (painter->processor);
+		ent_lock_free (painter->lock);
 		free (painter);
 		return NULL;
 	}
@@ -73,9 +73,9 @@ painter_free (
 {
 	if (painter)
 	{
-		if (painter->processor)
+		if (painter->lock)
 		{
-			ent_processor_free (painter->processor);
+			ent_lock_free (painter->lock);
 		}
 
 		free (painter);
@@ -210,7 +210,7 @@ painter_paint (
 	glClearColor (0.0, 0.0, 0.0, 1.0);
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	struct ent_session * session = ent_session_alloc (painter->processor);
+	struct ent_session * session = ent_session_alloc (painter->lock);
 	if (session == NULL)
 	{
 		return -1;
@@ -221,10 +221,10 @@ painter_paint (
 	{
 		struct ent_table * entities = painter->entities;
 		length_xy const * poss =
-		    (length_xy const *)ent_session_column_get_const (
+		    (length_xy const *)ent_session_select (
 		        session, entities, painter->pos);
 		uint8_t const * deads =
-		    (uint8_t const *)ent_session_column_get_const (
+		    (uint8_t const *)ent_session_select (
 		        session, entities, painter->dead);
 		size_t len = ent_session_table_len (session, entities);
 

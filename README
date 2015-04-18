@@ -43,22 +43,19 @@ applications).
     struct ent_table * table = ent_table_alloc ();
     assert (table);
 
-Allocate an `ent_processor` for each algorithm.  For example, there might be
-one algorithm to load data into an intially empty table, a number of
-algorithms to process data within the tables, and a few to send the results to
-output devices.  Each `ent_processor` must be configured for the set of
-operations the associated algorithms will perform.
+Allocate an `ent_lock` for each algorithm.  For example, there might be one
+algorithm to load data into an intially empty table, a number of algorithms to
+process data within the tables, and a few to send the results to output
+devices.  Each `ent_lock` must be configured for the set of operations the
+associated algorithms will perform.
 
-    struct ent_processor * loader = ent_processor_alloc ();
+    struct ent_lock * loader = ent_lock_alloc ();
     assert (loader);
 
-    // Specify mode "a" for "append".
-    assert (ent_processor_use_table (loader, table, "a") == 0);
+    assert (ent_lock_for_insert (loader, table) == 0);
 
-    // Specify mode "" for no permissions because we already have "append" on
-    // the table.
     int number_column =
-        ent_processor_use_column (loader, table, "number", sizeof(int), "");
+        ent_lock_for_update (loader, table, "number", sizeof(int));
 
 To execute an algorithm, allocate an `ent_session`.  This will acquire locks
 as necessary, so that table and column data can be accessed and modified
@@ -68,10 +65,10 @@ through the basic set of operations.
     assert (loading);
 
     // Tell libent how many rows will be inserted through this buffer.
-    struct ent_table * buffer = ent_session_table_insert (loading, table, 13);
+    struct ent_table * buffer = ent_session_insert (loading, table, 13);
     assert (buffer);
 
-    int * numbers = ent_session_table_get (loading, buffer, number_column);
+    int * numbers = ent_session_update (loading, buffer, number_column);
     assert (numbers);
 
     // Write data to the insertion buffer.
@@ -83,10 +80,10 @@ When an algorithm has completed its task, the `ent_session` must be committed.
     assert (ent_session_commit (loading) == 0);
     ent_session_free (loading);
 
-Of course each `ent_processor` and `ent_table` must ultimately be freed
+Of course each `ent_lock` and `ent_table` must ultimately be freed
 eventually too.
 
-    ent_processor_free (loader);
+    ent_lock_free (loader);
     ent_table_free (table);
 
 Error Handling and Memory Management
@@ -115,18 +112,16 @@ TODO: Correctness
 -----------------
 
  * Sessions should not allow modification of tables/columns not registered
-   through a processor.
+   through an `ent_lock`.
 
  * Isolated updates.  This means creating new update buffer tables in
-   `ent_session_column_get()`.
+   `ent_session_update()`.
 
  * Thread-safety, along with techniques to test, verify, and/or prove that the
    operations are in fact thread-safe.
 
 TODO: Features & Refactoring
 ----------------------------
-
- * Processor may be renamed to Locker with methods "locker_lock_table" etc.
 
  * Session may be renamed to Transaction.
 
@@ -135,9 +130,9 @@ TODO: Features & Refactoring
    rational for not doing so.  Such a rationale might be that data locality is
    best optimized when custom struct types are allowed.
 
- * Reference counting for `ent_processor`.
+ * Reference counting for `ent_lock`.
 
- * Code generator for processors & sessions based on C functions.
+ * Code generator for locks & sessions based on C functions.
 
 TODO: Proofs of Concept
 -----------------------

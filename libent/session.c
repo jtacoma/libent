@@ -7,7 +7,7 @@
 
 #include "alloc.h"
 #include "array.h"
-#include "processor.h"
+#include "lock.h"
 #include "rlist.h"
 #include "table.h"
 
@@ -31,14 +31,14 @@ ent_array_typed (struct deletion, deletion);
 
 struct ent_session
 {
-	struct ent_processor const * processor;
+	struct ent_lock const * lock;
 	struct ent_insertion_array * insertions;
 	struct ent_deletion_array * deletions;
 };
 
 struct ent_session *
 ent_session_alloc (
-    struct ent_processor * p)
+    struct ent_lock * p)
 {
 	if (!p)
 	{
@@ -53,7 +53,7 @@ ent_session_alloc (
 		return NULL;
 	}
 
-	*s = (struct ent_session) {.processor = p};
+	*s = (struct ent_session) {.lock = p};
 	s->insertions = ent_insertion_array_alloc();
 
 	if (!s->insertions)
@@ -120,7 +120,7 @@ ent_session_table_len (
 }
 
 struct ent_table *
-ent_session_table_insert (
+ent_session_insert (
     struct ent_session * s,
     struct ent_table * table,
     size_t add)
@@ -159,7 +159,7 @@ ent_session_table_insert (
 }
 
 int
-ent_session_table_delete (
+ent_session_delete (
     struct ent_session * s,
     struct ent_table * table,
     struct ent_rlist const * rlist)
@@ -200,7 +200,7 @@ ent_session_table_delete (
 }
 
 void *
-ent_session_column_get (
+ent_session_update (
     struct ent_session * s,
     struct ent_table * table,
     int column_id)
@@ -210,7 +210,7 @@ ent_session_column_get (
 	if (s)
 	{
 		struct column_info const column_info =
-		    ent_processor_column (s->processor, column_id);
+		    ent_lock_column (s->lock, column_id);
 
 		struct ent_array * array =
 		    ent_table_column (
@@ -228,12 +228,12 @@ ent_session_column_get (
 }
 
 void const *
-ent_session_column_get_const (
+ent_session_select (
     struct ent_session * s,
     struct ent_table * table,
     int column)
 {
-	return ent_session_column_get (s, table, column);
+	return ent_session_update (s, table, column);
 }
 
 int
@@ -251,11 +251,11 @@ ent_session_commit (
 	size_t inserts_len = ent_insertion_array_len (s->insertions);
 	struct insertion const * insertions = ent_insertion_array_get (s->insertions);
 
-	size_t tables_len = ent_processor_tables_len (s->processor);
+	size_t tables_len = ent_lock_tables_len (s->lock);
 
 	for (size_t table = 0; table < tables_len; ++table)
 	{
-		struct ent_table * dst = ent_processor_table (s->processor, (int)table);
+		struct ent_table * dst = ent_lock_table (s->lock, (int)table);
 		size_t old_len = ent_table_len (dst);
 		size_t new_len = old_len;
 

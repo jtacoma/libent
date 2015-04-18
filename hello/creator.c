@@ -5,9 +5,11 @@
 
 #include "ent.h"
 
+typedef double mass;
+
 struct creator
 {
-	struct ent_processor * processor;
+	struct ent_lock * lock;
 	struct ent_table * entities;
 	int mass;
 };
@@ -23,26 +25,13 @@ creator_free (struct creator * creator)
 {
 	if (creator)
 	{
-		if (creator->processor)
+		if (creator->lock)
 		{
-			ent_processor_free (creator->processor);
+			ent_lock_free (creator->lock);
 		}
 		free (creator);
 	}
 }
-
-#define ent_typedef_column(T, N) \
-	static inline int ent_processor_use_ ## N ## _column ( \
-		struct ent_processor * processor, \
-		struct ent_table * table, \
-		char const * mode) \
-	{ \
-		return ent_processor_use_column ( \
-			processor, table, #N, sizeof (T), mode); \
-	} \
-	typedef T N
-
-ent_typedef_column (double, mass);
 
 int
 creator_bind (struct creator * creator, struct ent_table * entities)
@@ -53,9 +42,9 @@ creator_bind (struct creator * creator, struct ent_table * entities)
 		return -1;
 	}
 
-	if (creator->processor)
+	if (creator->lock)
 	{
-		ent_processor_free (creator->processor);
+		ent_lock_free (creator->lock);
 	}
 
 	if (!entities)
@@ -65,30 +54,30 @@ creator_bind (struct creator * creator, struct ent_table * entities)
 
 	creator->entities = entities;
 
-	creator->processor = ent_processor_alloc();
+	creator->lock = ent_lock_alloc();
 
-	if (!creator->processor)
+	if (!creator->lock)
 	{
 		return -1;
 	}
 
-	if (ent_processor_use_table (
-	            creator->processor, entities, "w")
+	if (ent_lock_for_insert (
+	            creator->lock, entities)
 	        == -1)
 	{
-		ent_processor_free (creator->processor);
-		creator->processor = NULL;
+		ent_lock_free (creator->lock);
+		creator->lock = NULL;
 		return -1;
 	}
 
 	creator->mass =
-	    ent_processor_use_mass_column (
-	        creator->processor, creator->entities,  "w");
+	    ent_lock_for_update (
+	        creator->lock, creator->entities, "mass", sizeof (mass));
 
 	if (creator->mass == -1)
 	{
-		ent_processor_free (creator->processor);
-		creator->processor = NULL;
+		ent_lock_free (creator->lock);
+		creator->lock = NULL;
 		return -1;
 	}
 
@@ -105,7 +94,7 @@ creator_execute (struct creator * creator, size_t appending)
 		return -1;
 	}
 
-	struct ent_session * session = ent_session_alloc (creator->processor);
+	struct ent_session * session = ent_session_alloc (creator->lock);
 
 	if (!session)
 	{
@@ -115,7 +104,7 @@ creator_execute (struct creator * creator, size_t appending)
 	// Append some items to the "entities" table.  Data in all columns
 	// defaults to zero.
 	struct ent_table * new_entities =
-	    ent_session_table_insert (session, creator->entities, appending);
+	    ent_session_insert (session, creator->entities, appending);
 
 	if (!new_entities)
 	{
@@ -125,7 +114,7 @@ creator_execute (struct creator * creator, size_t appending)
 
 	// Get a non-const pointer to the appended "mass" data.
 	mass * mass =
-	    ent_session_column_get (session, new_entities, creator->mass);
+	    ent_session_update (session, new_entities, creator->mass);
 
 	if (!mass)
 	{

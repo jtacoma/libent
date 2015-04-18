@@ -41,34 +41,44 @@ void
 ent_table_free (
     struct ent_table * table);
 
-struct ent_processor;
+struct ent_lock;
 struct ent_session;
 typedef int (* ent_procfunc) (struct ent_session *, void *);
 
-struct ent_processor *
-ent_processor_alloc (void);
+struct ent_lock *
+ent_lock_alloc (void);
 
 void
-ent_processor_free (
-    struct ent_processor * p);
+ent_lock_free (
+    struct ent_lock * p);
 
 int
-ent_processor_use_table (
-    struct ent_processor * p,
-    struct ent_table * table_name,
-    char const * mode);
+ent_lock_for_insert (
+    struct ent_lock * p,
+    struct ent_table * table_name);
 
 int
-ent_processor_use_column (
-    struct ent_processor * p,
+ent_lock_for_delete (
+    struct ent_lock * p,
+    struct ent_table * table_name);
+
+int
+ent_lock_for_update (
+    struct ent_lock * p,
     struct ent_table * table,
     char const * column_name,
-    size_t width,
-    char const * mode);
+    size_t width);
+
+int
+ent_lock_for_select (
+    struct ent_lock * p,
+    struct ent_table * table,
+    char const * column_name,
+    size_t width);
 
 struct ent_session *
 ent_session_alloc (
-    struct ent_processor * p);
+    struct ent_lock * p);
 
 void
 ent_session_free (
@@ -80,19 +90,19 @@ ent_session_table_len (
     struct ent_table * table);
 
 struct ent_table *
-ent_session_table_insert (
+ent_session_insert (
     struct ent_session * s,
     struct ent_table * table,
     size_t add_size);
 
 int
-ent_session_table_delete (
+ent_session_delete (
     struct ent_session * s,
     struct ent_table * table,
     struct ent_rlist const * rlist);
 
 void const *
-ent_session_column_get_const (
+ent_session_select (
     struct ent_session * s,
     struct ent_table * table,
     int column);
@@ -103,7 +113,7 @@ ent_session_column_width (
     int column);
 
 void *
-ent_session_column_get (
+ent_session_update (
     struct ent_session * s,
     struct ent_table * table,
     int column);

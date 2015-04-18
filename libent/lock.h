@@ -17,22 +17,22 @@ struct column_info
 
 typedef int (* ent_procfunc) (struct ent_session *, void *);
 
-struct ent_processor *
-ent_processor_cpy_alloc (
-    struct ent_processor const * processor);
+struct ent_lock *
+ent_lock_cpy_alloc (
+    struct ent_lock const * lock);
 
 size_t
-ent_processor_tables_len (
-    struct ent_processor const * processor);
+ent_lock_tables_len (
+    struct ent_lock const * lock);
 
 struct ent_table *
-ent_processor_table (
-    struct ent_processor const * processor,
+ent_lock_table (
+    struct ent_lock const * lock,
     int table_id);
 
 struct column_info
-ent_processor_column (
-    struct ent_processor const * processor,
+ent_lock_column (
+    struct ent_lock const * lock,
     int column_id);
 
 #endif//LIBENT_PROCESSOR_H

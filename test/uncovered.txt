@@ -1,0 +1,26 @@
+lock.c:106:	if (! (p && table))
+lock.c:108:		return -1;
+lock.c:111:	size_t tables_len = ent_array_len (p->tables);
+lock.c:113:	if (ent_array_set_len (p->tables, tables_len + 1) == -1)
+lock.c:115:		return -1;
+lock.c:118:	struct ent_table ** tables = ent_array_get (p->tables);
+lock.c:120:	assert (tables);
+lock.c:122:	tables[tables_len] = table;
+lock.c:123:	ent_table_incref (table);
+lock.c:125:	return (int) tables_len;
+lock.c:181:	if (!p)
+lock.c:183:		return -1;
+lock.c:186:	struct ent_array * array = ent_table_column (
+lock.c:191:	if (!array)
+lock.c:193:		return -1;
+lock.c:196:	size_t columns_len = ent_array_len (p->columns);
+lock.c:198:	if (ent_array_set_len (p->columns, columns_len + 1) == -1)
+lock.c:200:		return -1;
+lock.c:203:	struct column_info * columns = ent_array_get (p->columns);
+lock.c:205:	columns[columns_len] = (struct column_info) { .width = width };
+lock.c:207:	size_t name_len = strlen (column_name) + 1;
+lock.c:208:	columns[columns_len].name = NULL;
+lock.c:210:	if (ent_alloc ((void**)&columns[columns_len].name , name_len) == -1)
+lock.c:212:		return -1;
+lock.c:215:	memcpy (columns[columns_len].name, column_name, name_len);
+lock.c:217:	return (int) columns_len;

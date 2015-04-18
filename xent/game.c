@@ -12,7 +12,7 @@
 struct game
 {
 	struct ent_table * entities;
-	struct ent_processor * processor;
+	struct ent_lock * lock;
 	int pos; // length_xy
 	int age; // float
 };
@@ -33,29 +33,29 @@ game_alloc (
 		return NULL;
 	}
 
-	game->processor = ent_processor_alloc();
-	if (!game->processor)
+	game->lock = ent_lock_alloc();
+	if (!game->lock)
 	{
 		free (game);
 		return NULL;
 	}
 
 	game->pos =
-	    ent_processor_use_column (
-	        game->processor, entities, "pos", sizeof (length_xy), "");
+	    ent_lock_for_update (
+	        game->lock, entities, "pos", sizeof (length_xy));
 	if (game->pos == -1)
 	{
-		ent_processor_free (game->processor);
+		ent_lock_free (game->lock);
 		free (game);
 		return NULL;
 	}
 
 	game->age =
-	    ent_processor_use_column (
-	        game->processor, entities, "age", sizeof (float), "");
+	    ent_lock_for_update (
+	        game->lock, entities, "age", sizeof (float));
 	if (game->age == -1)
 	{
-		ent_processor_free (game->processor);
+		ent_lock_free (game->lock);
 		free (game);
 		return NULL;
 	}
@@ -71,9 +71,9 @@ game_free (
 {
 	if (game)
 	{
-		if (game->processor)
+		if (game->lock)
 		{
-			ent_processor_free (game->processor);
+			ent_lock_free (game->lock);
 		}
 
 		free (game);
@@ -90,7 +90,7 @@ game_logic (
 		return -1;
 	}
 
-	struct ent_session * session = ent_session_alloc (game->processor);
+	struct ent_session * session = ent_session_alloc (game->lock);
 	if (session == NULL)
 	{
 		return -1;
@@ -101,7 +101,7 @@ game_logic (
 	do
 	{
 		size_t len = ent_session_table_len (session, entities);
-		float * ages = ent_session_column_get (session, entities, game->age);
+		float * ages = ent_session_update (session, entities, game->age);
 
 		for (size_t i = 0; i < len; ++i)
 		{

@@ -6,10 +6,10 @@
 
 #include "alloc.h"
 #include "array.h"
-#include "processor.h"
+#include "lock.h"
 #include "table.h"
 
-struct ent_processor
+struct ent_lock
 {
 	struct ent_array * tables; // struct ent_table **
 	struct ent_array * columns; // struct column_info *
@@ -17,14 +17,14 @@ struct ent_processor
 	void * func_arg;
 };
 
-struct ent_processor *
-ent_processor_alloc()
+struct ent_lock *
+ent_lock_alloc()
 {
-	struct ent_processor * p = NULL;
+	struct ent_lock * p = NULL;
 
 	if (ent_alloc ((void**)&p, sizeof (*p)) == 0)
 	{
-		*p = (struct ent_processor) {0};
+		*p = (struct ent_lock) {0};
 		p->tables = ent_array_alloc (sizeof (struct ent_table *));
 		if (!p->tables)
 		{
@@ -44,8 +44,8 @@ ent_processor_alloc()
 }
 
 void
-ent_processor_free (
-    struct ent_processor * p)
+ent_lock_free (
+    struct ent_lock * p)
 {
 	if (p)
 	{
@@ -72,17 +72,14 @@ ent_processor_free (
 }
 
 int
-ent_processor_use_table (
-    struct ent_processor * p,
-    struct ent_table * table,
-    char const * mode)
+ent_lock_for_insert (
+    struct ent_lock * p,
+    struct ent_table * table)
 {
-	if (! (p && table && mode))
+	if (! (p && table))
 	{
 		return -1;
 	}
-
-	//TODO: stop ignoring mode
 
 	size_t tables_len = ent_array_len (p->tables);
 
@@ -102,19 +99,89 @@ ent_processor_use_table (
 }
 
 int
-ent_processor_use_column (
-    struct ent_processor * p,
+ent_lock_for_delete (
+    struct ent_lock * p,
+    struct ent_table * table)
+{
+	if (! (p && table))
+	{
+		return -1;
+	}
+
+	size_t tables_len = ent_array_len (p->tables);
+
+	if (ent_array_set_len (p->tables, tables_len + 1) == -1)
+	{
+		return -1;
+	}
+
+	struct ent_table ** tables = ent_array_get (p->tables);
+
+	assert (tables);
+
+	tables[tables_len] = table;
+	ent_table_incref (table);
+
+	return (int) tables_len;
+}
+
+int
+ent_lock_for_update (
+    struct ent_lock * p,
     struct ent_table * table,
     char const * column_name,
-    size_t width,
-    char const * mode)
+    size_t width)
 {
 	if (!p)
 	{
 		return -1;
 	}
 
-	(void)mode;//TODO: stop ignoring mode
+	struct ent_array * array = ent_table_column (
+	                               table,
+	                               column_name,
+	                               width);
+
+	if (!array)
+	{
+		return -1;
+	}
+
+	size_t columns_len = ent_array_len (p->columns);
+
+	if (ent_array_set_len (p->columns, columns_len + 1) == -1)
+	{
+		return -1;
+	}
+
+	struct column_info * columns = ent_array_get (p->columns);
+
+	columns[columns_len] = (struct column_info) { .width = width };
+
+	size_t name_len = strlen (column_name) + 1;
+	columns[columns_len].name = NULL;
+
+	if (ent_alloc ((void**)&columns[columns_len].name , name_len) == -1)
+	{
+		return -1;
+	}
+
+	memcpy (columns[columns_len].name, column_name, name_len);
+
+	return (int) columns_len;
+}
+
+int
+ent_lock_for_select (
+    struct ent_lock * p,
+    struct ent_table * table,
+    char const * column_name,
+    size_t width)
+{
+	if (!p)
+	{
+		return -1;
+	}
 
 	struct ent_array * array = ent_table_column (
 	                               table,
@@ -151,54 +218,54 @@ ent_processor_use_column (
 }
 
 size_t
-ent_processor_tables_len (
-    struct ent_processor const * processor)
+ent_lock_tables_len (
+    struct ent_lock const * lock)
 {
 	size_t len = 0;
 
-	if (processor)
+	if (lock)
 	{
-		len = ent_array_len (processor->tables);
+		len = ent_array_len (lock->tables);
 	}
 
 	return len;
 }
 
 struct ent_table *
-ent_processor_table (
-    struct ent_processor const * processor,
+ent_lock_table (
+    struct ent_lock const * lock,
     int table_id)
 {
-	if (!processor)
+	if (!lock)
 	{
 		return NULL;
 	}
 
 	size_t index = (size_t) table_id;
-	size_t tables_len = ent_array_len (processor->tables);
+	size_t tables_len = ent_array_len (lock->tables);
 
 	if (tables_len <= index)
 	{
 		return NULL;
 	}
 
-	struct ent_table ** tables = ent_array_get (processor->tables);
+	struct ent_table ** tables = ent_array_get (lock->tables);
 	return tables[index];
 }
 
 struct column_info
-ent_processor_column (
-    struct ent_processor const * processor,
+ent_lock_column (
+    struct ent_lock const * lock,
     int column_id)
 {
-	if (!processor)
+	if (!lock)
 	{
 		return (struct column_info) {0};
 	}
 
 	size_t index = (size_t) column_id;
-	size_t columns_len = ent_array_len (processor->columns);
-	struct column_info * columns = ent_array_get (processor->columns);
+	size_t columns_len = ent_array_len (lock->columns);
+	struct column_info * columns = ent_array_get (lock->columns);
 
 	if (columns_len <= index)
 	{

@@ -10,7 +10,7 @@
 
 #include "alloc.h"
 #include "array.h"
-#include "processor.h"
+#include "lock.h"
 #include "rlist.h"
 #include "table.h"
 
