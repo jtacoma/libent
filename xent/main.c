@@ -91,11 +91,11 @@ main_loop (
 }
 
 int
-main()
+main ()
 {
-	xent_init_columns();
+	xent_init_columns ();
 
-	struct ent_table * entities = ent_table_alloc();
+	struct ent_table * entities = ent_table_alloc ();
 	if (!entities)
 	{
 		perror ("ent_table_alloc");
@@ -110,7 +110,7 @@ main()
 		return -1;
 	}
 
-	struct clock * clock = clock_alloc();
+	struct clock * clock = clock_alloc ();
 	if (!clock)
 	{
 		perror ("clock_alloc");

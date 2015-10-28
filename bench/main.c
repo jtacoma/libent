@@ -111,7 +111,7 @@ static struct ent_column * c;
 
 void update_table_bench (bench_count n)
 {
-	struct ent_table * table = ent_table_alloc();
+	struct ent_table * table = ent_table_alloc ();
 	ent_table_grow (table, (size_t)n);
 	double * as = ent_array_get (ent_table_column (table, a));
 	double * bs = ent_array_get (ent_table_column (table, b));
@@ -152,7 +152,7 @@ void run (bench_func func, long max_ns, bench_count * count, long * elapsed_ns)
 	}
 }
 
-int main()
+int main ()
 {
 	dump = fopen ("/dev/null", "w");
 	long max_ns = 1e9 / 60;

@@ -18,7 +18,7 @@ struct creator
 };
 
 struct creator *
-creator_alloc()
+creator_alloc ()
 {
 	return calloc (1, sizeof (struct creator));
 }
@@ -57,7 +57,7 @@ creator_bind (struct creator * creator, struct ent_table * entities)
 
 	creator->entities = entities;
 
-	creator->lock = ent_lock_alloc();
+	creator->lock = ent_lock_alloc ();
 
 	if (!creator->lock)
 	{

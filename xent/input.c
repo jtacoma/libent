@@ -35,7 +35,7 @@ input_alloc (
 		return NULL;
 	}
 
-	input->lock = ent_lock_alloc();
+	input->lock = ent_lock_alloc ();
 	if (!input->lock)
 	{
 		free (input);

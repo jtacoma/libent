@@ -15,7 +15,7 @@ static char const * shaders_sources [] =
 	"\n"
 	"varying vec4 v_colour;\n"
 	"\n"
-	"void main()\n"
+	"void main ()\n"
 	"{\n"
 	"v_colour = colour;\n"
 	"gl_Position = position;\n"
@@ -23,7 +23,7 @@ static char const * shaders_sources [] =
 	,
 	"varying vec4 v_colour;\n"
 	"\n"
-	"void main()\n"
+	"void main ()\n"
 	"{\n"
 	"gl_FragColor = v_colour;\n"
 	"}\n"
@@ -32,15 +32,15 @@ static char const * shaders_sources [] =
 
 enum shaders_type
 {
-	SHADERS_TYPE_FRAG,
-	SHADERS_TYPE_VERT,
+    SHADERS_TYPE_FRAG,
+    SHADERS_TYPE_VERT,
 };
 
 enum shaders_type shaders_types [] =
-{
-	SHADERS_TYPE_FRAG,
-	SHADERS_TYPE_VERT,
-};
+    {
+        SHADERS_TYPE_FRAG,
+        SHADERS_TYPE_VERT,
+    };
 
 // Identifiers for hard-coded access to the shaders above
 static int shaders_default_vert_id = 0;

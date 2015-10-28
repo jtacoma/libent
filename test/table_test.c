@@ -41,7 +41,7 @@ table_null_sets_einval (void)
 int
 new_table_is_empty (void)
 {
-	struct ent_table * table = ent_table_alloc();
+	struct ent_table * table = ent_table_alloc ();
 	if (!table)
 	{
 		return -1;
@@ -63,7 +63,7 @@ new_table_is_empty (void)
 int
 table_can_grow_by_zero (void)
 {
-	struct ent_table * table = ent_table_alloc();
+	struct ent_table * table = ent_table_alloc ();
 	if (!table)
 	{
 		return -1;
@@ -78,13 +78,13 @@ table_can_grow_by_zero (void)
 int
 table_sets_einval_when_deleting_beyond_end (void)
 {
-	struct ent_table * table = ent_table_alloc();
+	struct ent_table * table = ent_table_alloc ();
 	if (!table)
 	{
 		return -1;
 	}
 
-	struct ent_rlist * rlist = ent_rlist_alloc();
+	struct ent_rlist * rlist = ent_rlist_alloc ();
 	if (!rlist)
 	{
 		return -1;
@@ -108,14 +108,14 @@ table_sets_einval_when_deleting_beyond_end (void)
 int
 table_insertion_handles_out_of_memory (void)
 {
-	struct ent_table * dst = ent_table_alloc();
+	struct ent_table * dst = ent_table_alloc ();
 
 	if (!dst)
 	{
 		return -1;
 	}
 
-	struct ent_table * src = ent_table_alloc();
+	struct ent_table * src = ent_table_alloc ();
 
 	if (!src)
 	{
@@ -168,7 +168,7 @@ table_insertion_handles_out_of_memory (void)
 static int
 deletion_handles_out_of_memory (size_t len, size_t start, size_t end)
 {
-	struct ent_table * table = ent_table_alloc();
+	struct ent_table * table = ent_table_alloc ();
 
 	if (table == NULL)
 	{
@@ -192,7 +192,7 @@ deletion_handles_out_of_memory (size_t len, size_t start, size_t end)
 	assert (ent_table_len (table) == len);
 	assert (ent_array_len (numbers) == len);
 
-	struct ent_rlist * delete = ent_rlist_alloc();
+	struct ent_rlist * delete = ent_rlist_alloc ();
 
 	if (delete == NULL)
 	{
@@ -207,7 +207,7 @@ deletion_handles_out_of_memory (size_t len, size_t start, size_t end)
 		return -1;
 	}
 
-	struct ent_rlist * keep = ent_rlist_alloc();
+	struct ent_rlist * keep = ent_rlist_alloc ();
 
 	if (!keep)
 	{
@@ -291,7 +291,7 @@ int
 table_general_test (void)
 {
 	// Create a table
-	struct ent_table * table = ent_table_alloc();
+	struct ent_table * table = ent_table_alloc ();
 
 	if (table == NULL)
 	{
@@ -356,7 +356,7 @@ table_general_test (void)
 	}
 
 	// Delete some entities
-	struct ent_rlist * delete = ent_rlist_alloc();
+	struct ent_rlist * delete = ent_rlist_alloc ();
 
 	if (delete == NULL)
 	{

@@ -3,10 +3,10 @@
 
 enum mode
 {
-	MODE_CREATE = 1 << 0,
-	MODE_READ = 1 << 1,
-	MODE_UPDATE = 1 << 2,
-	MODE_DELETE = 1 << 3,
+    MODE_CREATE = 1 << 0,
+    MODE_READ = 1 << 1,
+    MODE_UPDATE = 1 << 2,
+    MODE_DELETE = 1 << 3,
 };
 
 typedef int (* ent_procfunc) (struct ent_session *, void *);

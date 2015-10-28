@@ -15,7 +15,7 @@ struct ent_column * age_column;
 struct ent_column * dead_column;
 
 void
-xent_init_columns()
+xent_init_columns ()
 {
 	input_type_column = ent_column_alloc (sizeof (enum input_type));
 	input_id_column = ent_column_alloc (sizeof (input_id));

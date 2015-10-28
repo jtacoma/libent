@@ -17,14 +17,14 @@ struct ent_rlist
 };
 
 struct ent_rlist *
-ent_rlist_alloc()
+ent_rlist_alloc ()
 {
 	struct ent_rlist * rlist = NULL;
 
 	if (ent_alloc ((void**)&rlist, sizeof (*rlist)) == 0)
 	{
 		*rlist = (struct ent_rlist) {0};
-		rlist->ranges = ent_range_array_alloc();
+		rlist->ranges = ent_range_array_alloc ();
 
 		if (rlist->ranges == NULL)
 		{

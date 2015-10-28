@@ -6,10 +6,10 @@
 struct creator;
 
 struct creator *
-creator_alloc();
+creator_alloc ();
 
 void
-creator_free();
+creator_free ();
 
 int
 creator_bind (struct creator * creator, struct ent_table * entities);

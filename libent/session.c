@@ -54,7 +54,7 @@ ent_session_alloc (
 	}
 
 	*s = (struct ent_session) {.lock = p};
-	s->insertions = ent_insertion_array_alloc();
+	s->insertions = ent_insertion_array_alloc ();
 
 	if (!s->insertions)
 	{
@@ -62,7 +62,7 @@ ent_session_alloc (
 		return NULL;
 	}
 
-	s->deletions = ent_deletion_array_alloc();
+	s->deletions = ent_deletion_array_alloc ();
 
 	if (!s->deletions)
 	{
@@ -130,7 +130,7 @@ ent_session_insert (
 		return NULL;
 	}
 
-	struct ent_table * buffer = ent_table_alloc();
+	struct ent_table * buffer = ent_table_alloc ();
 
 	if (!buffer)
 	{
@@ -170,7 +170,7 @@ ent_session_delete (
 		return -1;
 	}
 
-	struct ent_rlist * keep = ent_rlist_alloc();
+	struct ent_rlist * keep = ent_rlist_alloc ();
 
 	if (!keep)
 	{

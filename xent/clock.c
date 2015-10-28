@@ -15,7 +15,7 @@ struct clock
 	unsigned long tick_offset;
 };
 
-struct clock * clock_alloc()
+struct clock * clock_alloc ()
 {
 	return calloc (1, sizeof (struct clock));
 }

@@ -35,7 +35,7 @@ painter_alloc (
 		return NULL;
 	}
 
-	painter->lock = ent_lock_alloc();
+	painter->lock = ent_lock_alloc ();
 	if (!painter->lock)
 	{
 		free (painter);
@@ -121,7 +121,7 @@ static int
 painter_init (
     struct painter * painter)
 {
-	GLenum err = glewInit();
+	GLenum err = glewInit ();
 	if (err != GLEW_OK)
 	{
 		printf (
@@ -150,7 +150,7 @@ painter_init (
 		return -1;
 	}
 
-	GLuint program = glCreateProgram();
+	GLuint program = glCreateProgram ();
 	if (!program)
 	{
 		errno = ENOEXEC;

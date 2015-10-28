@@ -33,7 +33,7 @@ game_alloc (
 		return NULL;
 	}
 
-	game->lock = ent_lock_alloc();
+	game->lock = ent_lock_alloc ();
 	if (!game->lock)
 	{
 		free (game);

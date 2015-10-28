@@ -6,12 +6,12 @@
 #include "creator.h"
 #include "printer.h"
 
-int main()
+int main ()
 {
-	struct ent_table * entities = ent_table_alloc();
+	struct ent_table * entities = ent_table_alloc ();
 	assert (entities);
 
-	struct creator * creator = creator_alloc();
+	struct creator * creator = creator_alloc ();
 	assert (creator);
 
 	assert (creator_bind (creator, entities) == 0);

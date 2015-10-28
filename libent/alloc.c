@@ -59,7 +59,7 @@ ent_alloc (
 }
 
 size_t
-ent_alloc_count()
+ent_alloc_count ()
 {
 	return allocs;
 }

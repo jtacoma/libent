@@ -3,7 +3,7 @@
 int
 new_rlist_is_empty (void)
 {
-	struct ent_rlist * rlist = ent_rlist_alloc();
+	struct ent_rlist * rlist = ent_rlist_alloc ();
 
 	if (rlist == NULL)
 	{
@@ -57,7 +57,7 @@ null_rlist_sets_einval (void)
 int
 rlist_cannot_hold_inverted_ranges (void)
 {
-	struct ent_rlist * rlist = ent_rlist_alloc();
+	struct ent_rlist * rlist = ent_rlist_alloc ();
 
 	if (!rlist)
 	{
@@ -74,7 +74,7 @@ rlist_cannot_hold_inverted_ranges (void)
 int
 rlist_general_tests (void)
 {
-	struct ent_rlist * rlist = ent_rlist_alloc();
+	struct ent_rlist * rlist = ent_rlist_alloc ();
 
 	if (rlist == NULL)
 	{

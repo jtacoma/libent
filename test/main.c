@@ -21,7 +21,7 @@ struct ent_column * test_float64column;
 struct ent_column * test_ptrcolumn;
 
 int
-main()
+main ()
 {
 	test_int8column = ent_column_alloc (sizeof (int8_t));
 	test_int16column = ent_column_alloc (sizeof (int16_t));
@@ -40,21 +40,21 @@ main()
 	        ++i)
 	{
 		printf ("  %s: ", all_mem_tests[i].name);
-		size_t prev_fail_at = ent_alloc_fail_at();
-		size_t zero = ent_alloc_count();
-		assert (all_mem_tests[i].function() == 0);
-		size_t used = ent_alloc_count() - zero;
+		size_t prev_fail_at = ent_alloc_fail_at ();
+		size_t zero = ent_alloc_count ();
+		assert (all_mem_tests[i].function () == 0);
+		size_t used = ent_alloc_count () - zero;
 
 		// Only apply memory allocation stress if this test does not
 		// stress memory allocation on its own.
-		if (ent_alloc_fail_at() == prev_fail_at)
+		if (ent_alloc_fail_at () == prev_fail_at)
 		{
 			printf ("(%lu allocations) ", used);
 			for (size_t m = 1; m <= used; ++m)
 			{
-				ent_alloc_set_fail_at (ent_alloc_count() + m);
+				ent_alloc_set_fail_at (ent_alloc_count () + m);
 				errno = 0;
-				assert (all_mem_tests[i].function() == -1);
+				assert (all_mem_tests[i].function () == -1);
 				assert (errno == ENOMEM);
 			}
 		}

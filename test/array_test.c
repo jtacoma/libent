@@ -39,7 +39,7 @@ new_array_is_empty (void)
 int
 resized_array_is_set_to_zero (void)
 {
-	struct ent_index_array * array = ent_index_array_alloc();
+	struct ent_index_array * array = ent_index_array_alloc ();
 
 	if (!array)
 	{
@@ -79,7 +79,7 @@ resized_array_is_set_to_zero (void)
 int
 resized_array_retains_data (void)
 {
-	struct ent_index_array * array = ent_index_array_alloc();
+	struct ent_index_array * array = ent_index_array_alloc ();
 
 	if (!array)
 	{
@@ -202,7 +202,7 @@ null_array_sets_einval (void)
 		return -1;
 	}
 
-	struct ent_rlist * keep = ent_rlist_alloc();
+	struct ent_rlist * keep = ent_rlist_alloc ();
 
 	if (!keep)
 	{

@@ -19,7 +19,7 @@ struct ent_lock
 };
 
 struct ent_lock *
-ent_lock_alloc()
+ent_lock_alloc ()
 {
 	struct ent_lock * p = NULL;
 

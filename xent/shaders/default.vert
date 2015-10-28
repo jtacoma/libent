@@ -3,7 +3,7 @@ attribute vec4 colour;
 
 varying vec4 v_colour;
 
-void main()
+void main ()
 {
 	v_colour = colour;
 	gl_Position = position;

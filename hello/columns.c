@@ -9,7 +9,7 @@ struct ent_column * age_column;
 
 static bool  initialized = false;
 
-void columns_init()
+void columns_init ()
 {
 	if (!initialized)
 	{

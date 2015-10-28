@@ -35,7 +35,7 @@ ent_table_alloc (void)
 	{
 		*t = (struct ent_table) {0};
 		t->refcount = 1;
-		t->columns =  ent_column_array_alloc();
+		t->columns =  ent_column_array_alloc ();
 
 		if (!t->columns)
 		{

@@ -11,14 +11,14 @@ lock_invalid_argument_sets_einval (void)
 
 	// Create a table to use a place holder when we want to verify EINVAL
 	// for a different parameter.
-	struct ent_table * table = ent_table_alloc();
+	struct ent_table * table = ent_table_alloc ();
 	if (!table)
 	{
 		ent_column_free (column);
 		return -1;
 	}
 
-	struct ent_lock * lock = ent_lock_alloc();
+	struct ent_lock * lock = ent_lock_alloc ();
 	if (!lock)
 	{
 		ent_column_free (column);

@@ -9,7 +9,7 @@
 
 void print (struct ent_table * entities)
 {
-	struct ent_lock * printer = ent_lock_alloc();
+	struct ent_lock * printer = ent_lock_alloc ();
 	assert (printer);
 
 	assert (ent_lock_for_update (printer, entities, mass_column) == 0);

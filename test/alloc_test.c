@@ -3,7 +3,7 @@
 int
 alloc_counts_allocations (void)
 {
-	size_t zero = ent_alloc_count();
+	size_t zero = ent_alloc_count ();
 	void * mem = NULL;
 
 	for (size_t i = 0; i < 20; ++i)
@@ -14,9 +14,9 @@ alloc_counts_allocations (void)
 		}
 
 		assert (mem);
-		assert (ent_alloc_count() - zero == i + 1);
+		assert (ent_alloc_count () - zero == i + 1);
 		ent_alloc (&mem, 0);
-		assert (ent_alloc_count() - zero == i + 1);
+		assert (ent_alloc_count () - zero == i + 1);
 	}
 
 	return 0;
@@ -25,7 +25,7 @@ alloc_counts_allocations (void)
 int
 alloc_fails_when_told_to_fail (void)
 {
-	size_t zero = ent_alloc_count();
+	size_t zero = ent_alloc_count ();
 	ent_alloc_set_fail_at (zero + 2);
 
 	void * mem = NULL;
@@ -36,7 +36,7 @@ alloc_fails_when_told_to_fail (void)
 	void * fail = NULL;
 	assert (ent_alloc (&fail, 4) == -1);
 	assert (fail == NULL);
-	assert (ent_alloc_count() - zero == 2);
+	assert (ent_alloc_count () - zero == 2);
 
 	return 0;
 }

@@ -3,14 +3,14 @@
 int
 session_supports_deletion (void)
 {
-	struct ent_lock * lock = ent_lock_alloc();
+	struct ent_lock * lock = ent_lock_alloc ();
 
 	if (!lock)
 	{
 		return -1;
 	}
 
-	struct ent_table * table = ent_table_alloc();
+	struct ent_table * table = ent_table_alloc ();
 
 	if (!table)
 	{
@@ -89,7 +89,7 @@ session_supports_deletion (void)
 		return -1;
 	}
 
-	struct ent_rlist * rlist = ent_rlist_alloc();
+	struct ent_rlist * rlist = ent_rlist_alloc ();
 
 	if (!rlist)
 	{
@@ -153,14 +153,14 @@ session_supports_deletion (void)
 int
 session_supports_insertion (void)
 {
-	struct ent_table * table = ent_table_alloc();
+	struct ent_table * table = ent_table_alloc ();
 
 	if (!table)
 	{
 		return -1;
 	}
 
-	struct ent_lock * lock = ent_lock_alloc();
+	struct ent_lock * lock = ent_lock_alloc ();
 
 	if (!lock)
 	{
@@ -259,20 +259,20 @@ session_supports_insertion (void)
 int
 session_invalid_argument_sets_einval (void)
 {
-	struct ent_table * table = ent_table_alloc();
+	struct ent_table * table = ent_table_alloc ();
 	if (!table)
 	{
 		return -1;
 	}
 
-	struct ent_lock * lock = ent_lock_alloc();
+	struct ent_lock * lock = ent_lock_alloc ();
 	if (!lock)
 	{
 		ent_table_free (table);
 		return -1;
 	}
 
-	struct ent_rlist * rlist = ent_rlist_alloc();
+	struct ent_rlist * rlist = ent_rlist_alloc ();
 	if (!rlist)
 	{
 		ent_lock_free (lock);
@@ -348,7 +348,7 @@ session_invalid_argument_sets_einval (void)
 int
 session_general_test (void)
 {
-	struct ent_table * items = ent_table_alloc();
+	struct ent_table * items = ent_table_alloc ();
 
 	if (!items)
 	{
@@ -356,7 +356,7 @@ session_general_test (void)
 	}
 
 	{
-		struct ent_lock * load = ent_lock_alloc();
+		struct ent_lock * load = ent_lock_alloc ();
 
 		if (!load)
 		{
@@ -427,7 +427,7 @@ session_general_test (void)
 	}
 
 	{
-		struct ent_lock * check = ent_lock_alloc();
+		struct ent_lock * check = ent_lock_alloc ();
 
 		if (!check)
 		{
