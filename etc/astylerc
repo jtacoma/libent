@@ -1,0 +1,10 @@
+--quiet
+--suffix=none
+
+--style=allman
+--add-one-line-brackets
+--indent=tab
+--pad-oper
+--pad-header
+--unpad-paren
+--pad-first-paren-out

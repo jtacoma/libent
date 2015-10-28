@@ -18,7 +18,7 @@ clean: $(CLEAN_TARGETS)
 	rm -f .styled tags
 
 .styled: */*.[ch] */*/*.vert */*/*.frag
-	astyle $?
+	astyle --options=etc/astylerc $?
 	touch $@
 
 tags: */*.[ch]
