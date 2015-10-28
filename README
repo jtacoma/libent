@@ -3,7 +3,8 @@ libent
 
 Thread-safe operations over tables, with columns represented as simple arrays.
 
-Currently under development.
+Currently under development.  LLVM version 3.7 or later is recommended due to
+the way the `llvm-cov` tool is used to produce code coverage reports.
 
 Motivation
 ----------
