@@ -3,3 +3,6 @@
 /gmon.out
 /bin
 /lib
+/libent/*.gcda
+/libent/*.gcno
+/*.c.gcov
